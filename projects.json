@@ -1,0 +1,24 @@
+{
+  "projects": [
+    {
+      "name": "Whitelabel_GSI_Platform_Multiverse",
+      "path": "~/wow/Whitelabel_GSI_Platform_Multiverse",
+      "rules": ["wow_gsi.md", "multiverse.md"]
+    },
+    {
+      "name": "Whitelabel_GSI_Dashboard",
+      "path": "~/wow/Whitelabel_GSI_Dashboard",
+      "rules": ["wow_gsi.md", "dashboard.md"]
+    },
+    {
+      "name": "whitelabel-frontend-config",
+      "path": "~/wow/whitelabel-frontend-config",
+      "rules": ["wow_gsi.md", "frontend_config.md"]
+    },
+    {
+      "name": "static-resources",
+      "path": "~/wow/static-resources",
+      "rules": ["wow_gsi.md", "static_resources.md"]
+    }
+  ]
+}
