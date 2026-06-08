@@ -33,3 +33,8 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 - Do not proactively create or open Merge Requests or Pull Requests.
 - Do not use `glab` or `gh` to create MRs/PRs unless the user explicitly asks.
 - After pushing, share the GitLab/GitHub returned MR/PR link with the user and let the user decide whether to open it.
+
+## Opening URLs
+
+- Do not open URLs with the in-app browser.
+- Always open URLs through the Chrome extension instead.
