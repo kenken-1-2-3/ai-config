@@ -3,7 +3,12 @@
     {
       "name": "Whitelabel_GSI_Platform_Multiverse",
       "path": "~/wow/Whitelabel_GSI_Platform_Multiverse",
-      "rules": ["wow_gsi.md", "multiverse.md"]
+      "rules": ["wow_gsi.md", "multiverse.md"],
+      "skills": [
+        "multiverse-cms-navigation",
+        "multiverse-cross-template-bugfix",
+        "multiverse-shared-hook-extraction"
+      ]
     },
     {
       "name": "Whitelabel_GSI_Dashboard",

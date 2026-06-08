@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECTS_FILE="$ROOT_DIR/projects.json"
 RULES_DIR="$ROOT_DIR/rules"
+SKILLS_DIR="$ROOT_DIR/skills"
 
 expand_path() {
   local path="$1"
@@ -15,6 +16,11 @@ expand_path() {
 }
 
 json_value() {
+  local js="$1"
+  node -e "$js" "$PROJECTS_FILE"
+}
+
+json_has_key() {
   local js="$1"
   node -e "$js" "$PROJECTS_FILE"
 }
@@ -61,6 +67,24 @@ for ((i = 0; i < project_count; i++)); do
   write_rules "Personal Codex Rules" > "$codex_output"
   write_rules "Personal Claude Rules" > "$claude_output"
 
+  installed_skills=()
+  skill_count="$(json_has_key "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); console.log((data.projects[$i].skills || []).length);")"
+  if [[ "$skill_count" != "0" ]]; then
+    mkdir -p "$project_path/skills"
+    for ((s = 0; s < skill_count; s++)); do
+      skill_name="$(json_value "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); console.log(data.projects[$i].skills[$s]);")"
+      skill_source="$SKILLS_DIR/$skill_name"
+      skill_target="$project_path/skills/$skill_name"
+      if [[ ! -d "$skill_source" ]]; then
+        echo "missing skill: $skill_name" >&2
+        exit 1
+      fi
+      mkdir -p "$skill_target"
+      cp -R "$skill_source/." "$skill_target/"
+      installed_skills+=("skills/$skill_name/")
+    done
+  fi
+
   if [[ -d "$project_path/.git" ]]; then
     exclude_file="$project_path/.git/info/exclude"
     touch "$exclude_file"
@@ -70,9 +94,19 @@ for ((i = 0; i < project_count; i++)); do
     if ! grep -qxF "CLAUDE.local.md" "$exclude_file"; then
       printf 'CLAUDE.local.md\n' >> "$exclude_file"
     fi
+    if [[ "$skill_count" != "0" ]]; then
+      for skill_path in "${installed_skills[@]}"; do
+        if ! grep -qxF "$skill_path" "$exclude_file"; then
+          printf '%s\n' "$skill_path" >> "$exclude_file"
+        fi
+      done
+    fi
   fi
 
   echo "installed: $name"
   echo "  Codex:  $codex_output"
   echo "  Claude: $claude_output"
+  if [[ "$skill_count" != "0" ]]; then
+    echo "  Skills: ${installed_skills[*]}"
+  fi
 done
