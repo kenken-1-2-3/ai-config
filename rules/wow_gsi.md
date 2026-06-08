@@ -2,6 +2,12 @@
 
 Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 
+## Terminology
+
+- 會員端 (member side) refers to the `Whitelabel_GSI_Platform_Multiverse` project.
+- 代理端 (agent side) refers to the `Whitelabel_GSI_Dashboard` project.
+- Notion docs and requirements commonly use these terms; map them to the matching repo.
+
 ## Git Flow
 
 - `main`: production branch, bound to the formal/production environment.
