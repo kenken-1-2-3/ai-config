@@ -38,3 +38,8 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 
 - Do not open URLs with the in-app browser.
 - Always open URLs through the Chrome extension instead.
+
+## Testing
+
+- Write tests to verify the work.
+- Do not include test files in commits; remove them before committing.
