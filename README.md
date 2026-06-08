@@ -28,6 +28,16 @@ It also adds generated `.codex/`, `CLAUDE.local.md`, and configured local skills
 2. Add the skill name to the target project's `skills` array in `projects.json`.
 3. Run `./install.sh`.
 
+## Auto-install On Pull
+
+A `post-merge` git hook re-runs `install.sh` automatically after every `git pull` that merges changes, so generated rules stay in sync without remembering to run it.
+
+The hook lives in the tracked `.githooks/` directory. On a fresh clone, enable it once per machine:
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## Notes
 
 - Generated `.codex/`, `CLAUDE.local.md`, and configured project-local skill files are local to each machine and are not committed to project repos.

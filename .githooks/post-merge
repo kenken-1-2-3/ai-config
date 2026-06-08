@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Auto-run install.sh after `git pull` / merge so generated rules stay in sync.
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if [[ -x "$ROOT_DIR/install.sh" ]]; then
+  echo "[ai-config] post-merge: running install.sh"
+  "$ROOT_DIR/install.sh"
+fi
