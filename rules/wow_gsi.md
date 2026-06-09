@@ -11,7 +11,9 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 ## Git Flow
 
 - `main`: production branch, bound to the formal/production environment.
-- `develop`: testing branch, bound to the test environment.
+- `develop`: development test branch, bound to the dev test environment.
+- `staging`: staging test branch, bound to the staging test environment.
+- Before opening a branch from `main`, pull `main` first so it is up to date.
 - Main feature branches use `feat/{main-feature-summary}` and are opened from `main`.
 - Feature child branches use `feat/{main-feature-summary}/{sub-feature-summary}` when multiple people work under one parent feature; merge them back into the parent feature branch and remove the child branch when complete.
 - Bug fix branches use `fix/{bug-summary}`.
@@ -19,9 +21,14 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 - Optimization branches use `perf/{optimization-summary}`.
 - Refactor branches use `refactor/{refactor-summary}`.
 - Other work uses `chore/{other-work-summary}`.
-- After development, merge the work branch into `develop` and verify through the test environment.
-- Create the production MR to `main` only when the tested change needs to go online.
-- Do not rebase by default. If a production MR to `main` has conflicts, merge `main` into the work branch, resolve conflicts there, then create or update the MR.
+- Promote the same work branch through the environments in order: open it from `main`, then merge it into `develop`, then `staging`, then `main`.
+  1. After development, merge the work branch into `develop` and verify through the dev test environment.
+  2. Once dev testing passes, merge the work branch into `staging` and verify through the staging test environment.
+  3. Once staging testing passes, merge the work branch into `main` to release to production.
+- Do not skip a stage; each merge happens only after the previous environment's testing passes.
+- Never merge into any branch on your own. Always confirm with the user before performing any merge.
+- Create the production MR to `main` only when the staging-tested change needs to go online.
+- Do not rebase by default. If a merge into `develop`, `staging`, or `main` has conflicts, merge the target branch into the work branch, resolve conflicts there, then redo the merge or update the MR.
 
 ## ESLint
 
