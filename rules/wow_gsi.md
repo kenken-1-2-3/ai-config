@@ -56,3 +56,11 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 
 - Write tests to verify the work.
 - Do not include test files in commits; remove them before committing.
+
+## Spec-Driven Workflow
+
+- This is an optional workflow used only when the user explicitly asks to turn a requirement into a spec for Codex to implement.
+- Roles: Claude reads the requirement and writes a spec, Codex implements from the spec, Claude reviews the result against the spec.
+- The spec is the single source of truth for the handoff. Write it to `docs/specs/<feature>.md`.
+- A spec must include acceptance criteria as a checklist; review checks the diff against those criteria, item by item.
+- When implementing from a spec (Codex) or reviewing against one (Claude), treat the spec as the contract: if the requirement needs to change mid-way, update the spec first, then continue.

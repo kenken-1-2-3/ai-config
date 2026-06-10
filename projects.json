@@ -5,6 +5,7 @@
       "path": "~/wow/Whitelabel_GSI_Platform_Multiverse",
       "rules": ["wow_gsi.md", "multiverse.md"],
       "skills": [
+        "spec-driven-workflow",
         "multiverse-cms-navigation",
         "multiverse-cross-template-bugfix",
         "multiverse-shared-hook-extraction"
@@ -13,17 +14,20 @@
     {
       "name": "Whitelabel_GSI_Dashboard",
       "path": "~/wow/Whitelabel_GSI_Dashboard",
-      "rules": ["wow_gsi.md", "dashboard.md"]
+      "rules": ["wow_gsi.md", "dashboard.md"],
+      "skills": ["spec-driven-workflow"]
     },
     {
       "name": "whitelabel-frontend-config",
       "path": "~/wow/whitelabel-frontend-config",
-      "rules": ["wow_gsi.md", "frontend_config.md"]
+      "rules": ["wow_gsi.md", "frontend_config.md"],
+      "skills": ["spec-driven-workflow"]
     },
     {
       "name": "static-resources",
       "path": "~/wow/static-resources",
-      "rules": ["wow_gsi.md", "static_resources.md"]
+      "rules": ["wow_gsi.md", "static_resources.md"],
+      "skills": ["spec-driven-workflow"]
     }
   ]
 }
