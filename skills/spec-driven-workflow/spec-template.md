@@ -40,5 +40,5 @@
 
 ## 交接備註給 Codex
 
-- 從 `main` pull 後開 `feat/<feature>` 分支。
+- 從 `main` pull 後，依 git flow 的分支命名規則（`feat/` / `fix/` / `perf/` / `refactor/` / `chore/`，依工作類型選用）開工作分支。
 - 實作中若發現 spec 有缺漏或矛盾，先回報 / 更新 spec 再繼續。
