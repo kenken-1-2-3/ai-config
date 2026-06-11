@@ -57,6 +57,11 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 - Write tests to verify the work.
 - Do not include test files in commits; remove them before committing.
 
+## Multilingual Terms
+
+- When implementing or writing a spec, if you hit a multilingual (i18n) term that needs confirmation — wording or translation for a UI string across languages — ask the user before deciding.
+- Do not guess or invent translations or copy. Confirm the exact term first.
+
 ## Spec-Driven Workflow
 
 - This is an optional workflow used only when the user explicitly asks to turn a requirement into a spec for Codex to implement.
