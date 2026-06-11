@@ -66,7 +66,6 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 
 - This is an optional workflow used only when the user explicitly asks to turn a requirement into a spec for Codex to implement.
 - Roles: Claude reads the requirement and writes a spec, Codex implements from the spec, Claude reviews the result against the spec.
-- The spec is the single source of truth for the handoff. Write it to `docs/specs/<feature>.md`.
-- Spec files under `docs/specs/` are a local handoff artifact; never include them in commits.
+- The spec is the single source of truth for the handoff. Write it in the ai-config repo at `~/wow/ai-config/specs/<project>/<feature>.md`, where it is version-controlled and committed (do not put specs in the project repo).
 - A spec must include acceptance criteria as a checklist; review checks the diff against those criteria, item by item.
 - When implementing from a spec (Codex) or reviewing against one (Claude), treat the spec as the contract: if the requirement needs to change mid-way, update the spec first, then continue.

@@ -1,7 +1,7 @@
 # <feature 名稱>
 
 > 交接合約：Claude 產出，Codex 依此實作，Claude 對照「驗收條件」review。
-> 位置慣例：`docs/specs/<feature>.md`
+> 位置慣例：`~/wow/ai-config/specs/<project>/<feature>.md`（版控於 ai-config）
 
 ## 背景 / 目標
 

@@ -94,9 +94,6 @@ for ((i = 0; i < project_count; i++)); do
     if ! grep -qxF "CLAUDE.local.md" "$exclude_file"; then
       printf 'CLAUDE.local.md\n' >> "$exclude_file"
     fi
-    if ! grep -qxF "docs/specs/" "$exclude_file"; then
-      printf 'docs/specs/\n' >> "$exclude_file"
-    fi
     if [[ "$skill_count" != "0" ]]; then
       for skill_path in "${installed_skills[@]}"; do
         if ! grep -qxF "$skill_path" "$exclude_file"; then
