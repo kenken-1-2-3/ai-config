@@ -83,14 +83,38 @@ export const I18nKeys: Record<Enums, string> = {
 - 開「人工扣款」時，預設 `reason_id` 必須是該介面過濾後清單中存在的值。
 - 規則：開彈窗時把 `reason_id` 設為「該 type 過濾後第一個可選項的 value」（deposit 仍會是 1，withdraw 會落在第一個有效值）。並在設定後呼叫一次 `changeReason()` 等價邏輯，確保 `dialogModifyData[0].deposit_project` 標籤與預設原因一致。
 
-### 4) 異動原因說明 tooltip（驚嘆號）
+### 4) 異動原因說明（常駐提示，比照 CMS 說明樣式）
 
-- 位置：異動原因 label 紅點 `<span class="required-dot">`（`Index.vue:444-445`）的**右邊**。人工存款、人工扣款共用同一個 label 區塊，故 tooltip 為同一元件、**內容依 `dialogData.add.type` 切換**。
-- ICON：驚嘆號，樣式參考 CMS 自訂頁面說明（`WebsiteSettings/Cms/CustomPage/AddEdit.vue:35` 的 `<q-icon name="info">` 用法/尺寸/色）。本需求用驚嘆號 → `q-icon name="error_outline"`（沿用相近 size/color）。
-- 行為：hover 顯示 `q-tooltip`，文案多行，tooltip 容器加 `style="white-space: pre-line"` 讓 `\n` 換行生效。
-- 文案綁定：
-  - `dialogData.add.type === 'deposit'` → `t('query_params.modify_reason_tip_deposit')`
+> 2026-06-12 調整：經確認改為「比照 CMS 自訂頁面說明」——`info` icon + 文字**常駐並排顯示**（非 hover tooltip、非驚嘆號）。
+
+- 樣式對齊 `WebsiteSettings/Cms/CustomPage/AddEdit.vue` 的 `.page-components-header-tip`（`@apply flex items-center gap-1; font-size:12px; line-height:14px; color:#6b6b6b;`）。多行文案故 icon 用 `items-start` 對齊頂端。
+- ICON：**`<q-icon name="info">`**（與 CMS 一致；**不要** `error_outline`/驚嘆號）。
+- 顯示方式：**常駐並排**，不是 hover。文案直接渲染在畫面上。
+- 位置：異動原因 label 列（`Index.vue:443-446`，紅點 `required-dot` 那塊）的**下方**，獨立一行整列寬度（比照 CMS 把 tip 放標題下方的做法），人工存款/人工扣款共用同一元件。
+- 換行：容器加 `style="white-space: pre-line"`，讓文案的 `\n` 生效。
+- 文案綁定（沿用既有 `modifyReasonTip` computed，依 `dialogData.add.type` 切換）：
+  - `deposit` → `t('query_params.modify_reason_tip_deposit')`
   - else → `t('query_params.modify_reason_tip_withdraw')`
+
+參考實作：
+
+```html
+<!-- 異動原因 label 列下方 -->
+<div class="col-12">
+  <div class="modify-reason-tip" style="white-space: pre-line">
+    <q-icon name="info" size="14px" class="q-mt-xs" />
+    <span>{{ modifyReasonTip }}</span>
+  </div>
+</div>
+```
+```scss
+.modify-reason-tip {
+  @apply flex items-start gap-1;
+  font-size: 12px;
+  line-height: 14px;
+  color: #6b6b6b;
+}
+```
 
 ## i18n 新增 key（en / zh-TW / zh-CN）
 
@@ -133,14 +157,14 @@ export const I18nKeys: Record<Enums, string> = {
 - [ ] 人工扣款下拉顯示 {優惠活動, 返水, 額度異常扣除, 優惠金額, 額度調整}，**不含** 額度異常補存、儲值額度、代理調整。
 - [ ] id 7/8 在 zh-TW/zh-CN/en 三語顯示正確 label（非簡體 fallback）。
 - [ ] 開「人工扣款」新增彈窗時，異動原因預設值為過濾後清單中的有效項（不是被排除的 id=1），且 `deposit_project` 標籤同步。
-- [ ] 異動原因紅點右邊出現驚嘆號 icon，樣式比照 CMS 說明。
-- [ ] hover 驚嘆號顯示多行 tooltip，`\n` 正確換行（`white-space: pre-line`）。
-- [ ] tooltip 內容隨 deposit/withdraw 切換正確文案，三語皆正確。
+- [ ] 異動原因 label 下方出現 `info` icon + 常駐說明文字，樣式比照 CMS `.page-components-header-tip`（#6b6b6b、12px、icon 與文字並排）。**非 hover、非驚嘆號。**
+- [ ] 說明文字多行 `\n` 正確換行（`white-space: pre-line`）。
+- [ ] 說明內容隨 deposit/withdraw 切換正確文案，三語皆正確。
 - [ ] 送出後 `reason_id` 正確帶到後端（既有 `handleAdd` 流程不破壞）。
 - [ ] 既有「人工存款 / 人工扣款」其餘流程（金額、稽核倍數、批次匯入、列表顯示）不受影響。
 
 ## 驗證方式
 
 - 起本機 → `/MemberManagement/Quota`（需權限 `A_F_MEMBER_QUOTA`，站別 agent/anibetAgent/amusevip）。
-- 切 zh-TW / zh-CN / en 三語各開人工存款、人工扣款彈窗，核對下拉項目、預設值、icon、tooltip 文案與換行。
+- 切 zh-TW / zh-CN / en 三語各開人工存款、人工扣款彈窗，核對下拉項目、預設值、info icon、常駐說明文案與換行。
 - 測試檔不要進 commit。
