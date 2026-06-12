@@ -20,6 +20,17 @@ Apply these rules to `Whitelabel_GSI_Platform_Multiverse`.
 - Preserve existing `$t(...)` and `t(...)` calls unless the user provides an exact replacement.
 - If the user provides a remote i18n key, use it directly.
 
+## Deployment (發版)
+
+- Merging a branch back into `develop` or `staging` does NOT release; it only updates those test environments.
+- Releasing ("發版") is a separate step run with `yarn deploy` (single template) or `yarn deploy:all` (all templates). When the user says 發版/release, run one of these — nothing is released until then.
+- `yarn deploy` prompts:
+  1. Select template (版型): the user will name which template; select that one. If the user did not name it, ask before deploying.
+  2. Version number (版號): accept the default (just confirm).
+  3. Final confirmation: answer `y`.
+- `yarn deploy:all`: same prompts as `yarn deploy` except it does not ask for a template (deploys all); version number uses the default and final confirmation is `y`.
+- Deployment is outward-facing; only run it when the user explicitly asks to 發版/release.
+
 ## Verification
 
 - Use the smallest relevant validation for touched files.
