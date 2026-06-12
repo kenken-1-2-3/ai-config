@@ -49,7 +49,14 @@
 - 要寫哪些測試來驗證（注意：commit 前移除測試檔）。
 - 手動驗證步驟（若需要）。
 
+## Git Flow
+
+- 分支名稱：`<type>/<summary>`（`type` 依工作性質選 `feat` / `fix` / `perf` / `refactor` / `chore`）。
+- 從 `main` pull 後開出。
+- 推進路徑：工作分支 → `develop`（dev 測試）→ `staging`（staging 測試）→ `main`（上線），每階段測試過才進下一關。
+- 合併到任何分支前需使用者確認。
+
 ## 交接備註給 Codex
 
-- 從 `main` pull 後，依 git flow 的分支命名規則（`feat/` / `fix/` / `perf/` / `refactor/` / `chore/`，依工作類型選用）開工作分支。
+- 依上方 Git Flow 開分支實作。
 - 實作中若發現 spec 有缺漏或矛盾，先回報 / 更新 spec 再繼續。
