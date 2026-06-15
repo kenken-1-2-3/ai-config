@@ -167,23 +167,44 @@ const currencyColumns = computed(() => {
 
 ### ReferralSettingMobileCard.vue(單張卡)
 
+⚠️ **下列兩個元素是必做,實作時很容易漏**:
+- 卡片 header **右側必須有 `▼` chevron icon**(藍色)— 用來提示「可展開」,**點 header 整列**或點 icon 都能切換 expanded
+- 卡片 expanded 後**底部必須有「編輯」按鈕**(橘框 pill)— 對應 PC 表格操作欄的編輯
+
+#### Layout(collapsed)
+
 ```
-┌─ Card (collapsed) ──────────────────┐
-│  line00     會員帳號  10 ▼ 下級數量    │
-└──────────────────────────────────────┘
-↓ 點開 expand ↓
-┌─ Card (expanded) ───────────────────┐
-│  line00     會員帳號  10 ▲ 下級數量    │
-│  ──────────────────                  │
-│   PHP                          25%   │
-│   VND                          25%   │
-│   SGD                          25%   │
-│   MYR                          25%   │
-│   ┌──────────┐                       │
-│   │   編輯    │ ← 橘框 pill           │
-│   └──────────┘                       │
-└──────────────────────────────────────┘
+┌─ Card (collapsed) ───────────────────────────┐
+│  line00                    10               ▼│
+│  會員帳號                  下級數量              │
+└──────────────────────────────────────────────┘
 ```
+
+- 左側上下兩行:**帳號(白字粗體)** / 「會員帳號」(灰 label 小字)
+- 右側上下兩行:**下級數量(藍字粗體)** / 「下級數量」(灰 label 小字)
+- 最右邊 `▼` chevron icon(藍色,展開時轉成 `▲`)
+
+#### Layout(expanded)
+
+```
+┌─ Card (expanded) ────────────────────────────┐
+│  line00                    10               ▲│
+│  會員帳號                  下級數量              │
+├──────────────────────────────────────────────┤
+│   PHP                                  25%   │
+│   VND                                  25%   │
+│   SGD                                  25%   │
+│   MYR                                  25%   │
+│   ┌──────────────────────────────────────┐   │
+│   │              編輯                    │   │ ← 橘框 pill,全寬或固定寬
+│   └──────────────────────────────────────┘   │
+└──────────────────────────────────────────────┘
+```
+
+- header 維持 collapsed 樣子,只是 `▼` 變 `▲`
+- 中間 divider 線
+- 4 個幣別 row,左 label(白字)右 % 值(白字粗體)
+- **底部「編輯」按鈕**:橘外框 pill,**填滿卡片橫寬**(或左右留小 padding)
 
 #### Props
 ```ts
@@ -197,8 +218,20 @@ const emit = defineEmits<{
 ```
 
 #### 內部
-- `expanded` 本地 ref,點 header 切換
-- 編輯按鈕點下去 emit `edit` 給父層
+- `expanded` 本地 ref,**點 header 任何位置或點 `▼` icon 都切換**
+- 編輯按鈕點下去 `emit('edit', { memberId: row.member_id, account: row.account })` 給父層
+
+#### Token
+| 元件 | token |
+|---|---|
+| Card bg | `--card-card-bg-primary-enabled`(abyss-900) |
+| Card border | (Figma 看起來無,或極細 light-50) |
+| 帳號 / 數字白字 | `--text-text-primary` |
+| 「會員帳號」/「下級數量」灰 label | `--card-card-subtitle-primary-enabled`(neutral-400) |
+| 下級數量數字藍字 | `--link`(sky-400) |
+| ▼ chevron icon | `--link`(同藍字)或 `--icon-icon-primary-enabled` |
+| Divider 線 | `--border-border-line`(light-200,白 20% 細線) |
+| 編輯按鈕邊框/字 | `--button-button-title-border-enabled`(brand-primary 橘) |
 
 ---
 
@@ -242,7 +275,7 @@ PC 點某列「編輯」 / Mobile 點 card 內「編輯」
   └─ 彈窗成功編輯 → query.invalidate 自動讓本元件 refetch
 ```
 
-> 編輯彈窗成功後**不必手動 refetch**;`useUpdateReferralSettingMutation` 內已 invalidate `['referralSetting']`,query 會自動重抓。
+> 編輯彈窗成功後**不必手動 refetch**;`useUpdateReferralSettingMutation` 內已 invalidate `TANSTACK_QUERY_KEY_REFERRAL_SETTING`,query 會自動重抓。
 
 ---
 
@@ -303,7 +336,9 @@ PC 點某列「編輯」 / Mobile 點 card 內「編輯」
 ## 10. 驗收
 
 - [ ] PC 渲染表格,欄位順序:會員帳號 / 下級數量 / 幣別欄 / 操作
-- [ ] Mobile 渲染卡片,可 collapse/expand
+- [ ] **Mobile 卡片 collapsed 狀態右側必須有 `▼` chevron icon(藍色)**
+- [ ] **Mobile 卡片 expanded 後底部必須有橘框「編輯」按鈕**(點下去開彈窗)
+- [ ] Mobile 卡片點 header 任何位置(含 `▼`)都能 expand / collapse
 - [ ] 搜尋按鈕送出後才打 API,空字串視同無搜尋
 - [ ] Enter 鍵在 input 內等同於點搜尋
 - [ ] 翻頁不閃爍

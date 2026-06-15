@@ -94,7 +94,7 @@ PC 550×556 / Mobile 343×556,**內容結構兩端相同**,只差寬度。
 |---|---|
 | Header | 標題「編輯」(`t('common.edit')`),右上 `×` close icon,點 close 等同按取消 |
 | Info banner | `<i>` icon + 文字復用既有 `menu.commissionRate` 類 key;若現有 key 沒有 rate 參數,先用 computed string / replacement 產出 `100%` 橘字,避免新增 i18n |
-| 會員帳號列 | label `t('referral.memberAccount')` 灰字 + `{memberAccount}` 橘字加粗 |
+| 會員帳號列 | label `t('table_header.member_account')` 灰字 + `{memberAccount}` 橘字加粗 |
 | 每幣別 input | 上方 label(幣別 code,白字)+ BaseInput + 右側 `%` 後綴 |
 | Footer | 取消(outline)/ 確定(漸層 fill),兩顆等寬,中間 gap |
 

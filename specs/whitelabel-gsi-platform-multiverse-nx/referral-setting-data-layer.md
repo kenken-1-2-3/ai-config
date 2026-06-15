@@ -61,7 +61,7 @@ libs/shared/ui-layer/src/lib/api/
 ## 4. TypeScript 型別
 
 ```ts
-// libs/shared/ui-layer/src/lib/api/apiTypes.ts(append)
+// libs/shared/ui-layer/src/lib/api/commonTypes/referralTypes.ts(append/update)
 
 export interface GetReferralSettingBase {
   size?: number
@@ -103,35 +103,27 @@ export type ReferralSettingDetail = ReferralSettings
 > 下方是語意示意；實作請改現有 wrapper 檔案，不新增 `apiFunctions/referral.ts`。
 
 ```ts
-// libs/shared/ui-layer/src/lib/api/apiFunctions/referral_getReferralSetting.ts / referral_getReferralSettingDetail.ts / referral_putReferralSetting.ts
+// libs/shared/ui-layer/src/lib/api/apiFunctions/referral_getReferralSetting.ts
+import { requestFn } from "../axiosInterceptors"
+import { ENDPOINT_PATHS } from "../endpointPaths"
+import { GetReferralSettingBase, ReferralSetting } from "../commonTypes/referralTypes"
 
-import { requestFn } from "../axiosInterceptors"   // 沿用既有 axios wrapper
-import type {
-  GetReferralSettingRequest,
-  ReferralSettingListResponse,
-  ReferralSettingDetailResponse,
-  UpdateReferralSettingRequest,
-} from '../apiTypes'
+export type GetReferralSettingParamTypes = GetReferralSettingBase
+export type GetReferralSettingRequestTypes = GetReferralSettingBase
+export type GetReferralSettingResponseType = ReferralSetting
 
-export const getReferralSetting = (params: GetReferralSettingRequest) =>
-  request<ReferralSettingListResponse>({
-    url: '/v1/player/commission/settings',
-    method: 'get',
+export const getReferralSetting = (params: GetReferralSettingParamTypes) =>
+  requestFn<GetReferralSettingRequestTypes, GetReferralSettingResponseType>(
+    ENDPOINT_PATHS.REFERRAL.SETTING,
     params,
-  })
+    { name: "getReferralSetting", method: "get" }
+  )
 
-export const getReferralSettingDetail = (memberId: number) =>
-  request<ReferralSettingDetailResponse>({
-    url: `/v1/player/commission/settings/${memberId}`,
-    method: 'get',
-  })
+// libs/shared/ui-layer/src/lib/api/apiFunctions/referral_getReferralSettingDetail.ts
+export type GetReferralSettingDetailResponseType = ReferralSettingDetail
 
-export const putReferralSetting = (params: UpdateReferralSettingRequest) =>
-  request<null>({
-    url: `/v1/player/commission/settings/${params.member_id}`,
-    method: 'put',
-    data: params,
-  })
+// libs/shared/ui-layer/src/lib/api/apiFunctions/referral_putReferralSetting.ts
+// 已存在,沿用 UpdateReferralSettingParamTypes / putReferralSetting
 ```
 
 > 實際 wrapper 名稱(`request`)請對齊 shared layer 既有 axios 包裝;本 repo 實際使用 `requestFn` + `ENDPOINT_PATHS.REFERRAL.SETTING`。
@@ -144,32 +136,45 @@ export const putReferralSetting = (params: UpdateReferralSettingRequest) =>
 
 ```ts
 // libs/shared/ui-layer/src/lib/api/hooks/useReferralSettingQuery.ts
-
-import { useQuery, keepPreviousData } from '@tanstack/vue-query'
-import { computed, type Ref } from 'vue'
-import { getReferralSetting } from '../apiFunctions/referral'
+import { keepPreviousData, type UseQueryOptions } from "@tanstack/vue-query"
+import { computed, reactive, toValue, watch, type ComputedRef, type Ref } from "vue"
+import type { ApiResponse } from "../types"
+import { getReferralSetting, type GetReferralSettingResponseType } from "../apiFunctions/referral_getReferralSetting"
+import type { GetReferralSettingBase } from "../commonTypes/referralTypes"
+import { useApiQuery } from "../useApiQuery"
+import { TANSTACK_QUERY_KEY_REFERRAL_SETTING } from "../../constants/tanstackQueryKeys"
 
 export interface UseReferralSettingQueryParams {
-  offset: Ref<number>
-  size: Ref<number>
-  memberAccount: Ref<string>   // 空字串 = 不帶搜尋
+  params: Ref<GetReferralSettingBase> | ComputedRef<GetReferralSettingBase>
+  options?: Omit<UseQueryOptions<unknown, Error, GetReferralSettingResponseType, unknown[]>, "queryKey" | "queryFn">
 }
 
-export function useReferralSettingQuery(params: UseReferralSettingQueryParams) {
-  return useQuery({
-    queryKey: computed(() => [
-      'referralSetting',
-      { offset: params.offset.value, size: params.size.value, memberAccount: params.memberAccount.value },
-    ]),
-    queryFn: () =>
-      getReferralSetting({
-        offset: params.offset.value,
-        size: params.size.value,
-        member_account: params.memberAccount.value || undefined,
-      }),
-    placeholderData: keepPreviousData,   // 翻頁不閃爍
-    staleTime: 30_000,
-  })
+export function useReferralSettingQuery({ params, options = {} }: UseReferralSettingQueryParams) {
+  // useApiQuery 的 payload 需保持同一個 reactive reference,避免 queryFn closure 讀到舊參數。
+  const liveParams = reactive<GetReferralSettingBase>({})
+  watch(params, (next) => {
+    for (const key of Object.keys(liveParams) as (keyof GetReferralSettingBase)[]) delete liveParams[key]
+    Object.assign(liveParams, next)
+  }, { immediate: true })
+
+  const queryKey = computed(() => [
+    TANSTACK_QUERY_KEY_REFERRAL_SETTING,
+    toValue(params).offset ?? 0,
+    toValue(params).size ?? 10,
+    toValue(params).member_account ?? ""
+  ])
+
+  return useApiQuery<typeof getReferralSetting, GetReferralSettingResponseType>(
+    queryKey as unknown as any[],
+    getReferralSetting,
+    liveParams,
+    {
+      placeholderData: keepPreviousData,
+      select: (response: ApiResponse<GetReferralSettingResponseType>) => response.data ?? { list: [], total: 0, offset: 0, size: 0 },
+      staleTime: 30_000,
+      ...options
+    }
+  )
 }
 ```
 
@@ -177,17 +182,23 @@ export function useReferralSettingQuery(params: UseReferralSettingQueryParams) {
 
 ```ts
 // libs/shared/ui-layer/src/lib/api/hooks/useReferralSettingDetailQuery.ts
+import { useQuery } from "@tanstack/vue-query"
+import { computed, type Ref } from "vue"
+import type { ApiResponse } from "../types"
+import { getReferralSettingDetail, type GetReferralSettingDetailResponseType } from "../apiFunctions/referral_getReferralSettingDetail"
+import { TANSTACK_QUERY_KEY_REFERRAL_SETTING_DETAIL } from "../../constants/tanstackQueryKeys"
 
-import { useQuery } from '@tanstack/vue-query'
-import { computed, type Ref } from 'vue'
-import { getReferralSettingDetail } from '../apiFunctions/referral'
-
+// useApiQuery 不支援 primitive dynamic payload;沿用 useDepositPaymentDetail / useCmsDetailQuery 的 direct useQuery pattern。
 export function useReferralSettingDetailQuery(memberId: Ref<number | null>) {
-  return useQuery({
-    queryKey: computed(() => ['referralSettingDetail', memberId.value]),
-    queryFn: () => getReferralSettingDetail(memberId.value!),
+  return useQuery<GetReferralSettingDetailResponseType, Error>({
+    queryKey: computed(() => [TANSTACK_QUERY_KEY_REFERRAL_SETTING_DETAIL, memberId.value]),
+    queryFn: async () => {
+      const response = (await getReferralSettingDetail(memberId.value!)) as ApiResponse<GetReferralSettingDetailResponseType>
+      if (response.status === false) throw new Error(response.msg || `API Error Code: ${response.code}`)
+      return response.data ?? { currency_limit: {}, is_limit_configured: false }
+    },
     enabled: computed(() => memberId.value !== null),
-    staleTime: 0,   // 開彈窗必抓最新
+    staleTime: 0
   })
 }
 ```
@@ -196,20 +207,32 @@ export function useReferralSettingDetailQuery(memberId: Ref<number | null>) {
 
 ```ts
 // libs/shared/ui-layer/src/lib/api/hooks/useUpdateReferralSettingMutation.ts
-
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { putReferralSetting } from '../apiFunctions/referral'
-import type { UpdateReferralSettingRequest } from '../apiTypes'
+import { useNuxtApp } from "#imports"
+import { putReferralSetting, type UpdateReferralSettingParamTypes } from "../apiFunctions/referral_putReferralSetting"
+import { useApiMutation } from "../useApiMutation"
+import {
+  TANSTACK_QUERY_KEY_REFERRAL_SETTING,
+  TANSTACK_QUERY_KEY_REFERRAL_SETTING_DETAIL
+} from "../../constants/tanstackQueryKeys"
 
 export function useUpdateReferralSettingMutation() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (params: UpdateReferralSettingRequest) => putReferralSetting(params),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [TANSTACK_QUERY_KEY_REFERRAL_SETTING] })          // 重抓列表
-      queryClient.invalidateQueries({ queryKey: [TANSTACK_QUERY_KEY_REFERRAL_SETTING_DETAIL] })    // 清掉 detail cache,下次開彈窗會抓新值
-    },
+  const { $queryClient } = useNuxtApp()
+  const mutation = useApiMutation(putReferralSetting, {
+    onSuccess: async () => {
+      await $queryClient.invalidateQueries({ queryKey: [TANSTACK_QUERY_KEY_REFERRAL_SETTING] })
+      await $queryClient.invalidateQueries({ queryKey: [TANSTACK_QUERY_KEY_REFERRAL_SETTING_DETAIL] })
+    }
   })
+
+  return {
+    updateReferralSetting: (params: UpdateReferralSettingParamTypes) => mutation.mutateAsync(params),
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    reset: mutation.reset
+  }
 }
 ```
 
@@ -225,13 +248,13 @@ export function useUpdateReferralSettingMutation() {
 | `staleTime: 30_000`(list) | 30 秒內不重抓,降低 server 壓力 |
 | `staleTime: 0`(detail) | 開彈窗每次抓最新,避免使用者看到過時的上限值 |
 | invalidate by key prefix | 編輯成功後列表 + detail 都 invalidate,UX 一致 |
-| API wrapper 不額外處理 error | 沿用 shared layer 既有 axios error interceptor;hook 用 query.error 暴露 |
+| API wrapper 不額外處理 error | list/mutation 沿用 shared layer 既有 error handling;detail 因 primitive id 改用 direct `useQuery`,需在 queryFn 內處理 `status === false` 並丟 Error |
 
 ---
 
 ## 8. 驗收
 
-- [ ] `apiFunctions/referral.ts` 三隻 wrapper 都能正確打到後端,response 解到正確 type
+- [ ] `referral_getReferralSetting*.ts` / `referral_putReferralSetting.ts` wrapper 都能正確打到後端,response 解到正確 type
 - [ ] `useReferralSettingQuery` 改變 params(offset / size / memberAccount)會自動重抓
 - [ ] 連續快速翻頁時不會有 race(舊 response 不會覆蓋新 response)
 - [ ] `useReferralSettingDetailQuery` 在 memberId 為 null 時不打 API
@@ -244,12 +267,12 @@ export function useUpdateReferralSettingMutation() {
 
 - `getReferralSettingDetail` 目前 response type 不應是 `ReferralSetting` 分頁型別,應改成 `ReferralSettingDetail`。
 - `GetReferralSettingBase` 需補 `member_account?: string`,搜尋才有型別支援。
-- Query / Mutation hook 請用 repo 既有 `useApiQuery` / `useApiMutation`,並在 `constants/tanstackQueryKeys/referralKeys.ts` 新增 key 後由 index 匯出。
-- Hook `select` 需從 `ApiResponse<T>` 取 `response.data`,不要假設 wrapper 直接回 payload。
+- List query 用 repo 既有 `useApiQuery`;detail query 因 primitive id payload 問題,沿用 `useDepositPaymentDetail` / `useCmsDetailQuery` 的 direct `useQuery` pattern;mutation 用 `useApiMutation`。`constants/tanstackQueryKeys/referralKeys.ts` 新增 key 後由 index 匯出。
+- Hook 需從 `ApiResponse<T>` 取 `response.data`,不要假設 wrapper 直接回 payload。
 
-## 10. 注意事項給 codex
+## 10. 實作注意事項
 
 1. **不要動舊專案** — 所有檔案都新增在 `libs/shared/ui-layer`,不要動 `apps/r017` 內檔案
 2. **沿用既有 axios wrapper** — 不要新造一個 axios 實例,如果 shared layer 已有 `request` 或 `adminRequest`,直接 import
-3. **保留 query key 命名一致** — `['referralSetting', ...]` / `['referralSettingDetail', ...]`;之後 list / dialog spec 也會用同 key
+3. **保留 query key 命名一致** — `TANSTACK_QUERY_KEY_REFERRAL_SETTING` / `TANSTACK_QUERY_KEY_REFERRAL_SETTING_DETAIL`;之後 list / dialog spec 也會用同 key
 4. **`is_limit_configured` 欄位** — 後端有回,本 spec 暫時不用,但 type 保留(未來可能用來判斷 row level disable)
