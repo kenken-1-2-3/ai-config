@@ -28,6 +28,12 @@
       "path": "~/wow/static-resources",
       "rules": ["wow_gsi.md", "static_resources.md"],
       "skills": ["spec-driven-workflow"]
+    },
+    {
+      "name": "whitelabel-gsi-platform-multiverse-nx",
+      "path": "~/wow/whitelabel-gsi-platform-multiverse-nx",
+      "rules": ["wow_gsi.md", "multiverse_nx.md"],
+      "skills": ["spec-driven-workflow"]
     }
   ]
 }
