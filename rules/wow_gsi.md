@@ -49,8 +49,9 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 
 ## Opening URLs
 
+- This applies to both Claude and Codex.
 - Do not open URLs with the in-app browser.
-- Always open URLs through the Chrome extension instead.
+- Always open any URL through the Chrome extension instead.
 
 ## Testing
 
