@@ -10,11 +10,12 @@ Personal AI assistant rules for WOW/GSI workspaces.
 
 The installer reads `projects.json` and creates:
 
-- `<project>/.codex/personal_rules.md` for Codex
+- `<project>/.codex/personal_rules.md` for Codex (reference copy)
+- `<project>/AGENTS.override.md` for Codex — this is what Codex's official discovery actually loads (it reads `AGENTS.override.md` before `AGENTS.md` in the same directory). The repo's own `AGENTS.md`, if present, is inlined first so it is not shadowed, then the ai-config rules are appended.
 - `<project>/CLAUDE.local.md` for Claude Code
 - `<project>/skills/<skill-name>/SKILL.md` for project-local skills configured in `projects.json`
 
-It also adds generated `.codex/`, `CLAUDE.local.md`, and configured local skills to each repo's local `.git/info/exclude`.
+It also adds generated `.codex/`, `CLAUDE.local.md`, `AGENTS.override.md`, and configured local skills to each repo's local `.git/info/exclude`.
 
 ## Add A Project
 
