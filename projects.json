@@ -6,6 +6,7 @@
       "rules": ["wow_gsi.md", "multiverse.md"],
       "skills": [
         "spec-driven-workflow",
+        "figma-pixel-implementation",
         "multiverse-cms-navigation",
         "multiverse-cross-template-bugfix",
         "multiverse-shared-hook-extraction"
@@ -15,25 +16,25 @@
       "name": "Whitelabel_GSI_Dashboard",
       "path": "~/wow/Whitelabel_GSI_Dashboard",
       "rules": ["wow_gsi.md", "dashboard.md"],
-      "skills": ["spec-driven-workflow"]
+      "skills": ["spec-driven-workflow", "figma-pixel-implementation"]
     },
     {
       "name": "whitelabel-frontend-config",
       "path": "~/wow/whitelabel-frontend-config",
       "rules": ["wow_gsi.md", "frontend_config.md"],
-      "skills": ["spec-driven-workflow"]
+      "skills": ["spec-driven-workflow", "figma-pixel-implementation"]
     },
     {
       "name": "static-resources",
       "path": "~/wow/static-resources",
       "rules": ["wow_gsi.md", "static_resources.md"],
-      "skills": ["spec-driven-workflow"]
+      "skills": ["spec-driven-workflow", "figma-pixel-implementation"]
     },
     {
       "name": "whitelabel-gsi-platform-multiverse-nx",
       "path": "~/wow/whitelabel-gsi-platform-multiverse-nx",
       "rules": ["wow_gsi.md", "multiverse_nx.md"],
-      "skills": ["spec-driven-workflow"]
+      "skills": ["spec-driven-workflow", "figma-pixel-implementation"]
     }
   ]
 }
