@@ -55,8 +55,8 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 
 ## Testing
 
-- Write tests to verify the work.
-- Do not include test files in commits; remove them before committing.
+- Write tests to verify the work; "do not commit test files" does not mean tests are optional.
+- Do not include test files in commits; remove or unstage them before committing, after using them for verification.
 
 ## Multilingual Terms
 
