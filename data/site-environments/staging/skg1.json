@@ -1,0 +1,9 @@
+{
+  "baseApi": "https://api-skgm.gsiwl.com",
+  "apiPath": "/v1/player",
+  "version": "1.0.0",
+  "siteKey": "set33_RED",
+  "staticResourceUrl": "/statics/staging",
+  "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SKGM",
+  "agentCode": "SKG1"
+}

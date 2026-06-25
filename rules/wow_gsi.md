@@ -30,6 +30,11 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 - Create the production MR to `main` only when the staging-tested change needs to go online.
 - Do not rebase by default. If a merge into `develop`, `staging`, or `main` has conflicts, merge the target branch into the work branch, resolve conflicts there, then redo the merge or update the MR.
 
+## Commits
+
+- Never create a git commit without the user's explicit confirmation for that specific commit.
+- A direct instruction such as "commit" or "提交" counts as confirmation for the current commit only; do not reuse earlier confirmation for later commits.
+
 ## ESLint
 
 - Do not proactively fix ESLint issues if they do not prevent the app from running, building, or passing required verification.
@@ -41,6 +46,12 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 - Do not optimize unrelated screens, styles, layouts, micro-interactions, transitions, or animations unless the user explicitly asks for those changes.
 - Keep visual and motion changes limited to what is necessary for the requirement.
 
+## Figma MCP Implementation
+
+- When the user provides a Figma MCP link, treat the Figma node as the visual source of truth and implement the target UI pixel-perfect against it.
+- Use Figma MCP context for layout, spacing, sizing, typography, colors, assets, component states, and responsive variants; do not approximate from memory or screenshots alone when MCP data is available.
+- Before calling the implementation complete, compare the built UI against the Figma reference and fix visible mismatches unless the user explicitly accepts a deviation.
+
 ## Merge Requests
 
 - Do not proactively create or open Merge Requests or Pull Requests.
@@ -50,7 +61,8 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 ## Opening URLs
 
 - This applies to both Claude and Codex.
-- Do not open URLs with the in-app browser.
+- When the user asks to open, navigate to, inspect, view, test, or screenshot any URL, use the Chrome extension. This includes localhost and other local dev URLs.
+- Do not open URLs with the in-app browser unless the user explicitly asks for the in-app browser or the Browser plugin.
 - Always open any URL through the Chrome extension instead.
 
 ## Testing
@@ -65,8 +77,8 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 
 ## Spec-Driven Workflow
 
-- This is an optional workflow used only when the user explicitly asks to turn a requirement into a spec for Codex to implement.
-- Roles: Claude reads the requirement and writes a spec, Codex implements from the spec, Claude reviews the result against the spec.
+- This is an optional workflow used only when the user explicitly asks to turn a requirement into a spec for another agent to implement.
+- Roles are flexible: Claude or Codex may write the spec, implement from the spec, or review the result against the spec. Do not assume the workflow is always Claude writes, Codex implements, Claude reviews.
 - The spec is the single source of truth for the handoff. Write it in the ai-config repo at `~/wow/ai-config/specs/<project>/<feature>.md`, where it is version-controlled and committed (do not put specs in the project repo).
 - A spec must include acceptance criteria as a checklist; review checks the diff against those criteria, item by item.
 - When implementing from a spec (Codex) or reviewing against one (Claude), treat the spec as the contract: if the requirement needs to change mid-way, update the spec first, then continue.

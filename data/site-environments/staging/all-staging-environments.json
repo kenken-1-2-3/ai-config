@@ -1,0 +1,1207 @@
+{
+  "33RD": {
+    "siteUrls": [
+      "https://33rd.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set33_RED",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "33RD"
+    }
+  },
+  "6M81": {
+    "siteUrls": [
+      "https://6m81.gsivk.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-6m8m.gsivk.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsivk.com/gsi/staging/6M8M",
+      "agentCode": "6M81"
+    }
+  },
+  "8CP1": {
+    "siteUrls": [
+      "https://8cp1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-8CPM.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set33_GREEN",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/8CPM",
+      "staticResourceUrl": "/statics/staging",
+      "agentCode": "8CP1"
+    }
+  },
+  "8VU1": {
+    "siteUrls": [
+      "https://8vu1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-8vum.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r031",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/8VUM",
+      "agentCode": "8VU1"
+    }
+  },
+  "98GA": {
+    "siteUrls": [
+      "https://98ga.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-gogm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/gogm",
+      "agentCode": "98GA"
+    }
+  },
+  "9BX1": {
+    "siteUrls": [
+      "https://9bx1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-9BXM.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_royalslot88",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/9BXM",
+      "agentCode": "9BX1"
+    }
+  },
+  "AGGX": {
+    "siteUrls": [
+      "https://aggx.gsiwl.com",
+      "https://aggx.csg333slup.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-aggm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r017",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/AGGM",
+      "agentCode": "AGGX"
+    }
+  },
+  "ANIBET1": {
+    "siteUrls": [
+      "https://anibet1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-anib.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/anib",
+      "agentCode": "anip"
+    }
+  },
+  "ARG1": {
+    "siteUrls": [
+      "https://arg1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-argm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r022_mga",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/ARGM",
+      "agentCode": "ARG1"
+    }
+  },
+  "AST1": {
+    "siteUrls": [
+      "https://ast1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-astm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_ed8888",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/ASTM",
+      "agentCode": "AST1"
+    }
+  },
+  "BBF1": {
+    "siteUrls": [
+      "https://bbf1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-bbfm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r025",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/BBFM",
+      "agentCode": "BBF1"
+    }
+  },
+  "BCY1": {
+    "siteUrls": [
+      "https://bcy1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-bcym.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r031",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/BCYM",
+      "agentCode": "BCY1"
+    }
+  },
+  "BF61": {
+    "siteUrls": [
+      "https://bf61.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-bf6m.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/BF6M",
+      "agentCode": "BF61"
+    }
+  },
+  "BJ01": {
+    "siteUrls": [
+      "https://bj01.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-bj0m.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r022",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/BJ0M",
+      "agentCode": "BJ01"
+    }
+  },
+  "BLY1": {
+    "siteUrls": [
+      "https://bly1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-blym.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_ed3",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/BLYM",
+      "agentCode": "BLY1"
+    }
+  },
+  "DEMO1": {
+    "siteUrls": [
+      "https://demo1.playsoft88.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r017",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "R017"
+    }
+  },
+  "DEMO2": {
+    "siteUrls": [
+      "https://demo2.playsoft88.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "GSI1"
+    }
+  },
+  "DW11": {
+    "siteUrls": [
+      "https://dw11.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-dw1m.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/DW1M",
+      "agentCode": "DW11"
+    }
+  },
+  "ED1D": {
+    "siteUrls": [
+      "https://ed1d.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_ed8888",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "ED1D"
+    }
+  },
+  "ED2D": {
+    "siteUrls": [
+      "https://ed2d.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_paisa24",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "ED2D"
+    }
+  },
+  "ED3B": {
+    "siteUrls": [
+      "https://ed3b.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r029",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "ED3B"
+    }
+  },
+  "ED3D": {
+    "siteUrls": [
+      "https://ed3d.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_ed3",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "ED3D"
+    }
+  },
+  "EIB1": {
+    "siteUrls": [
+      "https://eib1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-EIBM.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r023",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/EIBM",
+      "agentCode": "EIB1"
+    }
+  },
+  "FA11": {
+    "siteUrls": [
+      "https://fa11.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-fa1m.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r022",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/FA1M",
+      "agentCode": "FA11"
+    }
+  },
+  "FA21": {
+    "siteUrls": [
+      "https://fa21.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-fa2m.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r022",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/FA2M",
+      "agentCode": "FA21"
+    }
+  },
+  "FP1A": {
+    "siteUrls": [
+      "https://fp1a.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-fp1m.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_green",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/fp1m",
+      "agentCode": "fp1a"
+    }
+  },
+  "GM81": {
+    "siteUrls": [
+      "https://gm81.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-gogm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_blackGold",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/gogm",
+      "agentCode": "gm81"
+    }
+  },
+  "GOG1": {
+    "siteUrls": [
+      "https://gog1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-gogm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/gogm",
+      "agentCode": "GOG1"
+    }
+  },
+  "GOW1": {
+    "siteUrls": [
+      "https://gow1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-gowm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/GOWM",
+      "agentCode": "GOW1"
+    }
+  },
+  "GSI-OBTN": {
+    "siteUrls": [
+      "https://gsi-obtn.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "GSI3"
+    }
+  },
+  "GSI1": {
+    "siteUrls": [
+      "https://gsi1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "GSI3"
+    }
+  },
+  "GSI2": {
+    "siteUrls": [
+      "https://gsi2.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "0.1.34",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "GSI2"
+    }
+  },
+  "GSI3": {
+    "siteUrls": [
+      "https://gsi3.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "GSI3"
+    }
+  },
+  "HAI1": {
+    "siteUrls": [
+      "https://hai1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-gogm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/gogm",
+      "agentCode": "HAI1"
+    }
+  },
+  "HB03": {
+    "siteUrls": [
+      "https://hb03.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_royalslot88",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "HB03"
+    }
+  },
+  "IF91": {
+    "siteUrls": [
+      "https://if91.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-if9m.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/IF9M",
+      "agentCode": "IF91"
+    }
+  },
+  "MDW1": {
+    "siteUrls": [
+      "https://mdw1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-mdwm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_blackGold",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/MDWM",
+      "agentCode": "MDW1"
+    }
+  },
+  "MSA1": {
+    "siteUrls": [
+      "https://msa1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-msam.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/MSAM",
+      "agentCode": "MSA1"
+    }
+  },
+  "N1P1": {
+    "siteUrls": [
+      "https://n1p1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-n1pm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r022",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/N1PM",
+      "agentCode": "N1P1"
+    }
+  },
+  "NOV1": {
+    "siteUrls": [
+      "https://nov1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-novm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_blackGold",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/NOVM",
+      "agentCode": "NOV1"
+    }
+  },
+  "OBBB": {
+    "siteUrls": [
+      "https://obbb.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r024",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "OBBB"
+    }
+  },
+  "OBBG": {
+    "siteUrls": [
+      "https://obbg.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_green",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "OBBG"
+    }
+  },
+  "OBBL": {
+    "siteUrls": [
+      "https://obbl.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_blackGold",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "OBBL"
+    }
+  },
+  "OBBU": {
+    "siteUrls": [
+      "https://obbu.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_blue",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "OBBU"
+    }
+  },
+  "OBGB": {
+    "siteUrls": [
+      "https://obgb.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r025",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "OBGB"
+    }
+  },
+  "OBRD": {
+    "siteUrls": [
+      "https://obrd.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_red",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "OBRD"
+    }
+  },
+  "OBTD": {
+    "siteUrls": [
+      "https://obtd.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "OBTD"
+    }
+  },
+  "OBTN": {
+    "siteUrls": [
+      "https://obtn.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-argm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r022_mga",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/ARGM",
+      "agentCode": "ARG1"
+    }
+  },
+  "OBTP": {
+    "siteUrls": [
+      "https://obtp.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r023",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "OBTP"
+    }
+  },
+  "OKW1": {
+    "siteUrls": [
+      "https://okw1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-okwm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/OKWM",
+      "agentCode": "OKW1"
+    }
+  },
+  "ORG1": {
+    "siteUrls": [
+      "https://org1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-orgm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/ORGM",
+      "agentCode": "ORG1"
+    }
+  },
+  "PHB1": {
+    "siteUrls": [
+      "https://phb1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-phbm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r022",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/PHBM",
+      "agentCode": "PHB1"
+    }
+  },
+  "POBG": {
+    "siteUrls": [
+      "https://pobg.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_green",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "POBG"
+    }
+  },
+  "POBP": {
+    "siteUrls": [
+      "https://pobp.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_purple",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "POBP"
+    }
+  },
+  "PS50": {
+    "siteUrls": [
+      "https://ps50.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_DBO88",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "PS50"
+    }
+  },
+  "PS51": {
+    "siteUrls": [
+      "https://ps51.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_jokerhill",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "PS51"
+    }
+  },
+  "PS52": {
+    "siteUrls": [
+      "https://ps52.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_6M88",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "PS52"
+    }
+  },
+  "R017": {
+    "siteUrls": [
+      "https://r017.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r017",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "R171"
+    }
+  },
+  "R020": {
+    "siteUrls": [
+      "https://r020.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_redBlack",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "R020"
+    }
+  },
+  "R021": {
+    "siteUrls": [
+      "https://r021.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "bmm_set_obtd",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "R021"
+    }
+  },
+  "R171": {
+    "siteUrls": [
+      "https://r171.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r017",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "R171"
+    }
+  },
+  "R172": {
+    "siteUrls": [
+      "https://r172.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r017",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "R172"
+    }
+  },
+  "R17B": {
+    "siteUrls": [
+      "https://r17b.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r017",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "R17B"
+    }
+  },
+  "R17P": {
+    "siteUrls": [
+      "https://r17p.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r031",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "R17P"
+    }
+  },
+  "R321": {
+    "siteUrls": [
+      "https://r321.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r032",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "R321"
+    }
+  },
+  "R331": {
+    "siteUrls": [
+      "https://r331.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-sits.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r033",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "R331"
+    }
+  },
+  "ROG1": {
+    "siteUrls": [
+      "https://rog1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-rogm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/ROGM",
+      "agentCode": "ROG1"
+    }
+  },
+  "RUB1": {
+    "siteUrls": [
+      "https://rub1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-rubm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/RUBM",
+      "agentCode": "RUB1"
+    }
+  },
+  "RUE1": {
+    "siteUrls": [
+      "https://rue1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-ruem.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_blackGold",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/RUEM",
+      "agentCode": "RUE1"
+    }
+  },
+  "RYS1": {
+    "siteUrls": [
+      "https://rys1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-rysm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_royalslot88",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/RYSM",
+      "agentCode": "RYS1"
+    }
+  },
+  "S27D": {
+    "siteUrls": [
+      "https://s27d.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_UFAONG",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "S27D"
+    }
+  },
+  "S334": {
+    "siteUrls": [
+      "https://s334.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set33_GREEN",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "S334"
+    }
+  },
+  "S33D": {
+    "siteUrls": [
+      "https://s33d.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set33",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "S33D"
+    }
+  },
+  "S49D": {
+    "siteUrls": [
+      "https://s49d.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set49",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "S49D"
+    }
+  },
+  "SAMJ": {
+    "siteUrls": [
+      "https://samj.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-anib.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_amuse",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/anib",
+      "agentCode": "samj"
+    }
+  },
+  "SJPN": {
+    "siteUrls": [
+      "https://sjpn.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-stagingagent.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_amuse",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+      "agentCode": "SJPN"
+    }
+  },
+  "SKG1": {
+    "siteUrls": [
+      "https://skg1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-skgm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set33_RED",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SKGM",
+      "agentCode": "SKG1"
+    }
+  },
+  "SNSD": {
+    "siteUrls": [
+      "https://snsd.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-gscm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r017",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/GSCM",
+      "agentCode": "GSC1"
+    }
+  },
+  "TKG1": {
+    "siteUrls": [
+      "https://tkg1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-tkgm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_redBlack",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/TKGM",
+      "agentCode": "TKG1"
+    }
+  },
+  "WFA1": {
+    "siteUrls": [
+      "https://wfa1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-wfam.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/WFAM",
+      "agentCode": "WFA1"
+    }
+  },
+  "WIN1": {
+    "siteUrls": [
+      "https://win1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-winm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/WINM",
+      "agentCode": "WIN1"
+    }
+  },
+  "WX81": {
+    "siteUrls": [
+      "https://wx81.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-wx8m.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_ed3",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/WX8M",
+      "agentCode": "WX81"
+    }
+  },
+  "XBR1": {
+    "siteUrls": [
+      "https://xbr1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-xbrm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r017",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/XBRM",
+      "agentCode": "XBR1"
+    }
+  },
+  "YFG1": {
+    "siteUrls": [
+      "https://yfg1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-yfgm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/YFGM",
+      "agentCode": "YFG1"
+    }
+  },
+  "YS81": {
+    "siteUrls": [
+      "https://ys81.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-gogm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_blackGold",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/gogm",
+      "agentCode": "YS81"
+    }
+  },
+  "ZPL1": {
+    "siteUrls": [
+      "https://zpl1.gsiwl.com"
+    ],
+    "environment": {
+      "baseApi": "https://api-zplm.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r023",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/ZPLM",
+      "agentCode": "ZPL1"
+    }
+  }
+}

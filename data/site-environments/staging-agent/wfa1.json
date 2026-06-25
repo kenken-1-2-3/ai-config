@@ -1,0 +1,8 @@
+{
+                            "mode": "agent",
+                            "baseApi": "https://api-wfam.gsiwl.com",
+                            "staticResourceUrl": "/statics/staging",
+                            "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/WFAM",
+                            "apiPath": "/v1/agent",
+                            "version": "1.0.0"
+                        }

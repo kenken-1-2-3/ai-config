@@ -1,0 +1,254 @@
+{
+  "DOBT": {
+    "siteUrl": "https://dobt-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "DOBT"
+    }
+  },
+  "GOGD": {
+    "siteUrl": "https://gogd-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "GOGD"
+    }
+  },
+  "BKGD": {
+    "siteUrl": "https://bkgd-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_blackGold",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "BKGD"
+    }
+  },
+  "FP1D": {
+    "siteUrl": "https://fp1d-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_green",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "FP1D"
+    }
+  },
+  "DOBR": {
+    "siteUrl": "https://dobr-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_red",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "DOBR"
+    }
+  },
+  "OBRB": {
+    "siteUrl": "https://obrb-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "okbet_redBlack",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "OBRB"
+    }
+  },
+  "DBOD": {
+    "siteUrl": "https://dbod-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_DBO88",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "DBOD"
+    }
+  },
+  "ED03": {
+    "siteUrl": "https://ed03-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_ed3",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "ED03"
+    }
+  },
+  "ED88": {
+    "siteUrl": "https://ed88-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_ed8888",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "ED88"
+    }
+  },
+  "JKHD": {
+    "siteUrl": "https://jkhd-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_jokerhill",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "JKHD"
+    }
+  },
+  "R016": {
+    "siteUrl": "https://r016-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r016",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "R016"
+    }
+  },
+  "GSAI": {
+    "siteUrl": "https://gsai-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "v0.0.1",
+      "siteKey": "set_r017",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "GSAI"
+    }
+  },
+  "R022": {
+    "siteUrl": "https://r022-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r022",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "R022"
+    }
+  },
+  "R023": {
+    "siteUrl": "https://r023-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r023",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "R023"
+    }
+  },
+  "R024": {
+    "siteUrl": "https://r024-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r024",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "R024"
+    }
+  },
+  "R025": {
+    "siteUrl": "https://r025-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_r025",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "R025"
+    }
+  },
+  "RYSD": {
+    "siteUrl": "https://rysd-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_royalslot88",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "RYSD"
+    }
+  },
+  "XGAD": {
+    "siteUrl": "https://xgad-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_sjpn2",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "XGAD"
+    }
+  },
+  "D334": {
+    "siteUrl": "https://d334-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set33_GREEN",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "D334"
+    }
+  },
+  "SKD1": {
+    "siteUrl": "https://skd1-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set33_RED",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "SKD1"
+    }
+  },
+  "DJPN": {
+    "siteUrl": "https://djpn-dev.gsiwl.com",
+    "environment": {
+      "baseApi": "https://api-devm-dev.gsiwl.com",
+      "apiPath": "/v1/player",
+      "version": "1.0.0",
+      "siteKey": "set_amuse",
+      "staticResourceUrl": "/statics/staging",
+      "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+      "agentCode": "DJPN"
+    }
+  }
+}

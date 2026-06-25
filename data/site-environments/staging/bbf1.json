@@ -1,0 +1,9 @@
+{
+  "baseApi": "https://api-bbfm.gsiwl.com",
+  "apiPath": "/v1/player",
+  "version": "1.0.0",
+  "siteKey": "set_r025",
+  "staticResourceUrl": "/statics/staging",
+  "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/BBFM",
+  "agentCode": "BBF1"
+}

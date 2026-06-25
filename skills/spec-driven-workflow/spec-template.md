@@ -1,6 +1,6 @@
 # <feature 名稱>
 
-> 交接合約：Claude 產出，Codex 依此實作，Claude 對照「驗收條件」review。
+> 交接合約：Spec 作者產出，指定實作者依此實作，reviewer 對照「驗收條件」review。Claude 與 Codex 的角色可互換。
 > 位置慣例：`~/wow/ai-config/specs/<project>/<feature>.md`（版控於 ai-config）
 
 ## 背景 / 目標
@@ -54,9 +54,10 @@
 - 分支名稱：`<type>/<summary>`（`type` 依工作性質選 `feat` / `fix` / `perf` / `refactor` / `chore`）。
 - 從 `main` pull 後開出。
 - 推進路徑：工作分支 → `develop`（dev 測試）→ `staging`（staging 測試）→ `main`（上線），每階段測試過才進下一關。
+- Commit 前需取得使用者針對該次提交的明確確認；不得沿用先前確認自行 commit。
 - 合併到任何分支前需使用者確認。
 
-## 交接備註給 Codex
+## 交接備註給實作者
 
 - 依上方 Git Flow 開分支實作。
 - 實作中若發現 spec 有缺漏或矛盾，先回報 / 更新 spec 再繼續。

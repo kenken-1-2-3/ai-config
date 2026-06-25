@@ -1,0 +1,9 @@
+{
+                            "baseApi": "https://api-phbm.gsiwl.com",
+                            "apiPath": "/v1/player",
+                            "version": "1.0.0",
+                            "siteKey": "set_r022",
+                            "staticResourceUrl": "/statics/staging",
+                            "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/PHBM",
+                            "agentCode": "PHB1"
+                        }

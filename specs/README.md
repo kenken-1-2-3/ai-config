@@ -1,6 +1,6 @@
 # Specs
 
-Spec files for the spec-driven workflow (Claude writes the spec, Codex implements, Claude reviews).
+Spec files for the spec-driven workflow. The agent roles are flexible: Claude or Codex may write the spec, implement it, or review it, depending on the handoff.
 
 - Layout: `specs/<project>/<feature>.md`, where `<project>` is the target repo name.
 - These are committed here in ai-config (version-controlled and synced across machines), not in the project repos.

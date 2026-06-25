@@ -1,0 +1,9 @@
+{
+                            "baseApi": "https://api-stagingagent.gsiwl.com",
+                            "apiPath": "/v1/player",
+                            "version": "0.1.34",
+                            "siteKey": "okbet",
+                            "staticResourceUrl": "/statics/staging",
+                            "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+                            "agentCode": "GSI2"
+                        }

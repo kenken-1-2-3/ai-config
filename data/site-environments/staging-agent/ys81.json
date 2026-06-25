@@ -1,0 +1,8 @@
+{
+  "mode": "agent",
+  "baseApi": "https://api-gogm.gsiwl.com",
+  "staticResourceUrl": "/statics/staging",
+  "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/gogm",
+  "apiPath": "/v1/agent",
+  "version": "1.0.0"
+}

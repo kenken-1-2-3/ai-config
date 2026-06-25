@@ -1,0 +1,9 @@
+{
+                            "baseApi": "https://api-orgm.gsiwl.com",
+                            "apiPath": "/v1/player",
+                            "version": "1.0.0",
+                            "siteKey": "okbet",
+                            "staticResourceUrl": "/statics/staging",
+                            "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/ORGM",
+                            "agentCode": "ORG1"
+                        }

@@ -1,0 +1,9 @@
+{
+  "baseApi": "https://api-fp1m.gsiwl.com",
+  "apiPath": "/v1/player",
+  "version": "1.0.0",
+  "siteKey": "okbet_green",
+  "staticResourceUrl": "/statics/staging",
+  "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/fp1m",
+  "agentCode": "fp1a"
+}

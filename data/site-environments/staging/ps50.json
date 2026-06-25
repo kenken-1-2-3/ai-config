@@ -1,0 +1,9 @@
+{
+    "baseApi": "https://api-stagingagent.gsiwl.com",
+    "apiPath": "/v1/player",
+    "version": "1.0.0",
+    "siteKey": "set_DBO88",
+    "staticResourceUrl": "/statics/staging",
+    "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/SITS",
+    "agentCode": "PS50"
+  }

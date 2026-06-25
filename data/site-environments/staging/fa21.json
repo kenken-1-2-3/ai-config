@@ -1,0 +1,9 @@
+{
+                            "baseApi": "https://api-fa2m.gsiwl.com",
+                            "apiPath": "/v1/player",
+                            "version": "1.0.0",
+                            "siteKey": "set_r022",
+                            "staticResourceUrl": "/statics/staging",
+                            "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/FA2M",
+                            "agentCode": "FA21"
+                        }

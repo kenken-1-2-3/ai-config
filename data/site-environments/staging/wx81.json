@@ -1,0 +1,9 @@
+{
+                            "baseApi": "https://api-wx8m.gsiwl.com",
+                            "apiPath": "/v1/player",
+                            "version": "1.0.0",
+                            "siteKey": "set_ed3",
+                            "staticResourceUrl": "/statics/staging",
+                            "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/WX8M",
+                            "agentCode": "WX81"
+                        }

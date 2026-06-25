@@ -1,0 +1,9 @@
+{
+                            "baseApi": "https://api-6m8m.gsivk.com",
+                            "apiPath": "/v1/player",
+                            "version": "1.0.0",
+                            "siteKey": "okbet",
+                            "staticResourceUrl": "/statics/staging",
+                            "dynamicResourceUrl": "https://wowdata.gsivk.com/gsi/staging/6M8M",
+                            "agentCode": "6M81"
+                        }

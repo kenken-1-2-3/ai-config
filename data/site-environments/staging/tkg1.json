@@ -1,0 +1,9 @@
+{
+                            "baseApi": "https://api-tkgm.gsiwl.com",
+                            "apiPath": "/v1/player",
+                            "version": "1.0.0",
+                            "siteKey": "okbet_redBlack",
+                            "staticResourceUrl": "/statics/staging",
+                            "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/TKGM",
+                            "agentCode": "TKG1"
+                        }

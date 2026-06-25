@@ -1,0 +1,7 @@
+{
+                            "mode": "agent",
+                            "baseApi": "https://api-mdwm.gsiwl.com",
+                            "staticResourceUrl": "/statics/staging",
+                            "apiPath": "/v1/agent",
+                            "version": "1.0.0"
+                        }

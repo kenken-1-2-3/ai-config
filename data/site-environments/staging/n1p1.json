@@ -1,0 +1,9 @@
+{
+                            "baseApi": "https://api-n1pm.gsiwl.com",
+                            "apiPath": "/v1/player",
+                            "version": "1.0.0",
+                            "siteKey": "set_r022",
+                            "staticResourceUrl": "/statics/staging",
+                            "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/N1PM",
+                            "agentCode": "N1P1"
+                        }

@@ -1,0 +1,8 @@
+{
+                            "mode": "agent",
+                            "baseApi": "https://api-gscm.gsiwl.com",
+                            "staticResourceUrl": "/statics/staging",
+                            "dynamicResourceUrl": "https://wowdata.gpsriowdl.com/gsi/staging/GSCM",
+                            "apiPath": "/v1/agent",
+                            "version": "1.0.0"
+                        }

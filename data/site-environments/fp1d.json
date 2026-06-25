@@ -1,0 +1,9 @@
+{
+  "baseApi": "https://api-devm-dev.gsiwl.com",
+  "apiPath": "/v1/player",
+  "version": "1.0.0",
+  "siteKey": "okbet_green",
+  "staticResourceUrl": "/statics/staging",
+  "dynamicResourceUrl": "https://wowdata.gsiwl.com/gsi/dev/devm",
+  "agentCode": "FP1D"
+}
