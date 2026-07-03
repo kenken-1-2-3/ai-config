@@ -12,6 +12,8 @@ Apply these rules to `Whitelabel_GSI_Platform_Multiverse`.
 - Template-specific work should stay in the requested `template/<siteKey>` folder.
 - Edit shared code only when the requirement explicitly asks for shared behavior, says all templates, or the existing implementation proves all affected templates use the shared path.
 - If the request does not name the affected template/siteKey, ask before editing.
+- If a requirement is for one agent/site/template but the change appears to require `src/common`, shared hooks/components, shared layout, shared config, or any non-template-specific member-side surface, stop and call out that it may affect other agents' sites before editing.
+- Prefer isolating one-site behavior in the requested `template/<siteKey>` path or site-specific config. Touch shared member-side code only after the user confirms the cross-site impact is intended.
 
 ## Remote I18n
 
