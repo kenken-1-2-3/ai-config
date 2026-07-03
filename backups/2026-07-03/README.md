@@ -14,9 +14,8 @@ The installer reads `projects.json` and creates:
 - `<project>/AGENTS.override.md` for Codex — this is what Codex's official discovery actually loads (it reads `AGENTS.override.md` before `AGENTS.md` in the same directory). The repo's own `AGENTS.md`, if present, is inlined first so it is not shadowed, then the ai-config rules are appended.
 - `<project>/CLAUDE.local.md` for Claude Code
 - `<project>/skills/<skill-name>/SKILL.md` for project-local skills configured in `projects.json`
-- `<project>/.claude/settings.local.json` — merges the top-level `claudeLocalSettings` object from `projects.json` (e.g. per-project plugin disables) into each project's personal Claude Code settings; existing unmanaged keys are preserved
 
-It also adds generated `.codex/`, `CLAUDE.local.md`, `AGENTS.override.md`, `.claude/settings.local.json`, and configured local skills to each repo's local `.git/info/exclude`.
+It also adds generated `.codex/`, `CLAUDE.local.md`, `AGENTS.override.md`, and configured local skills to each repo's local `.git/info/exclude`.
 
 ## Add A Project
 

@@ -104,35 +104,6 @@ for ((i = 0; i < project_count; i++)); do
     done
   fi
 
-  # Claude Code local settings: merge top-level "claudeLocalSettings" from
-  # projects.json into <project>/.claude/settings.local.json (personal,
-  # per-machine, git-excluded below). Merge is per top-level key; object
-  # values merge one level deep so unmanaged keys in an existing file survive.
-  has_claude_settings="$(json_value 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); console.log(data.claudeLocalSettings ? "yes" : "no");')"
-  if [[ "$has_claude_settings" == "yes" ]]; then
-    mkdir -p "$project_path/.claude"
-    node -e '
-      const fs = require("fs");
-      const managed = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).claudeLocalSettings;
-      const target = process.argv[2];
-      let existing = {};
-      if (fs.existsSync(target)) {
-        try { existing = JSON.parse(fs.readFileSync(target, "utf8")); } catch (e) {
-          console.error("skip settings merge (existing file is not valid JSON): " + target);
-          process.exit(0);
-        }
-      }
-      for (const [key, value] of Object.entries(managed)) {
-        if (value && typeof value === "object" && !Array.isArray(value)) {
-          existing[key] = Object.assign({}, existing[key] || {}, value);
-        } else {
-          existing[key] = value;
-        }
-      }
-      fs.writeFileSync(target, JSON.stringify(existing, null, 2) + "\n");
-    ' "$PROJECTS_FILE" "$project_path/.claude/settings.local.json"
-  fi
-
   if [[ -d "$project_path/.git" ]]; then
     exclude_file="$project_path/.git/info/exclude"
     touch "$exclude_file"
@@ -144,9 +115,6 @@ for ((i = 0; i < project_count; i++)); do
     fi
     if ! grep -qxF "AGENTS.override.md" "$exclude_file"; then
       printf 'AGENTS.override.md\n' >> "$exclude_file"
-    fi
-    if [[ "$has_claude_settings" == "yes" ]] && ! grep -qxF ".claude/settings.local.json" "$exclude_file"; then
-      printf '.claude/settings.local.json\n' >> "$exclude_file"
     fi
     if [[ "$skill_count" != "0" ]]; then
       for skill_path in "${installed_skills[@]}"; do
@@ -161,9 +129,6 @@ for ((i = 0; i < project_count; i++)); do
   echo "  Codex:  $codex_output"
   echo "  Codex (discovered): $agents_output"
   echo "  Claude: $claude_output"
-  if [[ "$has_claude_settings" == "yes" ]]; then
-    echo "  Claude settings: $project_path/.claude/settings.local.json"
-  fi
   if [[ "$skill_count" != "0" ]]; then
     echo "  Skills: ${installed_skills[*]}"
   fi
