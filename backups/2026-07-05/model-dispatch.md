@@ -1,6 +1,4 @@
-# Model Dispatch Rules (Claude Code binding)
-
-Scope: this file binds the shared dispatch core to the **Claude Code harness** (its agent types, model names, tool mechanics). The harness-agnostic core — three-part dispatch, two-retry cap, escalation-with-trail, verify-not-self — lives in `rules/agent_dispatch.md`, loaded by both Claude and Codex via install.sh; that file is the authority for the core rules, this file only adds Claude-specific bindings. If you are NOT running in Claude Code (e.g. Codex), use the core file alone — the model names and tools below do not exist in your harness.
+# Model Dispatch Rules
 
 For the main-session model ("the commander"). Goal: the main conversation holds decisions and conclusions, not raw file contents. Written 2026-07-03; tool facts re-verified against the live harness 2026-07-05 — if a tool/param named here errors as unknown, trust the error and update this file per ops/maintenance.md.
 

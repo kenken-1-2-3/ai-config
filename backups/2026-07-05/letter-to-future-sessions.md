@@ -110,9 +110,8 @@ judgment-rubrics 與 delegation-templates 審計後判定不需改動。
 v1 列的四種退化（儀式化、膨脹、事實漂移、繞過路由）維持有效。新增第五種：
 **重複建制**——強模型 session 重建一套平行制度，或同一判準散落多檔開始
 互相偏移。預防：本檔開頭那一課；以及 maintenance §4 的矛盾偵測（兩條規則
-打架時觸發壓縮）。判準的唯一權威位置：派工核心（跨 harness）=rules/agent_dispatch.md、
-Claude 派工綁定=model-dispatch、判斷=judgment-rubrics、模板=delegation-templates、
-維護=maintenance——別處只准引用不准複寫。
+打架時觸發壓縮）。判準的唯一權威位置：派工=model-dispatch、判斷=judgment-
+rubrics、模板=delegation-templates、維護=maintenance——別處只准引用不准複寫。
 
 ## 未盡事項（交接）
 

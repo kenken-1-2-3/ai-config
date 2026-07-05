@@ -1,4 +1,4 @@
-# Harness 診斷（2026-07-03 初版；2026-07-05 v2 附錄在文末，先讀 v2）
+# Harness 診斷（2026-07-03，由 Fable 5 session 撰寫）
 
 供後續所有 ops/ 檔案引用的問題清單。讀者：使用者本人與未來 session。
 證據基礎：本 session 實際觀察到的 system prompt 組成、`~/.claude/settings.json`、
@@ -70,66 +70,3 @@
   可抽成引用檔按需載入。優先級低於上面三項，因為內容本身品質好。
 - specs/ 下有多份未提交的 spec，ai-config 有未提交修改——維護協議
   應規定「規則改動要提交」，否則機器之間會漂移。
-
----
-
-# v2 附錄（2026-07-05，第二個 Fable 5 session 覆核）
-
-先講結論：v1 的三大修法均已落地且有效。以下是覆核結果與「現在」的前三名。
-
-## v1 遺留事項覆核（證據都是本 session 實查）
-
-- ✅ **superpowers 停用已在全部三個 wow code repo 落地**：
-  `Whitelabel_GSI_Platform_Multiverse`、`Whitelabel_GSI_Dashboard`、
-  `whitelabel-gsi-platform-multiverse-nx` 的 `.claude/settings.local.json`
-  都存在且含 `"superpowers@claude-plugins-official": false`。
-  查證教訓：repo 實際路徑以 `projects.json` 為準（Dashboard 是底線
-  `Whitelabel_GSI_Dashboard`，不是連字號）——用猜的路徑查會誤判成「未落地」。
-- ⚠️ 仍未直接驗證：停用後 wow session 的 SessionStart hook 注入是否徹底消失。
-  驗法：在 Multiverse 開一個 session 跑 `/context` 看有無 superpowers 全文。
-- ❌ v1 修法 3（MCP/plugin 按專案收斂）仍未做，見下方第二名。
-
-## 現在的前三名（2026-07-05）
-
-### 第一名：`~/own/*` 區完全在制度外
-
-`~/own/makemoney`（本 session 所在，活躍開發中）只有 README，沒有任何
-CLAUDE.md/AGENTS.md；記憶目錄是空的；superpowers 在此區全量注入（本 session
-親測：SessionStart hook 全文 + 30 條 skill 描述都在）。AegisX 有 6 筆記憶
-但同樣沒有專案規則。效果：own 區的每個弱模型 session 都在零專案知識 +
-最大干擾下工作。
-
-**修法**：(1) 本 session 已寫 `~/own/makemoney/CLAUDE.md`（如果你讀到這行
-但那個檔不存在，代表 session 中斷在它完成前——照本檔 v2 的做法補上）。
-(2) own 區各專案比照 wow：`.claude/settings.local.json` 停用 superpowers
-——這是 settings 變更，動之前問使用者（maintenance §2）。
-(3) AegisX/bitfinexLending 的 CLAUDE.md 留給在那些 repo 工作的未來 session，
-方法照抄：派 Explore agent 掃 repo → 只寫驗證過的指令與危險區。
-
-### 第二名：全域 MCP 注入仍在，但代價結構已改變
-
-harness 已引入 deferred tools 機制（工具只列名、schema 經 ToolSearch 按需
-載入），figma/notion/computer-use/chrome 的 schema 成本大幅下降。但 MCP server
-的 instructions 區塊與 30+ 條 skill 描述仍每個 session 注入（本 session 實測
-仍有數千 token）。v1 修法 3 的建議維持：用 `claude mcp list` 盤點，非本專案
-需要的移到專案層。優先級已從第一降到第二——deferred 機制吃掉了大半代價。
-
-### 第三名：記憶機制是「按專案隔離」的，教訓會寫錯地方
-
-記憶目錄按專案路徑分開（`~/.claude/projects/<flattened-path>/memory/`），
-A 專案存的記憶在 B 專案的 session 完全讀不到。弱模型最容易犯的錯：把
-跨專案通用的教訓（派工方式、驗證紀律）寫進當下專案的記憶，之後永遠不會
-被其他專案回想起來。**分流判準**（也已寫進 maintenance §3）：
-只跟這個 repo 有關 → 專案記憶；跨專案 workflow → `ops/`；Codex 也要遵守
-→ `rules/` + install.sh。寫之前先問「別的專案的 session 需要知道這件事嗎」。
-
-## harness 事實更新（2026-07-05 實測，供 ops 檔引用）
-
-- Agent tool 的 `model` 參數本 session 為 `haiku|sonnet|opus|fable`；
-  `fable` 僅特殊 session 出現，制度不可依賴（v1 判斷維持）。
-- Agent tool 仍**沒有 effort 參數**（v1 判斷維持）。
-- 新機制 deferred tools：部分工具（多為 MCP）只列名不載 schema，直接呼叫會
-  InputValidationError——先 `ToolSearch` 用 `select:工具名` 載入再呼叫，
-  一次 select 多個（逗號分隔），不要一個一個載。
-- 背景 agent（`run_in_background: true`）完成時 harness 會自動通知主對話，
-  不要去讀它的 output 檔輪詢（那是完整 JSONL transcript，會塞爆 context）。

@@ -12,7 +12,6 @@
         "wow_gsi.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
-        "agent_dispatch.md",
         "multiverse.md"
       ],
       "skills": [
@@ -30,7 +29,6 @@
         "wow_gsi.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
-        "agent_dispatch.md",
         "dashboard.md"
       ],
       "skills": [
@@ -45,7 +43,6 @@
         "wow_gsi.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
-        "agent_dispatch.md",
         "frontend_config.md"
       ],
       "skills": [
@@ -60,7 +57,6 @@
         "wow_gsi.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
-        "agent_dispatch.md",
         "static_resources.md"
       ],
       "skills": [
@@ -75,7 +71,6 @@
         "wow_gsi.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
-        "agent_dispatch.md",
         "multiverse_nx.md"
       ],
       "skills": [
@@ -89,8 +84,7 @@
       "rules": [
         "locale_manager.md",
         "jira_readonly.md",
-        "skill_trigger_guard.md",
-        "agent_dispatch.md"
+        "skill_trigger_guard.md"
       ],
       "skills": [
         "spec-driven-workflow"

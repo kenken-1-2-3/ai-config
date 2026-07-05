@@ -32,7 +32,7 @@ Same turn as the correction, decide the destination:
 
 - **Project-specific behavior** ("in repo X, command Y breaks") → the repo's rule file in `rules/`, or its section in `ops/projects-overview.md` (gotchas).
 - **Cross-project workflow** (dispatch, verification, when-to-ask) → the matching ops file, appended to the relevant section.
-- **User preference / repo-specific environment fact** → the memory mechanism (`~/.claude/projects/<flattened-path>/memory/`), per its own format. **Memory is per-project and invisible everywhere else** — before writing there, ask "would a session in a different repo need this?" If yes, it goes to `ops/` or `rules/` above, not memory.
+- **User preference / environment fact** → the memory mechanism (`~/.claude/projects/.../memory/`), per its own format.
 
 Format for appended lessons (one entry, ≤4 lines):
 

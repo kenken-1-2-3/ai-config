@@ -5,7 +5,6 @@
 - 兩個 agent **不會直接對話**。協作靠三種媒介：spec 檔（`specs/<project>/<feature>.md`）、程式碼 diff、以及使用者轉述。所有交接內容必須落在檔案裡，不能假設對方「知道剛剛討論了什麼」。
 - 規則同步機制：`install.sh` 把 `rules/*.md` 同時生成 `CLAUDE.local.md`（Claude 讀）和 `AGENTS.override.md`（Codex 讀）——**專案規則兩邊對稱**。
 - 但 **Codex 讀不到**：`~/.claude/CLAUDE.md`、`ops/` 全部、Claude 的記憶機制。所以交給 Codex 的 spec 必須自包含（spec-driven-workflow skill 已要求「實作者不需回頭問需求」——對 Codex 這不是建議，是硬條件）。
-- 例外：派工核心（三件套、重試兩輪上限、驗證不自驗）在 `rules/agent_dispatch.md`，走 install.sh 兩邊都載入——Codex 的升級路徑是「停下、帶失敗軌跡回報使用者」，因為它的主模型固定在 `~/.codex/config.toml`，session 內換不了。
 
 ## 1. 預設分工（可被使用者指定覆蓋；沒指定時照這個）
 

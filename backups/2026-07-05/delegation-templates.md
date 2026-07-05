@@ -33,7 +33,7 @@ Report format (nothing else):
 Goal: implement {{feature/fix}} in {{repo path}}. Motivation: {{why / ticket / spec path}}.
 Spec / source of truth: {{path to spec, or inline requirement}}.
 Scope: edit only under {{allowed dirs/files}}. Do NOT touch {{forbidden: e.g. src/common/, shared config, locale files, environment.json}}.
-Project rules: read the repo's rules file first and obey it — {{repo}}/CLAUDE.local.md in ~/wow repos, {{repo}}/CLAUDE.md in ~/own repos (verification commands, i18n policy, banned commands).
+Project rules: read {{repo}}/CLAUDE.local.md first and obey it (verification commands, i18n policy, banned commands).
 {{Optional: worked example of the pattern to follow — file:line of a similar existing implementation.}}
 
 Acceptance criteria:
