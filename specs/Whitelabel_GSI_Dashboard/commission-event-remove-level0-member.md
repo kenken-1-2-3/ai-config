@@ -1,7 +1,7 @@
 # 會員代理返水事件：編輯頁可刪除未有下級的 0 級會員
 
 > 交接合約：Spec 作者產出，指定實作者依此實作，reviewer 對照「驗收條件」review。Claude 與 Codex 的角色可互換。
-> 狀態：**草稿 — 「待確認事項」全數釐清前不可開工。**
+> 狀態：**已定案，可開工。**
 
 ## 背景 / 目標
 
@@ -52,38 +52,55 @@
 ## 關鍵決策與理由 (Key decisions)
 
 - **在編輯頁既有的 q-select chip 介面上做移除**（除非 Q3 企劃書另有指示）：編輯頁成員呈現是 `q-select` multiple + chips，非表格；chip 的 X 是既有的移除互動，成本最低且與新增頁行為一致。
-- **「有無下級」以後端回傳欄位為準，不在前端另外打 API 逐一查詢**：`Level0Detail.vue` 已示範 `next_level_count > 0` 的判斷模式；編輯頁應由 `GET commission/:id` 的 members 直接帶回同等欄位（待 Q2 確認後端支援）。前端自行輪詢每個成員的下級數會造成 N+1 請求。
-- **保留「有下級者不可移除」的前端鎖 + 送出前檢查雙層防呆**：現有三層鎖是好的防呆結構，只改判斷條件、不拆架構；後端仍為最終防線（Q1 需含錯誤回應約定）。
-- 現況 `updateAgentCommission` 的 payload 僅有 `new_members?: number[]`（`request.type.ts:2385-2389`），語意 append-only，**無法表達刪除**——API 合約必須先由後端定案（Q1），前端不得自行猜測欄位。
+- **「可否移除」以後端 `removable_member_ids` 白名單為準**：不在前端另外計算下級或打其他 API；`Level0Detail.vue` 的 `next_level_count > 0` 判斷是唯讀明細用途，不移植到編輯頁。
+- **保留前端鎖 + 送出前檢查雙層防呆**：現有三層鎖是好的防呆結構，只改判斷條件（從「既有成員一律鎖」改為「不在 `removable_member_ids` 內的既有成員鎖」）、不拆架構；後端仍為最終防線。
+- **刪除走 PUT 的 `remove_members` 欄位、隨表單送出**：後端已在 `PUT /platform/v1/agent/commission/{commission_id}` 增加 `remove_members: integer[]`；前端在送出時以 `initialMembers - 現存選取` 計算，不另開 DELETE 請求。
 
-## 待確認事項（開工前必須全數釐清）
+## 已定案事項（依 Apifox 後端合約回填；來源：Apifox project/4860774 → 代理端 → 會員代理 → 代理佣金設定）
 
-> 這些是 Notion 需求單與後端卡片都沒有寫的缺口。
+- **Q1（PUT 合約）— 已定案（2026-07-06）**：走既有 `PUT /platform/v1/agent/commission/{commission_id}`（Apifox api id 482650029，7/06 重建版，已发布，接口說明 "update agent commission settings, partial update supported"），body 新增欄位：
+  - `remove_members: integer[]` —「移除會員ID列表」，與既有 `new_members: integer[]` 並列。
+  - 前端對應改動：`UpdateAgentCommissionItem`（`request.type.ts:2385-2389`）補上 `remove_members?: number[]`。
+- **Q2（GET 回傳「可刪除」判斷）— 已定案（2026-07-07）**：`GET /platform/v1/agent/commission/{commission_id}`（Apifox api id 470278245，2026-07-06 15:37 更新）`data` 新增 `removable_member_ids: integer[]`，與 `members`（仍為 `{member_id, account}[]`）並列，語意為**白名單**——`removable_member_ids` 內的 `member_id` 才能顯示移除鈕。**由後端判斷 `hierarchy_level=0 && next_level_count=0`**，前端不再自算下級。
+  - 前端對應改動：`response.type.ts` 對應 detail 型別（目前 `GetPromotionDetail` 沒宣告 `members`，一併補齊 `members` 與 `removable_member_ids`）。
+- **Q5（生效時機）— 已定案（2026-07-06）**：合約為 PUT 隨表單送出（`remove_members` 是 update payload 的一部分），即「標記移除、按確認鈕隨表單一起送出」，非點擊即刪。UI 上 chip 移除只改本地狀態，送出時計算 `remove_members = initialMembers - 現存選取`。
 
-- **Q1（後端 API 合約）**：刪除事件成員走哪個接口？
-  - (a) `PUT /platform/v1/agent/commission/:id` 擴充 `removed_members: number[]`（隨表單送出），或
-  - (b) 新開 `DELETE` 專用 endpoint（點擊即刪）？
-  - 含：對「有下級會員」的成員請求刪除時，後端回應的錯誤碼/訊息格式。後端卡片 GSI-257 已在 develop testing，實際合約請直接向後端要 swagger/文件。
-- **Q2（資料欄位）**：`GET commission/:id` 回傳的 `members` 是否包含 `next_level_count`（或等價的「有無下級」欄位）？目前前端 `CommissionMemberInitial` 只有 `account` + `member_id`，且 `GetPromotionDetail` 型別（`response.type.ts:2118-2156`）根本沒宣告 `members` 欄位——需要後端確認實際回傳結構後補齊型別。
-- **Q3（UI 依據）**：企劃書 Axure 頁面中，編輯頁刪除的互動樣式為何（chip X？列表＋刪除按鈕？）？需求單截圖僅顯示現況無法刪除，未給目標 UI。若企劃書與現行 chip 介面不一致，以企劃書為準並更新本 spec。
-- **Q4（有下級者的呈現）**：有下級會員的 0 級會員在編輯頁應如何呈現——隱藏移除鈕（現行 removable=false 模式）、disable 加 tooltip 說明、或可點擊但彈錯誤提示？
-- **Q5（生效時機）**：移除是「點擊即呼叫 API 立即生效」還是「標記移除、隨表單一起送出」？（與 Q1 的 API 形式連動。）
-- **Q6（多語文案）**：移除確認彈窗與成功/失敗訊息的各語系文案（正/簡/英…）需 PM 或使用者提供，**不得自行翻譯**。建議新 key：`common.sure_to_delete_commission_member`。
-- **Q7（刪除後行為）**：被移除的會員是否應立即回到 `GET /commissions/no_event_members` 可選清單（可被重新加入本事件或其他事件）？列表頁 `zero_level_count` 是否即時更新即可、無其他連動？
+## 已知殘留（不阻塞開工，可先實作，事後追）
+
+- 7/06 PUT 文件重建時，舊版接口說明中「僅能移除 `hierarchy_level=0` 且 `next_level_count=0` 的帳號」這句限制與各欄位中文描述**全數遺失**。功能語意由 GET 的 `removable_member_ids` 承擔，不影響實作，但建議請後端把限制說明補回 PUT 接口說明。
+- PUT 僅定義 200 回應，**未文件化「移除了有下級會員的帳號」時的錯誤碼/訊息格式**。實作時前端以「非 0 的 code 顯示 msg」通用錯誤處理兜底；理論上前端只送 `removable_member_ids` 白名單內的 id，這條錯誤路徑不該被觸發。
+
+## 使用者定案（2026-07-07）
+
+- **Q3（UI 樣式）**：沿用編輯頁現行的 `q-select` multiple + chip 介面，透過 chip 的 X 按鈕移除成員。不改成列表或其他樣式。
+- **Q4（不可移除者的呈現）**：`member_id` 不在 `removable_member_ids` 內的既有成員，**完全隱藏移除鈕**（即 `removable=false`），不加 tooltip、不加點擊提示。
+- **Q7（刪除後行為）**：沿用現行下拉選單邏輯——已選擇的成員本來就會出現在下拉裡（反藍、不可再點選），移除後只是狀態從「已選（反藍）」變回「可選」，行為與現行「取消勾選」一致。PUT 成功後前端重新 fetch `GET /v1/agent/commissions/no_event_members` 更新可選清單即可，不需特別處理「加回下拉」的邏輯。
+
+- **Q6（多語文案）— 已定案（2026-07-07，由團隊決定，不走 PM）**：
+
+  | Key | 繁中 | 英文 |
+  |---|---|---|
+  | `common.sure_to_delete_commission_member` | 確定移除此會員？ | Are you sure you want to remove this member? |
+  | `common.sure_to_delete_commission_member_desc` | 移除後，該會員將不再屬於此返水事件，且此變更於儲存後生效。 | Once removed, this member will no longer belong to this rebate event. Changes take effect after saving. |
+  | `message.remove_member_success` | 移除成功 | Removed successfully |
+  | `message.remove_member_failed` | 移除失敗 | Failed to remove member |
+
+  簡中及其他語系比照專案現有 i18n 語系檔的既有翻譯風格填入（實作者依專案語系檔清單一併補齊，不再另行送審）。
+
 
 ## 驗收條件
 
 > 逐條、可勾選、可客觀判斷。Review 依此判斷過／不過。（標 ⏸ 者依待確認事項答案定稿後生效。）
 
-- [ ] 編輯頁中，`next_level_count = 0`（或 Q2 定案之等價欄位）的既有 0 級會員，可透過 UI 移除出事件成員。
-- [ ] ⏸(Q4) 有下級會員（`next_level_count > 0`）的既有 0 級會員，無法被移除，且呈現方式符合 Q4 定案。
-- [ ] 移除前跳出二次確認彈窗，取消則不變動；確認後依 Q1/Q5 定案呼叫 API。
+- [ ] 編輯頁中，`member_id` 在 `data.removable_member_ids` 內的既有 0 級會員，可透過 UI 移除出事件成員。
+- [ ] `member_id` 不在 `data.removable_member_ids` 內的既有成員，無法被移除，且完全隱藏移除鈕（不加 tooltip、不加點擊提示）。
+- [ ] 移除前跳出二次確認彈窗，取消則不變動；確認後標記移除，送出時 `PUT /platform/v1/agent/commission/{commission_id}` 的 payload 含 `remove_members`（僅含被移除者的 member_id，且每個 id 均屬於 `removable_member_ids`）。
 - [ ] 移除成功後，該成員自編輯頁成員清單消失；重新整理/重進編輯頁後仍不存在（以 `GET commission/:id` 回傳為準）。
 - [ ] 後端回傳「該成員有下級、不可刪除」錯誤時，前端顯示對應錯誤訊息且不變動成員清單。
 - [ ] create 模式（新增頁 Step1）行為不變：選取中的成員 chip 仍可自由移除，送出流程不受影響。
 - [ ] 編輯頁其他既有功能（成員新增、返水比例設定、事件名稱等欄位編輯與送出）行為不變。
 - [ ] 新增/變更的 API 呼叫已在 `agentMemberManagements.ts` 與 request/response 型別中補齊型別定義。
-- [ ] ⏸(Q6) 新增文案全部走 i18n key，各語系值採用 PM 提供之定稿，無寫死字串。
+- [ ] 新增文案全部走 i18n key（`common.sure_to_delete_commission_member`、`common.sure_to_delete_commission_member_desc`、`message.remove_member_success`、`message.remove_member_failed`），繁中/英文依本 spec 定稿，簡中及其他語系比照專案語系檔既有翻譯風格填入，無寫死字串。
 - [ ] 僅改動「受影響範圍」列出的檔案類別；未觸碰 Out of scope 項目。
 
 ## 邊界情況 / 例外
@@ -95,7 +112,7 @@
 
 ## 測試計畫
 
-- 元件測試（驗證後移除、不進 commit）：`EventInfo.vue` 的鎖定判斷——`next_level_count = 0` 者 removable、`> 0` 者不可；create 模式全部 removable。
+- 元件測試（驗證後移除、不進 commit）：`EventInfo.vue` 的鎖定判斷——edit 模式下，`member_id` ∈ `removable_member_ids` 者 removable、其餘既有成員不可；create 模式全部 removable。
 - 手動驗證（stg 或 dev 環境）：
   1. 進入後台「會員代理」→ KATEST1025 返水事件 → 編輯。
   2. 移除無下級的 0 級會員（KATEST1025）→ 確認彈窗 → 成功 → 重整後確認已不在名單。
