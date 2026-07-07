@@ -1,7 +1,7 @@
 # 會員代理返水事件：編輯頁可刪除未有下級的 0 級會員
 
 > 交接合約：Spec 作者產出，指定實作者依此實作，reviewer 對照「驗收條件」review。Claude 與 Codex 的角色可互換。
-> 狀態：**已定案，可開工。**
+> 狀態：**已定案，可開工。**（2026-07-07 實測解掉 Q8：只需前端把 detail GET 切成 PLATFORM 版即可，無需後端改動。）
 
 ## 背景 / 目標
 
@@ -69,6 +69,37 @@
 
 - 7/06 PUT 文件重建時，舊版接口說明中「僅能移除 `hierarchy_level=0` 且 `next_level_count=0` 的帳號」這句限制與各欄位中文描述**全數遺失**。功能語意由 GET 的 `removable_member_ids` 承擔，不影響實作，但建議請後端把限制說明補回 PUT 接口說明。
 - PUT 僅定義 200 回應，**未文件化「移除了有下級會員的帳號」時的錯誤碼/訊息格式**。實作時前端以「非 0 的 code 顯示 msg」通用錯誤處理兜底；理論上前端只送 `removable_member_ids` 白名單內的 id，這條錯誤路徑不該被觸發。
+
+## Q8：GET/PUT endpoint 前綴不對稱（2026-07-07 dev 實測發現並解決）
+
+**症狀**：Codex 交付第一版進 dev 環境實測，所有既有成員 chip 一律無 X 按鈕、無法移除，功能沒生效。
+
+**根因**：編輯頁 GET 與 PUT 打不同前綴。
+- **編輯頁取資料**（`agentMemberManagements.ts:96-100`，`getAgentMemberCommissionSettingDetail`）→ 打 `GET /v1/agent/commissions/settings/{id}`（**非 PLATFORM**）。這支 response 沒有 `removable_member_ids`。
+- **編輯頁送出**（`agentMemberManagements.ts:102-119`，`updateAgentMemberCommissionSetting`）→ 打 `PUT /platform/v1/agent/commission/{id}`（**PLATFORM**）。
+
+因為 GET 取不到 `removable_member_ids`，前端 `removableMemberIds.value` 恆為 `[]`，所有既有成員被判定 lock，chip removable=false → 完全沒 X。
+
+**解法（實測驗證通過）**：前端把 `getAgentMemberCommissionSettingDetail` 切成 PLATFORM GET (`/commission/{id}` + `usePlatform: true`)，對應後端 `GET /platform/v1/agent/commission/{commission_id}`，跟 PUT 對齊。
+
+**為什麼可以直接切**（Apifox schema 誤導的排除）：
+- Apifox 上 PLATFORM GET (api id 470278245) 的 response schema **只文件化 4 個 data 欄位**：`currency_limit, members, removable_member_ids, eligibility`。字面上看起來缺一堆表單欄位，會讓人以為要請後端補。
+- 2026-07-07 用 dev 環境（登入帳號 dobt）實際打該 endpoint 攔截 response，實測 `data` 回傳這些欄位：
+  ```
+  id, name, billing_type, enabled, calculation_type, payout_method, wallet_type,
+  currency_limit, eligibility, qualified_member_eligibility, cpa_eligibility,
+  qualified_member_count, cpa_qualified_member_count, reward_mode,
+  cpa_reward_by_currency, members, removable_member_ids
+  ```
+- **Apifox 文件與後端實際不同步**——實際 PLATFORM GET 已經回齊了所有欄位、還多 6 個獎勵/資格相關欄位。**不需要請後端補欄位**。建議請後端把 Apifox schema 更新，但這不阻塞前端。
+
+**驗收（實測）**：切成 PLATFORM GET 後，事件 id=10 的 members `[31, 161, 293]` 對應 `removable_member_ids: [161, 293]`——UI 上 seasontest(31) 沒 X、9122333444(161) 有 X、test1849(293) 有 X，與後端白名單完全一致。
+
+**前端要納入本 branch 的改動**：
+- `src/api/agentMemberManagements.ts` 的 `getAgentMemberCommissionSettingDetail`：路徑改為 `/commission/${id}`，config 加 `usePlatform: true`。
+
+**已知殘留（非阻塞，可請後端事後追）**：
+- Apifox 上 PLATFORM GET 的 schema 沒寫齊實際回傳的欄位。建議請後端補文件（或引用非 PLATFORM 版 detail schema 對齊）。
 
 ## 使用者定案（2026-07-07）
 
