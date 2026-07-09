@@ -6,9 +6,8 @@ How future sessions (any model) update the rules/ops files without degrading the
 
 1. Before editing any existing file under `rules/`, `ops/`, `skills/`, or `projects.json`: copy it to `backups/<YYYY-MM-DD>/` first (create the dir; keep the same filename; if the file already has a backup from today, that's enough).
 2. After editing `rules/*` or `skills/*` or `projects.json`: run `./install.sh` so project repos actually receive the change, and tell the user it ran.
-3. Skills index is auto-generated — never hand-maintained. `install.sh` scans each project's `.claude/skills/*/SKILL.md` (ai-config-installed) and `skills/*/SKILL.md` (repo-native) via `scripts/gen-skill-index.js` and injects a `# Skills Index` section into that project's `CLAUDE.local.md` / `AGENTS.override.md`. To refresh it after adding/removing a skill or changing a trigger, just re-run `install.sh` (item 2). Skills auto-discovered by Claude Code must live in `<project>/.claude/skills/`; a plain `<project>/skills/` is indexed-and-readable but not auto-registered.
-4. Rule/ops changes should be committed in this repo — remind the user; commit only with their explicit confirmation (per rules/wow_gsi.md).
-5. Never edit the generated files (`CLAUDE.local.md`, `AGENTS.override.md`, project-local `.claude/skills/` copies, the generated `# Skills Index` section) in the project repos — they get overwritten. Edit the source here.
+3. Rule/ops changes should be committed in this repo — remind the user; commit only with their explicit confirmation (per rules/wow_gsi.md).
+4. Never edit the generated files (`CLAUDE.local.md`, `AGENTS.override.md`, project-local `skills/` copies) in the project repos — they get overwritten. Edit the source here.
 
 ## 1. What you may change without asking
 

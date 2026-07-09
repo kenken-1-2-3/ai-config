@@ -10,7 +10,6 @@
       "path": "~/wow/Whitelabel_GSI_Platform_Multiverse",
       "rules": [
         "wow_gsi.md",
-        "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
@@ -29,7 +28,6 @@
       "path": "~/wow/Whitelabel_GSI_Dashboard",
       "rules": [
         "wow_gsi.md",
-        "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
@@ -45,7 +43,6 @@
       "path": "~/wow/whitelabel-frontend-config",
       "rules": [
         "wow_gsi.md",
-        "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
@@ -61,7 +58,6 @@
       "path": "~/wow/static-resources",
       "rules": [
         "wow_gsi.md",
-        "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
@@ -77,7 +73,6 @@
       "path": "~/wow/whitelabel-gsi-platform-multiverse-nx",
       "rules": [
         "wow_gsi.md",
-        "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
@@ -92,7 +87,6 @@
       "name": "whitelabel-gsi-locale-manager",
       "path": "~/wow/whitelabel-gsi-locale-manager",
       "rules": [
-        "git_https_token_auth.md",
         "locale_manager.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
