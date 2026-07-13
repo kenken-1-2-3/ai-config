@@ -124,10 +124,10 @@ Phase 1b #5 上線後桌面 41 / 行動 47,證實 SPA 下 `<img>` + fetchpriorit
 | 6 | D | §4.7 移除 NotoSansTC preload | 行動 +15-25 分、桌面 +3-5 分 | 無 | ✅ 已上線 |
 | 7 | E | §4.10 font-family stack 移除 Noto Sans TC | Mac/Win 零下載 5.3 MB;實測 +3-5 分 | PM 對齊跨平台字型 | ✅ 已上線 |
 | 8 | B | §4.9 inline preload API(banner list) | LCP 局部改善 | — | ✅ 已上線 |
-| 9 | **F** | **§4.11 CSS 非阻斷載入** | **桌面 +2-4、行動 +3-5** | Nitro hook API 驗證 | 未做,**建議下一步** |
-| 10 | H | 未用字型 preload 清理 + nuxt.config Noto Sans TC family 條目移除 | +1-2 | 檢查首屏字型使用 | 未做,快速拿分 |
+| — | F | §4.11 CSS 非阻斷載入 | FCP/TBT 改善但 CLS 大回歸 | 需先解無樣式 DOM 佔位 | ❌ **已試失敗,回退**(§8 記錄) |
+| 9 | **H** | **未用字型 preload 清理 + nuxt.config Noto Sans TC family 條目移除** | +1-2 | 檢查首屏字型使用 | 未做,**建議下一步** |
+| 10 | G | §4.12 JS bundle 瘦身(G1-G5 分批) | 桌面 +6-10、行動 +2-6 | `nuxi analyze` 先行;單獨 branch | 未做,spec 已備 |
 | 11 | C | §4.8 env.js 從外部 script 改為 inline | 桌面 FCP −240 ms、行動 −470 ms、+3-5 分 | 部署工作流變更(需 DevOps) | 暫緩 |
-| 12 | G | JS bundle 瘦身(可省 167 KiB) | +3-8 | Bundle analyzer + PrimeVue tree-shaking | 未做,深度優化 |
 | — | A | §4.3 字型子集化 | 極邊際(PSI 已不下載) | P0.3/P0.4 | **降級為非優先**(§8 記錄) |
 
 **Phase 2 疊加後估算(依實測 baseline 41-47 起跳)**:
@@ -552,6 +552,150 @@ head: {
 **與其他路線的關係**:
 - 與路線 C(§4.8 env.js inline)**部分競合**:C 直接消除 env.js 450ms 阻塞,F 消除 CSS 300ms 阻塞。兩者疊做效果最好,但單獨做 F 也有效果。
 - 與 §4.6 preconnect **正交**:各自解不同問題
+
+---
+
+### 4.12 JS bundle 瘦身(路線 G)
+
+**背景**:E 上線後(桌面 62 / 行動 56),PSI 剩餘主要扣分項:
+- 桌面主執行緒工作 2.1 s、TBT 460 ms(TBT 權重 30%,目前桌面最大的失分項)
+- 無用 JavaScript 可省 167 KiB
+- JS 執行時間 1.3 s
+
+**現況盤點(2026-07-08 從 dist 產物調查)**:
+
+- `dist/_nuxt/` 共 **279 個 JS chunk、合計 9.5 MB**(未壓縮;gzip 後傳輸約 1 MB+)
+- Entry chunk `0UCunOxW.js` **668 KB**(單一入口,包含 Nuxt runtime + 大量 Base components)
+- 另有 7 個 300-430 KB 的大 chunk
+- Swiper 被 24 處 import(HomeBanner、ProviderListCarousel、HomeCmsSection、CmsCustomPageSlider 等)
+- PrimeVue 使用 19 種元件(button/carousel/chart/checkbox/column/datatable/dialog/iconfield/inputicon/inputnumber/inputtext/progressbar/radiobutton/select/toast 等),經 `@primevue/nuxt-module` 自動載入
+- `primevue/chart`(內含 chart.js)只被 3 個檔案用到:`BaseChart.vue`、`SummayDisplayBlocks.vue`、`member/summary.vue` — **只有會員中心 summary 頁需要,首頁不用**
+
+**改法(按 CP 值排序,可分批做)**:
+
+**G1. Chart.js 延遲載入(預估 entry −100-150 KB)**
+
+chart.js + primevue/chart 只有 member/summary 頁用,但若被打進 entry chunk 就是首頁白付的成本。
+1. 確認 chart 相關代碼在哪個 chunk:`npx nuxi analyze`(或 `nuxi build --analyze`)
+2. 若在 entry:把 `BaseChart.vue` 改為 `defineAsyncComponent` 或在 summary 頁用 `<LazyBaseChart>`(Nuxt Lazy 前綴)
+3. 驗收:首頁 Network 面板不載入 chart 相關 chunk
+
+**G2. PrimeVue 元件按需載入確認(預估 −50-100 KB)**
+
+`@primevue/nuxt-module` 預設 `autoImport: true` 已做 tree-shaking(runtimeConfig 顯示 `autoImport: true`),理論上只打包用到的 19 種元件。要確認的是:
+1. `nuxi analyze` 檢查是否有未使用的 PrimeVue 元件被打包(例:datatable 只有會員中心用,是否進了 entry?)
+2. PrimeVue theme(aura-present)的 CSS-in-JS 部分是否過大
+3. 若 datatable/carousel 等重元件在 entry:確認引用點是否可 Lazy 化
+
+**G3. Swiper 模組共用與按需(預估 −30-50 KB)**
+
+Swiper 被 24 處 import。Vite 會去重,但要確認:
+1. `swiper/css` 每處 import 是否造成 CSS 重複
+2. HomeBanner 用的 Autoplay/Pagination 模組 vs 其他處的 FreeMode — 只 import 用到的模組(目前看起來已按需,驗證即可)
+
+**G4. Route-level chunk 檢視(預估 TBT −100-200 ms)**
+
+Nuxt pages 自動 code-split,但 shared ui-layer 的自動 import(`imports.dirs` 掃整個 composables/stores/constants)可能把跨頁面共用碼全拉進 entry:
+1. `nuxi analyze` 看 entry chunk 的組成
+2. 特別檢查:member 中心的 composables(useHistory、usePendingOrder、useMembershipManagement 等)是否進了 entry — 首頁用不到這些
+3. 若進了:評估把 `imports.dirs` 的掃描範圍縮小,或把重 composable 改為顯式 import
+
+**G5. 無用 JS 細查(PSI 標的 167 KiB)**
+
+PSI 的 unused-javascript audit 列出的檔案逐一對照,通常是:
+- polyfill 過度(target browsers 太舊)— 檢查 `vite build target`
+- 第三方 SDK 全量載入(GA、sensorsdata、Tawk 等 — 從 cookie 看到有這些)
+- **注意**:第三方 SDK(GA、Tawk chat)若由 GTM/後台注入,前端 repo 管不到,列出來但不動
+
+**執行順序建議**:先跑 `npx nuxi analyze` 拿到 bundle 全貌(一次),再依 G1 → G4 → G2 → G3 → G5 逐項確認。每做完一項本機 build + Lighthouse 驗一次,確認 TBT 有動再繼續。
+
+---
+
+**2026-07-10 analyze 實測後的修正(取代上面部分項目)**:
+
+`nuxi analyze` 報告(`dist/apps/r017/.nuxt/analyze/client.html`)解析結果:
+
+- **G1 原生已達成**:chart.js 本來就只在 summary chunk,entry 沒有,無需動作
+- **G4 疑慮排除**:member composables 沒進 entry,`imports.dirs` 沒造成污染
+- **Entry 717 KB 組成**(前幾名):@primeuix/themes 107 KB、Vue runtime 73 KB、@primevue/core 51 KB、shared src 49 KB、axios 41 KB、tanstack query 33 KB、其餘為 <31 KB 長尾 — 多為拿不掉的基礎設施
+- **真正的肉在 i18n 語系檔**(見新項目 G6)
+
+**G6. i18n 語系檔瘦身(新發現,最大的肉)**
+
+Analyze 顯示 top chunks 排名 entry 之後全是語系檔,每個語系一個 JS chunk:
+
+| chunk | 大小 |
+|---|---:|
+| my.js | 619 KB |
+| th.js | 613 KB |
+| bn.js | 564 KB |
+| ar.js | 525 KB |
+| zh-TW.js | 342 KB |
+| en.js | 294 KB |
+
+來源:`libs/shared/ui-layer/i18n/locales/*.json`(16 個語系,每個 205-347 KB)被 @nuxtjs/i18n 打成 lazy chunk。啟動時當前語系 chunk 必載,首次載入要下載 + parse ~300 KB JS,直接貢獻 TBT 與行動 LCP。
+
+**架構級疑點:本地語系與 remote locale 可能重複**。r017 有 [remote-locale.client.ts](../../whitelabel-gsi-platform-multiverse-nx/apps/r017/src/plugins/remote-locale.client.ts) plugin,啟動時抓 `https://locale.templates.gsiwl.com/locale/frontend/<locale>.json` 並 `setLocaleMessage` 蓋進 i18n(實測 network log 確認有此請求)。**即 app 打包了 294-342 KB 本地語系,啟動後又下載一份遠端語系覆蓋** — 本地那份可能大部分白載。
+
+改法方向(需先回答架構問題):
+1. **先確認 remote locale 的角色**:遠端是完整語系還是差分?本地檔是否為「斷網 / remote 掛了」的 fallback?→ 讀 `useRemoteLocaleMessages` 的 merge 邏輯 + 問產品決策
+2. 若 remote 是完整的:本地語系縮成「首屏 critical keys」(登入按鈕、導航、錯誤訊息等,幾 KB),其餘靠 remote;或本地檔 lazy 到 hydration 完成後才載
+3. 若本地必須完整保留(fallback 需求):至少確認 lazy loading 已生效(只載當前語系),並考慮 JSON 改為 fetch(不打進 JS,省 parse 成本,瀏覽器 JSON.parse 比 JS eval 快)
+
+預期:當前語系 chunk −250-300 KB,TBT 明顯改善,行動 LCP 連帶受益。
+
+---
+
+**2026-07-10 G6 架構調查結果(修正上面的假設)**:
+
+實測比對本地 `en.json` 與遠端 `locale.templates.gsiwl.com/locale/frontend/en.json`:
+
+| 項目 | 數字 |
+|---|---:|
+| 本地 keys(en) | 3,778 |
+| 遠端 keys(en) | 2,040 |
+| 交集 | **僅 279** |
+| 本地獨有 | 3,499 |
+| 遠端獨有 | 1,761 |
+
+**結論:本地與遠端「不重複」,原假設推翻**。本地 = app UI 主翻譯(3,499 個獨有 key),遠端 = CMS flat-key 翻譯(1,761 個獨有 key),merge 是疊加關係而非覆蓋。**「本地縮成 critical keys、靠 remote」的方案 2 不可行** — 遠端沒有 app UI 的翻譯。
+
+其他查證:
+- **Lazy loading 已生效**:locale JSON 不在 entry chunk(entry 內只有 vue-i18n runtime 17 KB + @nuxtjs/i18n runtime ~12 KB),只有當前語系 chunk 會載
+- **未使用 key 抽樣**:隨機抽 30 個本地 key,只有 2 個在代碼中以字面量出現(28 個 grep 不到;但含動態 key 如 `account_flow_type.${x}`、錯誤碼 I18nKeys,naive grep 會漏)— 顯示本地檔案很可能含大量舊 Multiverse 遺留的未使用 key,**但修剪需要動態 key 白名單保護,風險高**
+
+**修正後的 G6 可行選項**:
+
+- **G6a. 未使用 key 修剪**:靜態分析所有 `t("...")` 字面量 + 動態 key 前綴白名單(`account_flow_type.*`、錯誤碼 enum、`wallet.*` 等),把 16 個語系檔修剪到只剩實際使用的 key。預估 294 KB → 100-180 KB/語系。⚠️ 風險:漏掉動態 key 會讓 UI 顯示 raw key;且違反「不動 i18n key」慣例的邊緣,需完整回歸。工程量大。
+- **G6b. JSON 改 fetch 不打進 JS**:@nuxtjs/i18n 的語系 chunk 是 JS(需 parse+eval);改為 runtime fetch JSON(JSON.parse 較快)。需研究 @nuxtjs/i18n v10 是否支援(`experimental.jsTsFormatResource` 或自訂 lazy loader)。收益:parse 成本降,傳輸大小不變。
+- **G6c. 接受現狀**:單一語系 lazy chunk ~300 KB(gzip 後約 60-80 KB),在 lazy 已生效的前提下,對 PSI 的實際影響可能有限。先量測「當前語系 chunk 對 TBT 的實際貢獻」再決定要不要投入 G6a。
+
+**建議**:先做 G6c 的量測(Chrome DevTools Performance 面板看 locale chunk 的 eval 時間),若 eval < 100 ms 就不值得做 G6a 的大工程;把力氣留給 G7 或 H。
+
+**G7. @primeuix/themes 檢查(次要)**
+
+Entry 內最大單一依賴 107 KB(PrimeVue 主題系統)。查 `aura-present.ts` preset 是否整包 import Aura 再覆寫 — 若是,評估只引用用到的 component tokens。預期 entry −30-60 KB,但 PrimeVue 主題結構耦合較深,成本可能高於收益,查完再決定做不做。
+
+**預期效果(全部完成)**:
+- Entry chunk 668 KB → ~400-450 KB
+- 桌面 TBT 460 ms → ~250-350 ms、主執行緒 2.1 s → ~1.5 s
+- 分數:桌面 62 → **~68-72**、行動 56 → **~58-62**
+
+**動工前 checklist**:
+- [ ] `npx nuxi analyze` 或等效工具跑出 bundle 組成報告(存檔進 PR / spec §8)
+- [ ] 確認 `@primevue/nuxt-module` autoImport 的實際 tree-shaking 效果
+- [ ] 列出 entry chunk 前 10 大依賴,標記「首頁需要 / 不需要」
+
+**驗收 checklist**:
+- [ ] 首頁 Network 面板:chart.js 相關 chunk 不載入
+- [ ] 本機 Lighthouse 桌面 TBT 有感下降(≥100 ms)
+- [ ] 會員中心 summary 頁 chart 功能正常(lazy 化後)
+- [ ] 所有既有頁面 smoke test:首頁、遊戲大廳、會員中心、存提款
+
+**風險**:
+- `defineAsyncComponent` / Lazy 化會讓對應 UI 出現短暫載入延遲(summary 頁圖表晚半拍),需 UX 可接受
+- 動 `imports.dirs` 掃描範圍是全域行為變更,可能造成某頁 runtime error(auto-import 失效),需全站 smoke test
+- **本路線改動分散、回歸面大,建議單獨開 branch、單獨驗證,不與其他路線混在同一次發版**
 
 ---
 
@@ -1092,3 +1236,99 @@ Phase 1a 全部三批(#1 marquee/#2 bg WebP/#3 CLS 佔位 + #4 preconnect plugin
 
 **跳過的**:
 - **路線 A(§4.3 字型子集化)**:E 上線後 PSI 環境已完全不下載 NotoSansTC,再做字型子集化的 PSI 收益極小,幾乎無理由做。若日後真實 Android 用戶(無 CJK)體驗變成議題,再考慮 A 或改為 SDF 字型服務。**路線 A 從清單降級為「非優先」**。
+
+### 2026-07-08 · 路線 F(CSS 非阻斷載入)上線實測 — 失敗,已回退
+
+依 §4.11 方案 A 實作(nitro `prerender:generate` hook 把 stylesheet 改 preload+swap),上線後 PSI:<https://pagespeed.web.dev/analysis/https-gsi2-gsiwl-com/cvxeqyy1q4>
+
+**實測結果(對比 E)**:
+
+| 指標 | E(前) | +F | 變化 |
+|---|---:|---:|---:|
+| 桌面 Perf | 62 | **56** | **−6** ❌ |
+| 桌面 CLS | 0 | **0.545** | 大回歸 ❌ |
+| 桌面 FCP | 0.9 s | 0.8 s | −0.1 s ✓ |
+| 桌面 TBT | 460 ms | 160 ms | −300 ms ✓ |
+| 行動 Perf | 56 | **52** | **−4** ❌ |
+| 行動 LCP | 13.2 s | 11.6 s | −1.6 s ✓ |
+
+**失敗原因**:CSS 非阻斷後,頁面先以無樣式狀態渲染,CSS 到位後 **footer 從無樣式堆疊跳到正確位置**,PSI 桌面 CLS 主兇清單顯示 footer 一項就貢獻 0.545。§4.11 原本判斷「SPA 首屏是白畫面,FOUC 察覺不到」**是錯的** — Nuxt SPA 的早期 DOM(footer 等)在 CSS 前後位置不同,全部被 Lighthouse 記為 CLS。CLS 權重 25%,0.545 幾乎歸零該項,FCP/TBT 的改善補不回來。
+
+**處置**:2026-07-08 當日回退(`git checkout` 移除 hook)。**F 標記為「已試失敗」**。
+
+**若日後重啟 F 的前置條件**:必須先給「無 CSS 狀態的初始 DOM」做 inline 佔位樣式(至少 footer、header 的 min-height / 排版鎖定),驗證 CSS swap 前後零位移,才能重新上。成本高,優先級低。
+
+**教訓**:CLS 0 是目前分數的最大支柱,任何「先渲染再套樣式」類的優化(async CSS、lazy hydration)都會直接威脅這個支柱,上線前必須本機驗證 CLS 不動。
+
+### 2026-07-08 · 路線 G2(PrimeVue auto-import 收斂)本機驗證完成
+
+分支:`perf/pagespeed-js-bundle-slimming`(依 §4.12 建議單獨開)。改動:[apps/r017/nuxt.config.ts:177](../../whitelabel-gsi-platform-multiverse-nx/apps/r017/nuxt.config.ts) 把 PrimeVue auto-import 限縮到 `components: ["Button","ConfirmDialog","Toast"]`、`directives: ["Ripple"]`、`composables: ["useConfirm","useToast"]`。
+
+**安全性驗證**(review 記錄):16 種非白名單 PrimeVue 元件全部包在 `Base*` wrapper 內且有顯式 `import X from "primevue/x"`,不受 auto-import 限縮影響;白名單 3 個(`<Button>`/`<Toast>`/`<ConfirmDialog>`)是唯一靠全域註冊的用法,已涵蓋。逐 tag 掃描無漏網。
+
+**實測結果**:
+- PrimeVue async wrappers in entry:**119 → 3**
+- Entry JS:668.97 KB → 647.34 KB(gzip 197.69 KB → 193.60 KB)
+- chart.js / primevue/chart 確認只在 summary chunk,不在 entry(G1 目標原生已達成,無需另做)
+- 首頁 headless Chrome request log:無 chart chunk;`/member/summary` 正常載入 chart chunk
+- 驗證指令:`nuxi analyze`、`nx build --skip-nx-cache`、靜態 server + CDP request log
+
+**附帶發現**:`nx preview r017` 報 `Cannot find nitro.json` — 專案 generate output 與 preview target 路徑不吻合,**與本次改動無關**(既有問題)。驗證改用 `dist/apps/r017/.output/public` 靜態 server。待有空可修 project.json 的 preview target。
+
+**評估**:entry gzip 只省 ~4 KB,G2 的分數收益有限(async wrapper 119→3 對 runtime 初始化成本有幫助,但主要重量不在此)。**Entry 647 KB 的大頭還在別處**,下一步 G4 要用 analyze 報告找出 entry 的實際組成。
+
+### 2026-07-10 · G4 analyze 報告解讀 — G1/G4 排除,發現 G6(i18n 語系檔)為最大標的
+
+報告:`dist/apps/r017/.nuxt/analyze/client.html`。完整解讀已寫入 §4.12 的「2026-07-10 analyze 實測後的修正」段落,摘要:
+
+1. **G1 無需做**:chart.js 原生就只在 summary chunk
+2. **G4 疑慮排除**:member composables 沒進 entry
+3. **Entry 717 KB 是均勻的基礎設施**(PrimeVue theme 107 KB 最大,其餘 <75 KB 長尾),無單一大肥肉
+4. **真正的肉:i18n 語系檔** — 16 個語系各 294-619 KB JS chunk,當前語系啟動必載;且 app 同時有 remote locale plugin 啟動時抓遠端語系覆蓋,**本地打包的語系可能大部分白載**(架構級重複)
+5. 新增 G6(語系檔瘦身,最大標的)、G7(@primeuix/themes 107 KB,次要)兩個項目至 §4.12
+
+**下一步**:G6 — 先讀 `useRemoteLocaleMessages` merge 邏輯,回答「remote 是完整語系還是差分、本地檔是否為 fallback」的架構問題,再決定瘦身策略。
+
+### 2026-07-10 · F 回退 + G2/G5 部署後線上實測 — 桌面 79
+
+PSI:<https://pagespeed.web.dev/analysis/https-gsi2-gsiwl-com/dik43n5i7r>
+
+| 指標 | E 版(07-08) | 現在 | 變化 |
+|---|---:|---:|---:|
+| 桌面 Performance | 62 | **79** | **+17** |
+| 桌面 FCP / LCP / TBT | 0.9s / 2.4s / 460ms | 0.7s / **2.1s** / **190ms** | 全面改善 |
+| 桌面 CLS | 0 | 0 | F 回退生效 |
+| 行動 Performance | 56 | 44 | 單次 TBT 噪聲(見下) |
+| 行動 FCP / LCP | 4.2s / 13.2s | 3.8s / **11.5s** | 改善 |
+| 行動 TBT | 240 ms | 670 ms | ⚠️ 單次波動,其他指標全改善,代碼同版桌面 TBT 反而 −270ms,判定為 4× throttle 噪聲 |
+
+**關鍵觀察**:
+- **桌面 79,距 80 綠燈 1 分**。G2 的 PrimeVue async wrapper 收斂(119→3)對 TBT 的效果(−270 ms)遠大於 bundle 體積數字(gzip −4 KB)所暗示 — wrapper 初始化成本才是重點。
+- 行動 44 判定為單次噪聲:LCP −1.7s、FCP −0.4s、CLS 持平,唯 TBT +430ms。行動 4× CPU throttle 下 TBT 波動可達數百 ms。**待多次重測取中位**,預估實際水位 55-60。
+
+**狀態**:`perf/pagespeed-js-bundle-slimming`(21db1df)已部署驗證,待走正式合併流程。
+
+**2026-07-10 行動版 3 次重測確認水位**(`sbez1evpiq` 49 / `xeatukcf3m` 51 / `k6yxdbavtj` 51):
+
+- **行動真實水位 ~50(中位 51)**,TBT 穩定在 410-420 ms、LCP 穩定 11.4-11.6 s、FCP 3.8 s、CLS 0.017
+- **修正歷史解讀**:E 時期的行動 56 分含 TBT 幸運值(240 ms,歷史中位 ~420 ms)。「56→51」非 G2/G5 回歸,是 TBT 回歸常態。真實的持續改善:LCP −1.6 s、FCP −0.4 s(對比 E 時期)
+- 先前單次 44(TBT 670 ms)確認為往下的離群值
+
+**最終累積:桌面 11→79(+68)、行動 23→51(+28)**。行動 TBT 410 ms 與 LCP 11.5 s 是下一階段目標(路線 C env.js + 營運端圖片素材)。
+
+### 2026-07-10 · G6c / G7 Chrome trace 實測 — 不進行高風險拆分
+
+以最新 production static build 啟動本機靜態 server,Chrome 冷載首頁並套用 **4× CPU slowdown** 錄製 trace。當前英文 locale chunk 為 `B8CGhNaF.js`(288,851 bytes;build gzip 59.67 KB)。
+
+| locale chunk 階段 | 4× CPU 實測 |
+|---|---:|
+| background parse | 6.832 ms |
+| compile module | 0.020 ms |
+| module script execute | 5.182 ms |
+| **合計** | **約 12.0 ms** |
+
+**G6c 結論**:即使在 4× CPU slowdown 下仍遠低於 §4.12 設定的 100 ms 門檻。G6a 修剪 3,778 個 key 的 raw-key 回歸風險與工程成本不成比例;G6b 改 loader 也缺乏足夠效益。**G6 維持現狀,不做 G6a/G6b。**
+
+**G7 查證**:`SharedAuraPreset` 透過 `@primeuix/themes/aura` 靜態匯入 90 個 component token modules;Aura source components 合計約 116.8 KB,production theme chunk 107.85 KB。相同 4× CPU trace 中該 theme chunk background parse 僅 **3.220 ms**。若改為手動組 minimal preset,需補齊 DataTable、Carousel 等內部 PrimeVue 元件的 transitive tokens,會影響 R017 所有 PrimeVue 畫面。**收益不足以覆蓋回歸面,G7 不實作。**
+
+**G5 低風險清理**:[apps/r017/src/app.vue](../../whitelabel-gsi-platform-multiverse-nx/apps/r017/src/app.vue) 移除只供 `console.log` 使用的 `palette` import/debug log。Production entry 647.66 KB → 646.86 KB(gzip 194.45 KB → 194.14 KB),約省 0.80 KB raw / 0.31 KB gzip。Build 通過。

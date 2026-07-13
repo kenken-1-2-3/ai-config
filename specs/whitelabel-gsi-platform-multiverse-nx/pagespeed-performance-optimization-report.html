@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R017 PageSpeed 優化報告</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --ink: #1c2330;
+    --muted: #5d6a7d;
+    --line: #e3e7ed;
+    --accent: #0f5fa8;
+    --accent-soft: #e8f1f9;
+    --good: #178a50;
+    --good-soft: #e7f4ec;
+    --warn: #b06f00;
+    --warn-soft: #fdf3e2;
+    --bad: #b3362e;
+    --bad-soft: #faeceb;
+    --band-red: rgba(179, 54, 46, 0.055);
+    --band-orange: rgba(176, 111, 0, 0.05);
+    --band-green: rgba(23, 138, 80, 0.06);
+    --chart-desktop: #0f5fa8;
+    --chart-mobile: #8a63c9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11151c;
+      --surface: #191f28;
+      --ink: #e6ebf2;
+      --muted: #93a1b4;
+      --line: #2a323e;
+      --accent: #6db1e8;
+      --accent-soft: #1b2a3a;
+      --good: #4cc580;
+      --good-soft: #17301f;
+      --warn: #e2a94f;
+      --warn-soft: #33270f;
+      --bad: #e06a5e;
+      --bad-soft: #38201d;
+      --band-red: rgba(224, 106, 94, 0.07);
+      --band-orange: rgba(226, 169, 79, 0.06);
+      --band-green: rgba(76, 197, 128, 0.07);
+      --chart-desktop: #6db1e8;
+      --chart-mobile: #b491e8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11151c;
+    --surface: #191f28;
+    --ink: #e6ebf2;
+    --muted: #93a1b4;
+    --line: #2a323e;
+    --accent: #6db1e8;
+    --accent-soft: #1b2a3a;
+    --good: #4cc580;
+    --good-soft: #17301f;
+    --warn: #e2a94f;
+    --warn-soft: #33270f;
+    --bad: #e06a5e;
+    --bad-soft: #38201d;
+    --band-red: rgba(224, 106, 94, 0.07);
+    --band-orange: rgba(226, 169, 79, 0.06);
+    --band-green: rgba(76, 197, 128, 0.07);
+    --chart-desktop: #6db1e8;
+    --chart-mobile: #b491e8;
+  }
+  :root[data-theme="light"] {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --ink: #1c2330;
+    --muted: #5d6a7d;
+    --line: #e3e7ed;
+    --accent: #0f5fa8;
+    --accent-soft: #e8f1f9;
+    --good: #178a50;
+    --good-soft: #e7f4ec;
+    --warn: #b06f00;
+    --warn-soft: #fdf3e2;
+    --bad: #b3362e;
+    --bad-soft: #faeceb;
+    --band-red: rgba(179, 54, 46, 0.055);
+    --band-orange: rgba(176, 111, 0, 0.05);
+    --band-green: rgba(23, 138, 80, 0.06);
+    --chart-desktop: #0f5fa8;
+    --chart-mobile: #8a63c9;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
+    line-height: 1.65;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* ── header ── */
+  header { display: flex; flex-direction: column; gap: 20px; }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+  }
+  .lede { margin: 0; color: var(--muted); max-width: 40em; }
+
+  /* score hero */
+  .scoreboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .score-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .gauge { flex-shrink: 0; }
+  .gauge svg { display: block; }
+  .gauge-track { stroke: var(--line); }
+  .gauge-arc-orange { stroke: var(--warn); }
+  .gauge-num {
+    font-size: 26px;
+    font-weight: 700;
+    fill: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .score-meta { display: flex; flex-direction: column; gap: 2px; }
+  .score-label { font-size: 13px; color: var(--muted); }
+  .score-move {
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .score-from { color: var(--bad); }
+  .score-arrow { color: var(--muted); font-size: 15px; font-weight: 400; }
+  .score-to { color: var(--warn); font-size: 30px; }
+  .score-delta {
+    align-self: flex-start;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 99px;
+    background: var(--good-soft);
+    color: var(--good);
+    font-variant-numeric: tabular-nums;
+  }
+  .kpi-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 26px;
+    padding: 14px 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  .kpi { display: flex; align-items: baseline; gap: 7px; font-variant-numeric: tabular-nums; }
+  .kpi b { font-size: 15px; }
+  .kpi .lbl { color: var(--muted); }
+  .kpi .good { color: var(--good); }
+
+  /* ── sections ── */
+  section { display: flex; flex-direction: column; gap: 14px; }
+  h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .note { margin: 0; font-size: 13px; color: var(--muted); }
+
+  /* chart */
+  .chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 14px 10px;
+    overflow-x: auto;
+  }
+  .chart-wrap svg { display: block; min-width: 640px; width: 100%; height: auto; }
+  .chart-legend {
+    display: flex;
+    gap: 20px;
+    padding: 4px 8px 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .chart-legend .dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 99px;
+    margin-right: 6px;
+    vertical-align: baseline;
+  }
+
+  /* tables */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow-x: auto;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th {
+    text-align: left;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 12px 16px 8px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .gain { color: var(--good); font-weight: 700; }
+  .flat { color: var(--muted); }
+  td .sub { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  tr.total-row td {
+    border-top: 2px solid var(--line);
+    font-weight: 700;
+    background: color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  }
+
+  .prio {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px; height: 22px;
+    border-radius: 99px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* reverted strip */
+  .strip {
+    display: flex;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--bad);
+    border-radius: 8px;
+    background: var(--surface);
+    font-size: 13.5px;
+  }
+  .strip .tag {
+    flex-shrink: 0;
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--bad-soft);
+    color: var(--bad);
+    white-space: nowrap;
+  }
+  .strip p { margin: 0; color: var(--muted); }
+  .strip b { color: var(--ink); }
+
+  .ceiling {
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .ceiling b { color: var(--ink); }
+
+  footer {
+    font-size: 12.5px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+  }
+
+  @media (max-width: 560px) {
+    .page { padding: 32px 16px 48px; gap: 32px; }
+    h1 { font-size: 24px; }
+    .score-to { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header>
+    <div>
+      <div class="eyebrow">R017 · gsi2.gsiwl.com · 2026-07-06 → 07-10</div>
+      <h1>PageSpeed 效能優化報告</h1>
+    </div>
+
+    <div class="scoreboard">
+      <div class="score-card">
+        <div class="gauge" aria-hidden="true">
+          <svg width="84" height="84" viewBox="0 0 84 84">
+            <circle class="gauge-track" cx="42" cy="42" r="36" fill="none" stroke-width="6"/>
+            <circle class="gauge-arc-orange" cx="42" cy="42" r="36" fill="none" stroke-width="6"
+              stroke-linecap="round" stroke-dasharray="178.7 226.2"
+              transform="rotate(-90 42 42)"/>
+            <text class="gauge-num" x="42" y="51" text-anchor="middle">79</text>
+          </svg>
+        </div>
+        <div class="score-meta">
+          <span class="score-label">桌面 Performance</span>
+          <span class="score-move">
+            <span class="score-from">11</span>
+            <span class="score-arrow">→</span>
+            <span class="score-to">79</span>
+          </span>
+          <span class="score-delta">+68</span>
+        </div>
+      </div>
+
+      <div class="score-card">
+        <div class="gauge" aria-hidden="true">
+          <svg width="84" height="84" viewBox="0 0 84 84">
+            <circle class="gauge-track" cx="42" cy="42" r="36" fill="none" stroke-width="6"/>
+            <circle class="gauge-arc-orange" cx="42" cy="42" r="36" fill="none" stroke-width="6"
+              stroke-linecap="round" stroke-dasharray="115.4 226.2"
+              transform="rotate(-90 42 42)"/>
+            <text class="gauge-num" x="42" y="51" text-anchor="middle">51</text>
+          </svg>
+        </div>
+        <div class="score-meta">
+          <span class="score-label">行動 Performance</span>
+          <span class="score-move">
+            <span class="score-from">23</span>
+            <span class="score-arrow">→</span>
+            <span class="score-to">51</span>
+          </span>
+          <span class="score-delta">+28</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-strip">
+      <span class="kpi"><span class="lbl">桌面 LCP</span> <b>7.8s → <span class="good">2.1s</span></b> <span class="lbl">達綠燈標準</span></span>
+      <span class="kpi"><span class="lbl">行動 LCP</span> <b>40.7s → <span class="good">11.5s</span></b></span>
+      <span class="kpi"><span class="lbl">CLS</span> <b>0.835 → <span class="good">0</span></b></span>
+      <span class="kpi"><span class="lbl">首頁傳輸量</span> <b>12.6MB → <span class="good">1.7MB</span></b> <span class="lbl">−87%</span></span>
+    </div>
+  </header>
+
+  <section>
+    <h2>分數歷程</h2>
+    <div class="chart-wrap">
+      <svg viewBox="0 0 720 250" role="img" aria-label="分數歷程折線圖:桌面 11 到 79,行動 23 到 51">
+        <!-- lighthouse bands -->
+        <rect x="56" y="20"  width="648" height="18"  fill="var(--band-green)"/>
+        <rect x="56" y="38"  width="648" height="72"  fill="var(--band-orange)"/>
+        <rect x="56" y="110" width="648" height="90"  fill="var(--band-red)"/>
+        <!-- gridlines: y = 200 - score*1.8 -->
+        <g stroke="var(--line)" stroke-width="1">
+          <line x1="56" y1="20"  x2="704" y2="20"/>
+          <line x1="56" y1="38"  x2="704" y2="38"/>
+          <line x1="56" y1="110" x2="704" y2="110"/>
+          <line x1="56" y1="200" x2="704" y2="200"/>
+        </g>
+        <g fill="var(--muted)" font-size="11" font-family="inherit" text-anchor="end">
+          <text x="48" y="24">100</text>
+          <text x="48" y="42">90</text>
+          <text x="48" y="114">50</text>
+          <text x="48" y="204">0</text>
+        </g>
+
+        <!-- x: 6 milestones at 100,220,340,460,580,680 -->
+        <!-- desktop: 11,45,41,57,62,79 → y: 180.2,119,126.2,97.4,88.4,57.8 -->
+        <polyline points="100,180.2 220,119 340,126.2 460,97.4 580,88.4 680,57.8"
+          fill="none" stroke="var(--chart-desktop)" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- mobile: 23,44,47,53,56,51 → y: 158.6,120.8,115.4,104.6,99.2,108.2 -->
+        <polyline points="100,158.6 220,120.8 340,115.4 460,104.6 580,99.2 680,108.2"
+          fill="none" stroke="var(--chart-mobile)" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="1 0"/>
+
+        <g fill="var(--chart-desktop)">
+          <circle cx="100" cy="180.2" r="4"/><circle cx="220" cy="119" r="4"/>
+          <circle cx="340" cy="126.2" r="4"/><circle cx="460" cy="97.4" r="4"/>
+          <circle cx="580" cy="88.4" r="4"/><circle cx="680" cy="57.8" r="5.5"/>
+        </g>
+        <g fill="var(--chart-mobile)">
+          <circle cx="100" cy="158.6" r="4"/><circle cx="220" cy="120.8" r="4"/>
+          <circle cx="340" cy="115.4" r="4"/><circle cx="460" cy="104.6" r="4"/>
+          <circle cx="580" cy="99.2" r="4"/><circle cx="680" cy="108.2" r="5.5"/>
+        </g>
+
+        <!-- endpoint labels -->
+        <g font-size="13" font-weight="700" font-family="inherit">
+          <text x="680" y="44" text-anchor="middle" fill="var(--chart-desktop)">79</text>
+          <text x="680" y="130" text-anchor="middle" fill="var(--chart-mobile)">51</text>
+        </g>
+        <g font-size="12" font-family="inherit" fill="var(--muted)">
+          <text x="100" y="196" text-anchor="middle" font-variant-numeric="tabular-nums">11 / 23</text>
+        </g>
+
+        <!-- x labels -->
+        <g fill="var(--muted)" font-size="11.5" font-family="inherit" text-anchor="middle">
+          <text x="100" y="222">基準 07-06</text>
+          <text x="220" y="222">資產+CLS</text>
+          <text x="340" y="222">Banner img</text>
+          <text x="460" y="222">字型+API</text>
+          <text x="580" y="222">字型移除</text>
+          <text x="680" y="222">JS 瘦身</text>
+        </g>
+        <g fill="var(--muted)" font-size="10" font-family="inherit" text-anchor="middle">
+          <text x="680" y="238">07-10 最終</text>
+        </g>
+      </svg>
+      <div class="chart-legend">
+        <span><span class="dot" style="background: var(--chart-desktop)"></span>桌面</span>
+        <span><span class="dot" style="background: var(--chart-mobile)"></span>行動(4 次測量中位)</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>改了什麼、分數多多少</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>改動</th>
+            <th>內容</th>
+            <th class="num">桌面</th>
+            <th class="num">行動</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>資產瘦身 + CLS 佔位</b></td>
+            <td>marquee 1.4MB→4.6KB、背景圖轉 WebP −1MB;首頁各區塊預留高度,CLS 0.835→0</td>
+            <td class="num gain">+34</td>
+            <td class="num gain">+21</td>
+          </tr>
+          <tr>
+            <td><b>Banner LCP</b></td>
+            <td>banner 改 <code>&lt;img fetchpriority&gt;</code>;HTML 內 inline script 與 JS 下載平行呼叫 banner API<span class="sub">桌面 LCP 7.1s → 2.4s,進入綠燈區間</span></td>
+            <td class="num gain">+12</td>
+            <td class="num gain">+6</td>
+          </tr>
+          <tr>
+            <td><b>字型移除</b></td>
+            <td>Noto Sans TC 5.3MB 從 font stack 移除,改用系統中文字型(Mac PingFang / Win YaHei)<span class="sub">第一方傳輸量 −82%</span></td>
+            <td class="num gain">+5</td>
+            <td class="num gain">+3</td>
+          </tr>
+          <tr>
+            <td><b>JS 瘦身</b></td>
+            <td>PrimeVue auto-import 收斂(async wrapper 119→3)<span class="sub">桌面 TBT 460ms → 190ms</span></td>
+            <td class="num gain">+17</td>
+            <td class="num flat">~0</td>
+          </tr>
+          <tr class="total-row">
+            <td>合計</td>
+            <td>首頁傳輸量 12.6MB → 1.7MB(−87%)</td>
+            <td class="num gain">+68</td>
+            <td class="num gain">+28</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="strip">
+      <span class="tag">已撤案</span>
+      <p><b>CSS 非阻斷載入</b>:footer 無樣式閃現造成 CLS 回歸(−6 分),當日回退。<b>字型子集化、i18n 檔修剪</b>:實測 parse 僅 3~12ms,收益太小不值得做。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>還剩下什麼可以改</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>項目</th>
+            <th class="num">預估分數</th>
+            <th>卡在哪</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="prio">1</span></td>
+            <td>字型 preload 清理(移除死代碼、檢查 DINPro / Segoe 必要性)</td>
+            <td class="num gain">桌面 +1~2</td>
+            <td>無,20 分鐘 — <b>做完桌面可破 80 綠燈</b></td>
+          </tr>
+          <tr>
+            <td><span class="prio">2</span></td>
+            <td>env.js 改 inline(行動阻斷算繪 450ms)</td>
+            <td class="num gain">+3~5</td>
+            <td>需 DevOps 同意「改 env.js 要重 build」</td>
+          </tr>
+          <tr>
+            <td><span class="prio">3</span></td>
+            <td>Banner 素材規範(JPEG 434KB、GIF 1.8MB 壓縮)</td>
+            <td class="num gain">行動 +2~3</td>
+            <td>營運端 / 後台上傳規範</td>
+          </tr>
+          <tr>
+            <td><span class="prio">4</span></td>
+            <td>無障礙 84 → 90+(按鈕標籤、對比度)</td>
+            <td class="num flat">非效能分</td>
+            <td>順手可修</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ceiling">
+      <b>天花板說明</b>:行動 LCP 11.5s 受限於 SPA 架構(無 SSR)+ 4G 模擬環境,再往上需要動架構(SSR / prerender),現階段不建議投入。
+    </div>
+  </section>
+
+  <footer>
+    詳細過程、逐輪 PSI 報告 ID 與調查記錄:<code>ai-config/specs/whitelabel-gsi-platform-multiverse-nx/pagespeed-performance-optimization.md</code> §8
+  </footer>
+
+</div>
+
+</body>
+</html>
