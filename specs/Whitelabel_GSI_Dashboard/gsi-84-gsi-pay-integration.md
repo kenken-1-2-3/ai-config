@@ -16,6 +16,8 @@
   - `gsi-86-gsi-pay-billing-center.md`
   - `gsi-87-gsi-pay-transaction-report.md`
 - 端別：代理端 `Whitelabel_GSI_Dashboard`。
+- Backend contract：[Apifox project 4860774](https://app.apifox.com/project/4860774)，`代理端 > 金流管理 > GSI Pay帳戶費率` 與 `GSI Pay計費中心`。
+- 視覺／UI mapping：`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11_API標註.html`。此版本已在各UI區塊直接標出method、endpoint與用途；Apifox補充完整request／response與實測範例，兩者需一致使用。
 
 ## 背景 / 目標
 
@@ -76,6 +78,29 @@ main
 - Shared UI component只有在至少兩頁contract與interaction真正相同時才抽取；否則維持feature-local，避免提早抽象。
 - Central type merge conflict必須保留三張票的additive exports，除非使用者明確要求移除。
 
+## 已確認 Backend API 邊界（2026-07-22）
+
+所有下列代理端 endpoints 都是 `/v1/agent/...`，在本 repo 應走一般 request mode：wrapper 傳相對於既有 `/v1/agent` base 的 suffix，省略 `{ usePlatform: true }`，也不可把 `/v1/agent` 重複寫進 wrapper path。只有實際 path 為 `/platform/v1/agent/...` 時才使用 platform rewrite。
+
+| Owner | Method | Endpoint | Frontend 用途 |
+| --- | --- | --- | --- |
+| GSI-85 | GET | `/v1/agent/gsipay/wallet/overview` | 餘額卡、GSI Pay 支援幣別、站點不支援提示、進行中提現橫幅 |
+| GSI-85 | POST | `/v1/agent/gsipay/wallet/buy` | 買分下單；成功 payload 回 `payment_url` |
+| GSI-85 | POST | `/v1/agent/gsipay/wallet/withdraw` | 提現申請；backend 提交當下即凍結扣款 |
+| GSI-85 | GET | `/v1/agent/gsipay/wallet/withdraw/recent` | 最近 5 筆提現 |
+| GSI-85 | GET | `/v1/agent/gsipay/wallet/ledger` | 帳戶異動、types `1..7`、server pagination |
+| GSI-85 | GET | `/v1/agent/gsipay/wallet/ledger/export` | 依目前 filters 匯出帳變 CSV |
+| GSI-84（GSI-85 reuse） | GET | `/v1/agent/gsipay/fee-settings` | 已開通幣別的唯讀專屬費率／限額；既有endpoint，不重複新增 |
+| GSI-86 | GET | `/v1/agent/gsipay/billing/flow` | Deposit／Payout／Payout Reject 逐筆計費流水 |
+| GSI-86 | GET | `/v1/agent/gsipay/billing/flow/export` | 依目前 filters 匯出計費 CSV |
+
+- 上述 wrappers 集中在 `src/api/gsiPay.ts`；85 先建立，86 只 additive extension。Request／response contracts分別放central type files，helper generic使用unwrapped `data` payload。
+- 兩支export都回 `{ export_uuid }`；排除pagination fields後帶入與list相同filters，再呼叫既有`useExport().getExportPath(export_uuid)` polling／download flow。GSI Pay是normal agent API，因此下載流程不傳platform override。
+- `POST /v1/callback/gsipay/buy` 是 GSPay → backend webhook；Dashboard frontend不呼叫、不建立wrapper、不持有callback secret，也不以瀏覽器輪詢或偽造callback。
+- 使用者已確認：DEV測試站`dobt`已備妥三幣別餘額、帳變7種類型、計費3種business types、提現3種statuses及各filter組合資料；85／86 production API integration以該資料做deterministic驗證。
+- 使用者已確認：實際金流商尚未開通；因此依賴外部GSPay的買分支付目前可能回錯。這是已知環境限制，須保留error UX並記錄backend response，不得把第三方尚未開通誤判成frontend串接失敗，也不得用真實資金繞過測試。
+- 本批API清單沒有GSI-87六種交易報表的generate/list/export endpoint；87不得拿85 ledger或86 billing list在frontend聚合替代，production integration維持blocked，直到report contract補齊並先更新GSI-87 spec。
+
 ## UI Information Architecture
 
 - Git父整合分支不等於UI parent route。
@@ -122,7 +147,7 @@ main
 
 - CashFlow route branch：`src/router/routes.ts`。
 - 目前GSI-85 UI-first branch：`feat/gsi-pay-account-rate`、commit`55652a80`。
-- GSI-85／86／87各自spec與`GSI_Pay_管理中心_v7_11.html`。
+- GSI-85／86／87各自spec與`GSI_Pay_管理中心_v7_11_API標註.html`。
 - Query／pagination：`src/components/query/common.vue`、`src/components/query/pagination.vue`、`src/hook/useSearch.ts`。
 - Export：`src/hook/useExport.ts`、既有report blob／job patterns。
 - Timezone：`src/utils/timeFieldRules.ts`、`src/composables/useRfc3339.ts`。
@@ -147,6 +172,10 @@ main
 - [ ] 下一張child由包含前一張正式整合結果的父分支建立。
 - [ ] 三頁在CashFlow下為sibling routes，未新增UI parent或改CashFlow redirect。
 - [ ] Shared API／contracts／constants沒有重複modules，central exports保留三張additive contracts。
+- [ ] GSI-85／86 wrappers使用本spec確認的normal agent endpoints，沒有誤用platform rewrite或重複`/v1/agent` prefix。
+- [ ] 帳變與計費export都以`export_uuid`接既有`useExport()`流程，且沿用list filters、不帶pagination。
+- [ ] Frontend沒有串接`POST /v1/callback/gsipay/buy`，也沒有任何第三方callback secret。
+- [ ] GSI-87在正式report endpoints補齊前沒有以85／86資料做frontend聚合。
 - [ ] Wallet ledger、billing ledger、report DTOs維持明確分離。
 - [ ] GSI Pay／Ultrapay共存且無credentials、cross-site data或third-party reference洩漏。
 - [ ] 三張child整合後完成route／build／permission／timezone／export cross-feature驗證。

@@ -13,17 +13,18 @@
   - [GSI-85](https://gamingsoft.atlassian.net/browse/GSI-85)「GSI Pay 帳戶費率」。
   - [GSI-87](https://gamingsoft.atlassian.net/browse/GSI-87)「GSI Pay 交易報表」。
   - [GSI-88](https://gamingsoft.atlassian.net/browse/GSI-88)「GSI Pay - Telegram 財務審核自動化整合」。
-- Jira 附件／使用者提供檔案：`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11.html`。
+- Jira 附件／使用者提供檔案：`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11_API標註.html`。
+- Backend contract：[Apifox project 4860774](https://app.apifox.com/project/4860774)，`代理端 > 金流管理 > GSI Pay計費中心`。
 - 既有 sibling spec：`~/wow/ai-config/specs/Whitelabel_GSI_Dashboard/gsi-85-gsi-pay-account-rate.md`。
 - 端別：代理端 `Whitelabel_GSI_Dashboard`。
 
 ### 來源可用性與優先序
 
-- Spec 作者已讀取 GSI-85、GSI-86 的 Jira 需求及本機 HTML，並檢查目前 GSI-85 spec、UI-first branch 與 Dashboard 既有 route／table／export／timezone patterns。
+- Spec 作者已讀取 GSI-85、GSI-86 的 Jira 需求及本機 HTML，並檢查目前 GSI-85 spec、UI-first branch 與 Dashboard 既有 route／table／export／timezone patterns；2026-07-22另以登入中的Apifox核對list／export契約。
 - Jira 的 GSI-85 與 GSI-86 沒有正式 issue link（沒有 `blocks`／`depends on`）；兩者的關係來自共同父需求 GSI-84、同一份 HTML、相同 GSI Pay domain 與共用前端基礎。
 - 本 spec 是實作的單一真實來源。新的 backend／permission／產品決議只有在產品確認並先寫回本 spec 後才可取代既有內容；更新 spec 時以產品核准的正式 contract、Jira 已確認規則、HTML concept與repo sibling pattern交叉核對，不得由實作者自行選一版覆蓋。
-- 視覺優先序：HTML 的 GSI-86 section（約第 931–1061 行）是資訊架構與視覺概念來源；實作需逐層檢查該 section 的 toolbar、table、badge、數字對齊、horizontal scroll、pagination 與說明文字，不只看外層 panel。
-- HTML 是靜態 mock，hardcoded 假資料、client-side pagination、stub query／export、固定幣別與缺少 responsive states 均不是正式 contract。
+- 視覺優先序：API標註版HTML的GSI-86 section（第942–1074行）是資訊架構與視覺概念來源；實作需逐層檢查該section的toolbar、table、badge、數字對齊、horizontal scroll、pagination與說明文字，不只看外層panel。
+- HTML是靜態mock但已直接標出billing list／export endpoint與query摘要；hardcoded假資料、client-side pagination、stub query／export、固定幣別與缺少responsive states仍不是正式response contract，完整schema以Apifox為準。
 - HTML 與 Jira 有重大帳務矛盾，詳見「帳務 contract 衝突與實作 gate」。在產品／backend 確認前，不得從 sample 數字反推並寫入 frontend 計算邏輯。
 
 ## 與 GSI-85 的關係
@@ -39,7 +40,7 @@
 
 - GSI-85 是商戶錢包頁：錢包餘額、買分／提現、pending withdrawal、費率與限額、帳戶異動事件。
 - GSI-86 是計費稽核頁：每筆 `PAY-`／`REV-` 的交易金額、當下費率快照、固定費、拒收費、收費與該幣別點數 Running Balance。
-- GSI-85 的 `balance_before`／`balance_after` 商戶帳變 contract 不等於 GSI-86 的 `points_before`／`points_after` 計費流水 contract；不得共用 GSI-85 feature-local `IGsiPayTransaction` 或 placeholder rows。
+- GSI-85 account ledger與GSI-86 billing flow雖都使用`balance_before`／`balance_after`欄名，DTO與帳務domain仍不同；不得共用GSI-85 feature-local `IGsiPayTransaction`或placeholder rows。
 - GSI-86 不得用 GSI-85 的「目前費率」重算歷史交易。Backend 必須回傳交易發生當下的 immutable rate／fee snapshots 與最終帳務結果。
 - `WD-`、`TXN-`、`ADJ-` 等 GSI-85 account ledger 事件不自動納入 GSI-86。除非正式 contract 明確定義它們會產生計費流水，GSI-86 只處理 Jira 定義的 Deposit、Payout 與 Payout chargeback／reversal。
 - GSI-86不直接從GSI-85 sibling branch開發；GSI-85完成且經使用者批准merge回`feat/gsi-pay`後，GSI-86才從更新後的整合父分支建立。
@@ -99,7 +100,9 @@
 
 ## 權限
 
-Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認：
+Jira未提供permission IDs；Apifox已標示list／export使用VIEW `3590101`。仍須由permission owner確認S／M／A audience對應與route meta常數後，才能取代UI-first暫借權限。
+
+所需controls：
 
 1. Page Function / View：控制 sidebar、CashFlow child tab 與直接 URL。
 2. Export action：控制 export button 與 export API。
@@ -147,14 +150,23 @@ Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認
 - HTML pagination 的 `10／20／50` 與 repo shared pagination 不同；production 沿用 repo `20／50／100`，除非正式 backend／產品 contract另有指定。
 - 實作完成後需用 Chrome 開啟本機 app，對照 HTML GSI-86 section 做 desktop／tablet／mobile 視覺檢查，修正明顯 layout、spacing、font、color、alignment 與 overflow 差異；不得只驗證畫面可開。
 
+### HTML 中各 API 的畫面位置
+
+| API | HTML畫面位置 |
+| --- | --- |
+| `GET /v1/agent/gsipay/billing/flow` | API tag與完整query摘要`:945`；GSI Pay計費中心section`:942-1074`，含filters、12欄table及pagination |
+| `GET /v1/agent/gsipay/billing/flow/export` | 匯出button旁API tag`:967`，明訂回`export_uuid`走既有下載流程 |
+
+上述`:line`均指`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11_API標註.html`；HTML負責API放置位置與query摘要，完整schema／sample以Apifox為準。
+
 ## 篩選與查詢行為
 
 ### Filters
 
 1. **交易單號**：GSI `PAY-`／`REV-` 單號精準查詢。
-2. **業務類型**：全部、Deposit、Payout、Payout Chargeback／Reversal；正式 enum value 與顯示文案由 backend／產品提供。
+2. **業務類型**：`all`全部（預設）、`deposit`代收、`payout`代付、`payout_reject`拒收沖銷；顯示文案集中mapping。
 3. **幣別**：全部或本站已開通且可用於 GSI Pay 的幣別；HTML 只列四幣是 fixture，不可 hardcode。
-4. **備註關鍵字**：對 `remark` 做右模糊查詢（語意為 `keyword%`），由 backend 執行；frontend 不載入全量資料自行 filter。
+4. **備註關鍵字**：query field為`keyword`，backend從備註開頭做前綴匹配；frontend不載入全量資料自行filter。
 5. **結算日期起訖**：必須完整、`start <= end`，以站點時區送出，最多 31 個日曆日（inclusive）。同一天合法；31 天邊界與 DST／跨月由 backend 再次驗證。
 
 ### Query behavior
@@ -172,7 +184,7 @@ Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認
 
 | UI 欄位 | 建議 contract 語意 | 顯示規則 |
 | --- | --- | --- |
-| 交易單號 | `transaction_no` | 只顯示 GSI `PAY-`／`REV-` 單號。 |
+| 交易單號 | `biz_no` | 只顯示 GSI `PAY-`／`REV-` 單號。 |
 | 業務類型 | `business_type` | Deposit／Payout／Chargeback mapping；正式 enum 後集中在 GSI Pay constants。 |
 | 幣別 | `currency` | 該筆 billing ledger 的法幣代碼。 |
 | 金額 | `amount` | Backend 定義的 signed／unsigned business amount；sign convention需先確認。 |
@@ -180,8 +192,8 @@ Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認
 | 固定費 | `fixed_fee` | 交易當下快照；合法 0 顯示 0。 |
 | 拒收手續費 | `chargeback_fee` | 只在適用 row 顯示；不適用顯示 `—`，合法 0 不當成 N/A。 |
 | 收費 | `total_fee` | 欄位語意與 sign convention 是 blocking gate；frontend 原值呈現，不自行計算。 |
-| 扣款前點數餘額 | `points_before` | 該幣別 ledger 執行前 Running Balance。 |
-| 扣款後點數餘額 | `points_after` | 該幣別 ledger 執行後 Running Balance。 |
+| 扣款前點數餘額 | `balance_before` | 該幣別 ledger 執行前 Running Balance。 |
+| 扣款後點數餘額 | `balance_after` | 該幣別 ledger 執行後 Running Balance。 |
 | 結算時間 | `settled_at` | RFC3339／正式 timestamp，以站點時區顯示。 |
 | 備註 | `remark` | Backend 原文；chargeback 包含淨返還與下游錯誤訊息時完整可讀。 |
 
@@ -209,43 +221,46 @@ Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認
 Backend／產品需提供一組正式 fixture，至少涵蓋 Deposit、Payout、Payout Chargeback，逐欄確認：
 
 - `amount`、`fee_rate`、`fixed_fee`、`chargeback_fee`、`total_fee` 的語意、正負號、scale 與 N/A 表示。
-- 三種 business type 的 `points_before -> points_after` reconciliation invariant。
+- 三種business type的`balance_before -> balance_after` reconciliation invariant。
 - 原 `PAY-` 與後續 `REV-` 的關聯欄位與是否需要顯示。
 - Table 下方公式說明的精確文案；未確認前不 render 可能誤導財務的公式。
 
 上述gate完成並寫回本spec前，不開始程式實作。若使用者另行明確批准UI-first phase，須先更新本spec，限定可做的route／layout範圍、placeholder生命週期與禁止當成正式contract的邊界，再開始該階段。
 
-## API / 資料契約前置條件
+### UI-first phase（使用者已於 2026-07-16 明確批准）
 
-GSI-86 未提供 endpoint、method、request／response schema 或 export contract。實作前 backend 至少需提供：
+- 批准範圍：route／child tab、頁面 layout（section title、說明文字、filters toolbar、12 欄 table、pagination、export button stub）。GSI-85 的 UI-first commit 已經批准 fast-forward merge 進 `feat/gsi-pay`，本票從更新後父分支建立 `feat/gsi-pay-billing-center`。
+- Placeholder 生命週期：display-only 假資料集中在 feature-local `placeholder.ts`，檔頭標明「串接後整檔移除」；數值僅供版面示意，不得當帳務真相、不得寫入任何費用計算或 sign 判斷邏輯。
+- 帳務邊界：頁尾收費公式說明不 render；金額／收費欄不做正負色判斷（sign semantics 未確認）；chargeback row 只沿用視覺 highlight。
+- Permission：比照 GSI-85 UI-first 方案暫借 `S_F_CASH_FLOW／M_F_CASH_FLOW／A_F_CASH_FLOW` 作 page view（routes.ts 標 TODO），Export 按鈕未 gating；正式 IDs 確認後替換。
+- i18n：新文案 hardcode Jira／HTML 已提供之繁中並標 TODO；沿用既有 remote keys（`common.no_data`、`table_header.currency` 等）。
+- 正式API雖已補齊，accounting reconciliation／permissions／i18n與production驗證仍受其餘gates管制。
 
-1. 計費流水 list endpoint：全部 filters、stable sort、server pagination。
-2. 計費流水 export endpoint：沿用全部 filters，明訂 CSV／Excel、job／blob、檔名與 timeout。
-3. Enabled currencies source，或確認可共用 GSI-85 wallet／capability response。
-4. Business type enums、money／rate precision、nullable fields、error codes。
-5. 正式帳務 fixtures 與 reconciliation rules。
+## 已確認 API / 資料契約（2026-07-22）
 
-Frontend wrapper 建議集中在 `src/api/gsiPay.ts`，語意名稱可為：
+Apifox `代理端 > 金流管理 > GSI Pay計費中心`定義：
 
-- `getGsiPayBillingTransactions()`
-- `exportGsiPayBillingTransactions()`
+| Frontend wrapper | Method／normal-mode suffix | Request | Unwrapped `data` payload |
+| --- | --- | --- | --- |
+| `getGsiPayBillingTransactions()` | GET `gsipay/billing/flow` | `biz_no?`、`business_type?`、`currency?`、`keyword?`、required `start_date`／`end_date`、`offset?`、`size?` | `{ list, pagination: { offset, size, total } }` |
+| `exportGsiPayBillingTransactions()` | GET `gsipay/billing/flow/export` | 與list相同filters，不帶pagination | `{ export_uuid: string }` |
 
-以上只是 frontend wrapper 語意，不授權自行發明 endpoint path、method 或 field names。
+Contract規則：
 
-Contract 規則：
-
-- Request／response types 放在 `src/api/request.type.ts`、`src/api/response.type.ts` 的 GSI Pay 區段，不使用 `any`。
-- Standard helper generic 使用 caller 消費的 unwrapped payload `T`，不把 raw backend envelope當 `T`。
-- 若 endpoint 是 `/platform/v1/...`，使用 relative path + `{ usePlatform: true }`，由 `src/utils/request.ts` rewrite。
-- List response 提供 `{ list, pagination }` 或可穩定映射至 `useSearch()` 的等價結構。
-- Response row 有穩定唯一 `id`／key，不能只靠 transaction number + timestamp 猜 row key。
-- Response 保留 typed Ultrapay third-party transaction number，但 UI／export不 render。
-- Backend enum確認後，新增或擴充 focused `src/utils/constants/gsiPay.ts` 並由 constants index export；不在 page 內散落 magic strings。
-- Export contract若回 job id／UUID，沿用 `useExport()` polling；若直接回 blob，沿用 request helper blob flow。依 contract只實作一套。
+- 完整server path為`/v1/agent/...`，wrapper使用normal request mode與上表suffix，不傳`{ usePlatform: true }`，也不重複寫`/v1/agent`。
+- List由backend以`settled_at DESC`排序；相同時間的stable tie-breaker與row unique key若未隨payload提供，仍須在實作前由backend補充，不可用array index。
+- `business_type`為`all／deposit／payout／payout_reject`；`biz_no`完整精準匹配`PAY-／REV-`，`keyword`為remark前綴匹配。
+- Date格式是站點時區`YYYY-MM-DD`，`start_date`／`end_date`必填且最多31天；`offset`從0開始、`size`預設20。
+- Row contract為`biz_no`、`business_type`、`currency`、`amount`、`fee_rate`、`fixed_fee`、`chargeback_fee`、`total_fee`、`balance_before`、`balance_after`、`settled_at`、`remark`、`ref_trans_code`、`orig_biz_no`。Money／rate使用decimal string；不適用欄位可為`null`。
+- `ref_trans_code`是Ultrapay第三方單號，只保留在typed response／Network供排查，不進UI、DOM、log或export；`orig_biz_no`供REV回鏈原PAY。
+- Apifox定義計費只含account ledger types `2／3／4`。Payout Reject以獨立REV row表達：退回原預扣後再扣`chargeback_fee`；frontend仍不重算或校正backend ledger。
+- List／export的Apifox權限標示VIEW `3590101`；route／Export在S／M／A audiences的正式permission mapping仍須permission owner確認。
+- Export固定回`export_uuid`，再呼叫既有`useExport().getExportPath(uuid)`；GSI Pay為normal agent API，不傳platform override，不實作blob或frontend CSV。
+- 使用者已確認DEV測試站`dobt`已備妥三種business types及所有filter組合資料；正式驗證須逐列核對12欄與PAY／REV關聯。Apifox頁面中的舊local E2E空list只代表當次未產生types 2／3／4，不代表DEV fixture缺資料。
 
 ## Timezone / Date contract
 
-- 查詢欄位名稱與 endpoint path確認後，若使用 RFC3339 conversion，加入 `src/utils/timeFieldRules.ts` 對應 allowlist。
+- List／export使用`start_date`與`end_date`，格式為站點時區`YYYY-MM-DD`；不把日期自行改成未經contract定義的RFC3339。
 - 顯示使用 `useRfc3339().formatDateTime()`；不得直接以瀏覽器 local timezone format。
 - Backend 依站點時區處理 day boundary 與 inclusive 31 calendar days；frontend validation只作 UX 防呆。
 - `start > end`、只填一端、超過 31 天均不送 request；同一天與跨月合法。
@@ -256,8 +271,8 @@ Contract 規則：
 - Pagination 顯示總筆數、上一頁／下一頁與頁碼，filter query 後回第 1 頁。
 - 不把 HTML 既有 rows 載入後做 client-side pagination。
 - Export button 只對正式 Export permission 顯示，submit pending 時 disabled，避免重複 job。
-- Export params 與 list query params 必須由同一 mapping 產生；不能只帶日期而漏掉 transaction number、business type、currency 或 keyword。
-- Export 也要通過完整日期、inclusive 31 天與 backend permission／validation。
+- Export params與list query params必須由同一mapping產生；不能只帶日期而漏掉`biz_no`、`business_type`、`currency`或`keyword`，但需移除`offset／size`。
+- Export也要通過完整日期、inclusive 31天與backend permission／validation；成功取`export_uuid`後走既有`useExport()`polling／download。
 - HTML 的「功能開發中」alert 不納入 production。
 
 ## 邊界情況 / 例外（Loading / Empty / Error / Concurrency）
@@ -309,7 +324,7 @@ Jira／HTML 的繁中可作精確 zh-TW 語意來源；實作者不得自行發�
 - Export job：`src/pages/Reports/CashReport/List.vue`、`src/hook/useExport.ts`；blob path：`src/utils/request.ts`。
 - Platform wrapper／rewrite：`src/api/report.ts`、`src/utils/request.ts`。
 - Time conversion／display：`src/utils/timeFieldRules.ts`、`src/composables/useRfc3339.ts`。
-- HTML GSI-86 section：`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11.html` 第 931–1061、1432–1527 行。
+- HTML GSI-86 section：`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11_API標註.html` 第942–1074行；API tags在945、967行。
 
 ## Out of scope
 
@@ -344,18 +359,19 @@ Jira／HTML 的繁中可作精確 zh-TW 語意來源；實作者不得自行發�
 
 ## 待確認項目（實作前 gate）
 
-- [ ] Page View、Export 的 S／M／A permission IDs 與適用 audience。
+- [ ] Apifox已標示VIEW `3590101`；仍需確認Page／Export在S／M／A audiences的正式permission mapping。
 - [x] Route維持CashFlow child；本批次只建立Git整合父分支，不建立UI parent。仍需確認正式path／name／order／icon／remote i18n key。
-- [ ] List／export endpoint、method、normal／platform mode、request／response、pagination、stable sort與 error contract。
+- [x] List／export endpoint、method、normal request mode、filters、主要response、pagination、`settled_at DESC`與`export_uuid`contract已由Apifox確認。
+- [ ] Backend補充stable tie-breaker／row unique key、完整error codes與nullable schema，不可用array index或sample猜測。
 - [ ] Enabled currencies來源，及其是否可直接共用 GSI-85 capability response。
-- [ ] `business_type` enum values與顯示 labels。
-- [ ] `amount`、`fee_rate`、`fixed_fee`、`chargeback_fee`、`total_fee`、`points_before/after` 的 precision、nullable、sign與 reconciliation contract。
+- [x] `business_type` enum為`all／deposit／payout／payout_reject`；各啟用語系顯示labels仍需產品提供。
+- [ ] `amount`、`fee_rate`、`fixed_fee`、`chargeback_fee`、`total_fee`、`balance_before/after`已確認為decimal-string／nullable欄位；仍需正式scale、rounding、sign與reconciliation contract。
 - [ ] 帳務時點：PAY發起時是否預扣本金＋代付費，以及是否只有拒收手續費延至REV發生時扣除。
-- [ ] Deposit／Payout／REV 各至少一組產品與 backend共同確認的正式 fixture；修正現有矛盾 samples。
-- [ ] PAY／REV relationship field，及是否要在 UI 顯示原單關聯；本 spec預設只以單號／remark呈現，不新增欄。
+- [ ] DEV `dobt`已具三種business types；仍需產品／backend逐欄簽認Deposit／Payout／REV reconciliation fixture，取代矛盾mock數字。
+- [x] PAY／REV relationship field為`orig_biz_no`；本spec預設typed保留但12欄UI不新增關聯欄。
 - [ ] 頁尾公式說明的精確已確認 copy；未確認預設不顯示。
 - [ ] 初始日期範圍是否為今日；31 天採 inclusive calendar-day規則。
-- [ ] Export 是 CSV或 Excel、job或 blob、檔名與最大資料量。
+- [x] Export為CSV、回`export_uuid`並走既有`useExport()`流程；檔名與最大資料量仍由backend既有匯出機制定義。
 - [ ] 長 remark與下游 error message 的安全清理、最大長度與 tooltip／wrap策略。
 - [ ] 所有啟用語系的精確文案與 remote i18n keys。
 
@@ -376,8 +392,8 @@ Jira／HTML 的繁中可作精確 zh-TW 語意來源；實作者不得自行發�
 - [ ] 每row使用交易當下的rate／fixed fee／chargeback fee snapshots，不讀GSI-85目前費率回算歷史。
 - [ ] PAY row不因拒收被改寫；REV以獨立row呈現，points before/after與正式fixture一致。
 - [ ] 多幣別Running Balance未跨幣別／跨頁做錯誤連續性判斷。
-- [ ] settled_at以站點時區顯示；查詢／匯出送出正式RFC3339／date contract。
-- [ ] Export只對有權限者顯示，沿用所有filters，pending防重複送出，依正式job或blob contract完成下載。
+- [ ] `settled_at`以站點時區顯示；查詢／匯出送`YYYY-MM-DD`的`start_date／end_date`。
+- [ ] Export只對有權限者顯示，沿用所有filters但不帶pagination，pending防重複送出，以`export_uuid`接既有`useExport()`完成下載。
 - [ ] Loading、empty、API error、validation error、快速query race與export error可區分且不顯示mock資料。
 - [ ] UI只顯示GSI單號；typed response保留Ultrapay三方單號供Network排查，但UI／DOM／export／log均未render。
 - [ ] Source、request／response、DOM、console與錯誤訊息均無integration credentials或敏感third-party payload。
@@ -406,13 +422,14 @@ Repo目前沒有可用的Vitest／Jest／Playwright／Cypress基礎設施；不�
 
 ### API fixture / 手動驗證
 
+- DEV測試站使用`dobt`；後端已建立`deposit／payout／payout_reject`及每個filter都有結果的資料集。
 - Deposit、Payout、Chargeback各使用backend／產品已確認fixture核對12欄。
 - 測多幣別交錯、0、null、N/A、極大值、不同小數precision、長remark與相同settled_at。
 - 測query：每個filter單獨／組合、empty、server error、401／403、page 20／50／100、快速切頁。
 - 測date：今日、同日、31日、32日、跨月與站點offset。
 - 測export：所有filters、permission denied、processing、success、download failure、double click。
 - 用browser Network確認response保留三方單號，但table／tooltip／DOM／export無該值；確認無credentials。
-- 在Chrome開啟local app，對照HTML第931–1061行，測desktop／tablet／mobile、horizontal table scroll與所有啟用語系。
+- 在Chrome開啟local app，對照HTML第942–1074行，測desktop／tablet／mobile、horizontal table scroll與所有啟用語系。
 
 ### 最小程式驗證
 

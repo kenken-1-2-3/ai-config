@@ -12,15 +12,18 @@
 - Sibling specs：
   - `gsi-85-gsi-pay-account-rate.md`
   - `gsi-86-gsi-pay-billing-center.md`
-- Jira附件／使用者提供檔案：`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11.html`。
+- Jira附件／使用者提供檔案：`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11_API標註.html`。
+- Backend contract查核：[Apifox project 4860774](https://app.apifox.com/project/4860774)，`代理端 > 金流管理`。
 - 端別：代理端 `Whitelabel_GSI_Dashboard`。
 
 ### 來源可用性與優先序
 
-- Spec作者已讀取GSI-87 Jira description（2026-07-14更新）、HTML report section及repo report／query／export／timezone patterns。
+- Spec作者已讀取GSI-87 Jira description（2026-07-14更新）、HTML report section及repo report／query／export／timezone patterns，並於2026-07-22查核Apifox。
+- 目前Apifox只存在`GSI Pay帳戶費率`7支及`GSI Pay計費中心`2支，沒有`GSI Pay交易報表`目錄，也沒有六種report的generate/list/export endpoint。
+- API標註版HTML在GSI-87區明確寫「本輪（85/86）未實作，無對應API」（`:1079`）；六種報表控制與display-only資料仍不能當backend contract或拿85／86 endpoints替代。
 - GSI-85／86／87沒有正式Jira blocks／depends links；關係來自共同父需求、共用資料domain與整合順序。
 - 本spec是實作的單一真實來源。產品核准的backend／permission決議必須先寫回本spec，才能取代目前內容。
-- HTML第1063行起的report panel是資訊架構與視覺concept；其hardcoded data、client pagination、alert export與缺失states不是production contract。
+- HTML第1076行起的report panel是資訊架構與視覺concept；其hardcoded data、client pagination、alert export與缺失states不是production contract。
 
 ## 背景 / 目標
 
@@ -41,7 +44,7 @@
 
 - GSI-85負責wallet、買分／提現操作、pending與account ledger；GSI-87不建立或處理提款申請。
 - GSI-86負責逐筆billing ledger；GSI-87負責report selection、backend summaries與report-specific rows，不重用GSI-86 12欄table contract作所有reports。
-- GSI-85的wallet `balance_after`與GSI-86的billing `points_after`不同；Daily report的「帳變後餘額」必須由正式contract指定來源。
+- GSI-85 wallet ledger與GSI-86 billing flow雖都可能回`balance_after`，帳務domain不同；Daily report的「帳變後餘額」必須由正式report contract指定來源。
 - GSI-87不實作Telegram Bot、Webhook或withdrawal status transition。
 
 ## GSI-84 分支整合策略
@@ -50,7 +53,7 @@
 - GSI-85：`feat/gsi-pay-account-rate`。
 - GSI-86：`feat/gsi-pay-billing-center`。
 - GSI-87工作分支：`feat/gsi-pay-transaction-report`。
-- GSI-87只在GSI-85與GSI-86分別完成review、取得使用者merge批准並整合進父分支後，才從更新後`feat/gsi-pay`建立。
+- Production API整合原則上須在GSI-85／86完成review並經批准整合進父分支後進行；既有GSI-87 UI-first branch依2026-07-16使用者批准例外，已從只含GSI-85的父分支建立，詳見後文，不重建或改寫歷史。
 - 使用flat branch names；不使用`feat/gsi-pay/...`，避免Git ref prefix衝突。
 - Git父分支不等於UI route parent；三頁仍是`/CashFlow`下的sibling pages。
 
@@ -207,6 +210,13 @@ Jira未提供permission IDs。實作前確認：
 
 ## API / 資料契約前置條件
 
+### 2026-07-22 contract gap
+
+- 使用者提供的9支代理端API完整覆蓋GSI-85／86，但沒有GSI-87 endpoint；Apifox目前也沒有交易報表目錄或report contract。
+- `GET /v1/agent/gsipay/wallet/ledger`是GSI-85逐筆wallet ledger，`GET /v1/agent/gsipay/billing/flow`是GSI-86逐筆billing ledger；兩者都不回六種報表需要的type-specific summaries，不能拿來當GSI-87 production API。
+- Frontend不得下載85／86全量資料後自行aggregate Daily／Monthly／Volume／Fee／Chargeback／Withdrawal，也不得把其export endpoint改名重用。
+- UI-first phase可保留，production串接維持blocked；backend補齊contract後先更新本節、wrapper names、request／response unions、permissions與驗收fixtures，再開始API implementation。
+
 Backend至少提供：
 
 1. 六種report的generate/list能力，包括summary、rows、pagination與stable sort。
@@ -230,7 +240,7 @@ Contract設計：
 - 使用`report_type` discriminant（actual name由contract定義）建立六種summary／row unions；各type只暴露自己的columns。
 - 不建立包含所有optional fields的巨型row interface。
 - Standard helper generic使用caller消費的unwrapped payload。
-- Platform endpoints使用relative path＋`{usePlatform:true}`。
+- Request mode由未來正式path決定：`/v1/agent/...`走normal mode，只有`/platform/v1/agent/...`才傳`{usePlatform:true}`；不可先假設。
 - Response保留但不render Ultrapay reference。
 - Money／rate使用decimal string或正式precision-safe型別。
 
@@ -278,7 +288,7 @@ Contract設計：
 - Export job／blob：`src/hook/useExport.ts`、`src/api/report.ts`。
 - Timezone：`src/stores/timezoneStore.ts`、`src/composables/useRfc3339.ts`、`src/utils/timeFieldRules.ts`。
 - Permission：`src/hook/usePermission.ts`、`src/router/index.ts`、`src/utils/constants/permission.ts`。
-- Visual concept：HTML第1063–1414、1244–1430、1530–1549行。
+- Visual concept：API標註版HTML第1076行起的report panel、`:1079`無API註記與report pagination／export stubs。
 
 ## Out of scope
 
@@ -306,7 +316,7 @@ Contract設計：
 
 - [ ] GSI-85／86已驗收並經使用者批准merge入`feat/gsi-pay`。
 - [ ] Route path／name／order／icon、View／Export permission IDs、remote i18n keys。
-- [ ] 六種report endpoint／method／request／response／pagination／sort／error contracts。
+- [ ] 六種report endpoint／method／request／response／pagination／sort／error contracts；2026-07-22提供的9支API及Apifox均未包含，這是production integration blocker。
 - [ ] A／B／E／F multi-currency policy；C／D currency filter是否disabled。
 - [ ] Calendar month或selected-period semantics及對應labels。
 - [ ] A帳變後餘額domain、fee範圍、success statuses。
@@ -319,9 +329,20 @@ Contract設計：
 
 任一涉及財務語意、API、permission、sensitive data或route的gate未完成時，不開始production實作；UI-first需另行明確批准並先更新spec。
 
+### UI-first phase（使用者已於 2026-07-16 明確批准）
+
+- 分支基底偏離備註：使用者指示 GSI-86 UI-first commit「先不合回」`feat/gsi-pay`，因此 `feat/gsi-pay-transaction-report` 從只含 GSI-85 的 `feat/gsi-pay`（55652a80）建立，GSI-86 留在 `feat/gsi-pay-billing-center`（d3298647）。整合時 86／87 在 routes.ts 同一插入點會有 trivial append conflict，屆時依 Git Flow 規則回報處理。
+- 批准範圍：route／child tab、report controls（六種報表類型、幣別、起訖日期、產生報表）、type 連動 date limit 與 hint、初始／驗證／結果 empty states、六種報表的 summary cards 與對應 table、pagination、export button stub、withdrawal address 截斷＋copy。
+- Placeholder 生命週期：display-only 假資料集中在 feature-local `placeholder.ts`，檔頭標明「串接後整檔移除」；數值僅版面示意，不當帳務真相，frontend 不做任何 aggregate 計算。
+- 財務邊界：E 拒付率 summary 不 render 未確認的 denominator 公式說明；A／B／E／F 幣別必選單一值（不做跨幣別相加、不沿用 mock 的 silent MMK fallback）；C／D 幣別 select 依 mock disabled（gate 未定，標 TODO）。
+- F Withdrawal remark 唯讀顯示；不實作寫入。
+- Permission：比照 GSI-85／86 UI-first 方案暫借 `S_F_CASH_FLOW／M_F_CASH_FLOW／A_F_CASH_FLOW` 作 page view（routes.ts 標 TODO），Export 未 gating；正式 IDs 確認後替換。
+- i18n：新文案 hardcode 已提供之繁中並標 TODO；沿用既有 remote keys。
+- API／export／backend 驗證等 production 實作仍受原 gate 管制。
+
 ## 驗收條件
 
-- [ ] GSI-87 branch由包含已驗收GSI-85／86的`feat/gsi-pay`建立，未從sibling branch或main直接建立。
+- [ ] 既有GSI-87 UI-first branch符合已記錄的2026-07-16基底例外；開始production API整合前，85／86 shared foundation須依使用者批准的merge策略補齊，遇到route／central-file conflict立即停止回報。
 - [ ] 新route為CashFlow sibling，未修改85／86或CashFlow redirect。
 - [ ] Page／Export／optional Edit使用正式permissions，backend endpoints亦驗權。
 - [ ] Controls完整顯示report type、正式currency policy、dates與Generate；切type不殘留stale results。
@@ -374,17 +395,16 @@ Repo無runner時使用backend-approved deterministic fixtures並明確回報；�
 
 ## Git Flow
 
-- 基底分支：包含已批准GSI-85／86整合結果的`feat/gsi-pay`。
+- Production API基底：包含已批准GSI-85／86整合結果的`feat/gsi-pay`；既有UI-first branch保留已核准的基底例外，不rebase／重建。
 - 工作分支：`feat/gsi-pay-transaction-report`。
-- GSI-87開始前才從父分支建立，不預先建立空branch。
+- 開始production API整合前，先依使用者批准的策略把缺少的85／86 shared foundation帶入；不得自行merge或處理conflict。
 - 實作／review完成後，經使用者明確批准才merge回`feat/gsi-pay`；conflict停止回報，不自行resolve或merge parent回child。
 - 三張完成後：`feat/gsi-pay` → `develop` → `staging` → `main`；每階段測試通過且取得merge批准才前進。
 - Commit／push／MR／PR均需各自明確授權；不得沿用先前授權。
 
 ## 交接備註給實作者
 
-- 先確認GSI-85／86已正式整合與所有待確認gates已寫回本spec。
-- 從更新後`feat/gsi-pay`建立指定工作分支，不在父分支直接開發。
+- 先確認GSI-85／86 shared foundation已依批准策略補齊，且所有待確認gates已寫回本spec；保留既有UI-first branch與commit history。
 - 讀Jira、HTML完整report section、GSI-84 integration spec與85／86 contracts；不把mock samples當財務真相。
 - Shared module只做additive extension；report DTOs維持discriminated且與wallet／billing DTO分離。
 - 若發現需改shared UI／menu／permission behavior，先回報三頁影響並更新spec。

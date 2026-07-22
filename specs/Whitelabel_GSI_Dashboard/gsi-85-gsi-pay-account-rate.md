@@ -14,16 +14,18 @@
   - [GSI-87](https://gamingsoft.atlassian.net/browse/GSI-87)「GSI Pay 交易報表」
   - [GSI-88](https://gamingsoft.atlassian.net/browse/GSI-88)「GSI Pay - Telegram 財務審核自動化整合」
 - Jira 附件：
-  - `GSI_Pay_管理中心_v7_11.html`：頁面資訊架構／視覺概念稿。
+  - `GSI_Pay_管理中心_v7_11_API標註.html`：頁面資訊架構／視覺概念稿與各API畫面位置。
   - `kiosktopup.pdf`：站長買分所需的 GS 內部金流 contract。
 - 費率與限額資料來源：[Google Sheet](https://docs.google.com/spreadsheets/d/1zhFSRWgQF5VKV6BQkZWCE0WqHqbPbqJOKx9Xy16if0k/edit?gid=0#gid=0)
+- Backend contract：[Apifox project 4860774](https://app.apifox.com/project/4860774)，`代理端 > 金流管理 > GSI Pay帳戶費率`。
 - 端別：代理端 `Whitelabel_GSI_Dashboard`。
 
 ### 來源可用性說明
 
 - Spec 作者已讀取 GSI-84、GSI-85、GSI-86、GSI-87、GSI-88 的 Jira 文字需求。
-- 已檢視使用者提供的本機 HTML：`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11.html`。它是靜態 concept mock，包含假資料與示意 JavaScript；只作資訊架構、視覺層級與互動概念參考，不把 mock 數值、client-side pagination 或 stub export 當正式 contract。
-- Jira connector 只提供 `kiosktopup.pdf` metadata，未提供 PDF 內容；Google Sheet 也無法由目前連線讀取。因此，本 spec 不猜測 PDF／Sheet 內未出現在 Jira description 的 API 欄位、費率數字或支付流程。
+- 已檢視使用者提供的本機HTML：`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11_API標註.html`。它直接標示各endpoint在UI中的位置與用途；其中假資料、client-side pagination及stub export仍只作視覺concept，不當正式response contract。
+- 2026-07-22 已以登入中的 Apifox 專案核對 7 支 endpoint 的method、path、parameters、response examples、enum與permission說明；API contract優先於HTML mock。
+- Jira connector 只提供 `kiosktopup.pdf` metadata，未提供 PDF 內容；Google Sheet 也無法由目前連線讀取。未由Apifox覆蓋的產品文案、實際費率數字與第三方支付細節仍不得猜測。
 - 實作開始前，實作者必須以有權限的 Jira／Google 帳號讀取 PDF 與 Sheet；若內容與本 spec 衝突，先更新本 spec，不能自行選一版實作。
 
 ## 背景 / 目標
@@ -46,7 +48,7 @@ GSI Pay 是包裝自 Ultrapay 的 GS 集團預設金流服務。此頁讓站長�
 - 顯示 pending withdrawal compact summary 與最近 5 筆提現。
 - 顯示唯讀的專屬費率／固定費／拒付費／通道限額。
 - 實作帳戶異動 filters、server-side pagination、table 與 permission-gated export。
-- 串接本頁所需的新 GSI Pay frontend API wrappers、types、enums、time rules、permissions 與 remote i18n keys；正式 contracts 必須先完成待確認 gate。
+- 串接本頁所需的新 GSI Pay frontend API wrappers、types、enums、time rules、permissions 與 remote i18n keys；已確認API依本spec實作，其餘產品／i18n／第三方金流 gates仍須完成。
 
 ## GSI-84 分支整合策略
 
@@ -103,12 +105,14 @@ GSI Pay 是包裝自 Ultrapay 的 GS 集團預設金流服務。此頁讓站長�
 
 ## 權限
 
-Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認：
+Jira未提供permission IDs；Apifox現已標示wallet VIEW `A_A_GSIPAY_WALLET_VIEW (3590101)`與EDIT `A_A_GSIPAY_WALLET_EDIT (3590102)`。VIEW涵蓋overview／recent／ledger／ledger export，EDIT涵蓋buy／withdraw；仍須由permission owner確認S／M／A audience對應及route meta常數後才能取代UI-first暫借權限。
+
+所需controls：
 
 1. Page Function / View：控制 sidebar、CashFlow child tab 與直接導航。
-2. Buy / Top-up action：控制「買分」按鈕與 submit。
-3. Withdraw action：控制「提現」按鈕與 submit。
-4. Export action：控制帳戶異動匯出按鈕與 export API。
+2. Buy / Top-up action：控制「買分」按鈕與submit，對應EDIT。
+3. Withdraw action：控制「提現」按鈕與submit，對應EDIT。
+4. Export action：控制帳戶異動匯出按鈕與export API，Apifox目前對應VIEW。
 
 實作規則：
 
@@ -141,6 +145,23 @@ Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認
 - Mock 的提現 dialog 顯示「最近 7 筆帳戶扣款紀錄」，而 Jira 明確要求「最近 5 筆我的提現紀錄」。本 spec 以 Jira 的 5 筆純提現紀錄為準，不混入 PAY／其他帳變。
 - Mock 餘額卡按鈕寫「存款」，Jira 用語是「買分（存款）」。本 spec UI 語意以「買分」為準，最終 key／文案由產品確認。
 - Mock pagination options 是 10／20／50；repo 現行 shared pagination 是 20／50／100。本 spec 沿用 repo pattern，除非 backend／產品另行指定。
+
+### HTML 中各 API 的畫面位置
+
+HTML已把method／literal endpoint直接標在畫面區塊，實作mapping固定如下：
+
+| API | HTML畫面位置 |
+| --- | --- |
+| `GET /v1/agent/gsipay/wallet/overview` | API tag `:599`；不支援幣別、餘額cards與`pending_withdraw`整頁一次取得，pending細節註記於`:676` |
+| `POST /v1/agent/gsipay/wallet/buy` | 買分modal API tag與`payment_url` redirect註記 `:333`；modal範圍`:328-354` |
+| `POST /v1/agent/gsipay/wallet/withdraw` | 提現modal API tag與凍結／`334010`註記`:362`；申請fields與submit`:357-403` |
+| `GET /v1/agent/gsipay/wallet/withdraw/recent` | 提現modal紀錄區`:404-480`，API tag`:408`明訂無參數、固定最近5筆「我的提現紀錄」；不採`:407`的舊「7筆」title |
+| `GET /v1/agent/gsipay/fee-settings` | 折疊面板API tag`:684`，註明既有GSI-84 endpoint且只回站點已開通幣別 |
+| `GET /v1/agent/gsipay/wallet/ledger` | 帳戶異動API tag與完整query摘要`:774`；section`:772-939` |
+| `GET /v1/agent/gsipay/wallet/ledger/export` | 匯出button旁API tag`:796`，明訂回`export_uuid`走既有下載流程 |
+| `POST /v1/callback/gsipay/buy` | HTML沒有此tag；依使用者確認為backend webhook，無frontend畫面且前端不串接 |
+
+上述`:line`均指`/Users/kenyu/Downloads/GSI_Pay_管理中心_v7_11_API標註.html`。
 
 ### 1. 不支援幣別提示
 
@@ -183,19 +204,19 @@ Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認
 
 - 幣別 selector：由點擊的卡片預選，可切換範圍只包含站點已開通且 GSI Pay 支援的幣別；若產品希望鎖定卡片幣別，需在實作前確認。
 - 法幣入款金額，必填且大於 0；min／max／precision 依 backend contract。
-- 即時匯率與折算後應支付 USDT 金額的呈現時機，依 `kiosktopup.pdf` 與 backend contract；在最終支付確認前必須讓使用者知道實際 USDT 金額，不可由前端自行計算。
-- quote／order loading、error、expired、submit loading、防重複提交狀態（實際是否分 quote 與 create 兩支 API，以正式 contract 為準）。
+- 本期backend沒有獨立quote endpoint；不要新增不存在的quote request，也不要由前端自行計算匯率／USDT金額。支付資訊由成功回傳的`payment_url`頁面負責。
+- 下單loading、validation error、provider error、submit loading與防重複提交狀態。
 - 取消與確認操作。
 
 資料流程：
 
 1. 使用者選擇／確認幣別並輸入有效法幣金額。
-2. 呼叫 backend quote 或 create-order flow；前端不得自行計算或固定匯率。
-3. 在不可逆支付確認前顯示 backend 計算的 USDT 金額與有效期限（若 contract 有 expiry）。
-4. 依 backend contract 建立／確認 `TXN-...` 買分單。
-5. 後續支付 UI／redirect／QR／wallet instruction、成功判定與逾時處理由 `kiosktopup.pdf` 與 backend contract 決定；附件確認前不得自行設計。
+2. `POST /v1/agent/gsipay/wallet/buy`，body為`{ currency, amount }`，兩個值均以string送出；`currency`限六個正式幣別，`amount`是大於0的decimal string。
+3. 成功payload為`{ payment_url }`；前端只在檢查URL存在且符合允許的navigation policy後導向GSPay付款頁，由該頁呈現QR／USDT支付資訊。
+4. 買分入帳由`POST /v1/callback/gsipay/buy`觸發；這是GSPay → backend webhook，Dashboard frontend不串接、不建立wrapper、不持有callback secret。
+5. 錯誤碼至少包含`334011`（幣別未開通）、`334012`（金額無效）；沿用既有error handler呈現可操作訊息。
 
-前端不可取得或使用 GS 內部金流憑證。Jira 註明該整合沒有測試環境，因此 implementation／QA 必須先由 owner 提供 sandbox、mock contract 或明確的 production-safe 測試方式；未確認前不可用真實資金做自動化或手動測試。
+前端不可取得或使用GS內部金流憑證。使用者已確認目前實際金流商尚未開通，因此買分下單／後續支付可能回provider error；這是已知環境限制。實作仍需完成request、loading與error UX，但不得把第三方未開通誤判為frontend regression，也不可使用真實資金繞過限制。
 
 ### 4. 提現 Modal 與最近 5 筆紀錄
 
@@ -206,7 +227,7 @@ Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認
 - 提現金額：必填、大於 0、不得大於目前顯示餘額；後端需再次驗證餘額、precision、min／max 與併發。
 - 虛擬錢包網路下拉：`TRC20`、`ERC20`、`BEP20`、`SOL`、`POLYGON`、`AVAX`、`ARB`、`OP`。實際 enum value 以 backend contract 為準。
 - USDT 收款錢包地址：必填；格式驗證規則由所選 network／backend contract 決定。
-- 站長聯繫方式：類型為 TG／手機／Email，並輸入對應值。是否只能選一種、格式與必填規則需產品確認。
+- 站長聯繫方式：backend body使用單一必填string欄位`contact`，可承載TG／手機／Email；前端如要額外提供類型selector，仍須由產品確認顯示方式與validation。
 - submit loading、防重複提交、backend validation error。
 
 同一 dialog 右側或下方顯示該站長最近 5 筆提現，欄位：
@@ -219,8 +240,9 @@ Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認
 
 成功提交後：
 
-- 顯示 backend 回傳的 `WD-...` 單號與 `PENDING_REVIEW` 狀態。
-- refetch 最近 5 筆、頁首進行中提示與帳戶異動；餘額是否立即凍結／扣除完全依 backend response，不由前端預判。
+- 成功payload為`{ wd_no }`；顯示backend回傳的`WD-...`單號，並以重新查詢結果呈現`PENDING_REVIEW`狀態。
+- Backend在提交當下即凍結扣款並寫入ledger type `5`；成功後立即refetch wallet overview、最近5筆與帳戶異動，不以frontend本地加減取代authoritative response。
+- 錯誤碼至少包含`334010`餘額不足、`334013`幣別未開通、`334014`金額無效、`334015`wallet network無效、`334016`地址或聯絡方式空白。
 - Telegram 通知、財務指令、白名單、退回返還與狀態 webhook 屬 GSI-88／backend；本頁只提交申請並顯示後端狀態。
 
 ### 5. 進行中提現提示
@@ -259,7 +281,7 @@ Jira 未提供 permission IDs。實作前必須由產品／後端提供並確認
 篩選：
 
 - 幣別：全部或站點已開通且 GSI Pay 支援之個別幣別。
-- 帳變類型：買分充值、代收扣款、代付扣款、提現、提現退回、人工調整；enum value 由 backend 提供。
+- 帳變類型：`1`買分充值、`2`代收扣款、`3`代付扣款、`4`拒收沖銷、`5`提現、`6`提現退回、`7`人工調整；`0`或不帶為全部。
 - GSI 單號：精準查詢。
 - 時間區間：開始／結束，最長 31 天，以站點時區送出。
 - 匯出：需 Export permission，且沿用當前全部 filters。
@@ -282,61 +304,48 @@ Table 行為：
 - 預設排序為 backend contract 的 `created_at DESC`；Jira 未要求可操作 sorting，不新增 sort UI。
 - 前後餘額須滿足 `balance_before + amount = balance_after`，但這是 backend／QA 對帳檢核，不由前端更改 response。
 - 無資料顯示既有 no-data；API error 不以空陣列偽裝成功。
-- Export flow 需依 backend contract 選擇「job id／UUID + `useExport()` polling」或 blob download，不能同時實作兩套，也不能由前端產 CSV。
+- Export固定呼叫`GET /v1/agent/gsipay/wallet/ledger/export`，帶入與list相同filters但不帶`offset／size`；成功取`export_uuid`後呼叫既有`useExport().getExportPath(uuid)`完成polling與下載，不另做blob或frontend CSV。
 
-## API / 資料契約前置條件
+## 已確認 API / 資料契約（2026-07-22）
 
-GSI-85 沒有 endpoint、method、request／response schema 或 export contract；因此實作開始前，backend 至少要提供下列能力的正式 Swagger／sample response：
+Apifox `代理端 > 金流管理 > GSI Pay帳戶費率` 是本期正式API來源：
 
-1. 站點 GSI Pay wallet／supported currency／balance list。
-2. 買分 quote。
-3. 建立買分單與後續支付狀態。
-4. 建立提現申請。
-5. 最近 5 筆提現。
-6. pending withdrawal summary／latest item。
-7. 各幣別費率與通道限額。
-8. 帳戶異動 list（filters + pagination）。
-9. 帳戶異動 export。
+| Frontend wrapper | Method／normal-mode suffix | Request | Unwrapped `data` payload／重點 |
+| --- | --- | --- | --- |
+| `getGsiPayWalletOverview()` | GET `gsipay/wallet/overview` | 無 | `supported_currencies[]`、`unsupported_site_currencies[]`、`cards[]`、`pending_withdraw`；card包含`currency`、`currency_name`、decimal-string `balance`、`enabled` |
+| `createGsiPayTopUp()` | POST `gsipay/wallet/buy` | body `{ currency: string, amount: string }` | `{ payment_url: string }` |
+| `createGsiPayWithdrawal()` | POST `gsipay/wallet/withdraw` | body `{ currency, amount, wallet_network, wallet_address, contact }`，皆為string | `{ wd_no: string }`；提交即凍結扣款 |
+| `getGsiPayRecentWithdrawals()` | GET `gsipay/wallet/withdraw/recent` | 無query params；固定最近5筆 | `{ list }`；status為`PENDING_REVIEW`／`SUCCESS`／`REJECTED` |
+| `getGsiPayAccountTransactions()` | GET `gsipay/wallet/ledger` | `currency?`、`type?`、`biz_no?`、required `start_date`／`end_date`、`offset?`、`size?` | `{ list, pagination: { offset, size, total } }`，`created_at DESC` |
+| `exportGsiPayAccountTransactions()` | GET `gsipay/wallet/ledger/export` | 與ledger相同filters，不帶pagination | `{ export_uuid: string }` |
+| `getGsiPayRatesAndLimits()` | GET `gsipay/fee-settings` | 無 | `{ list }`，row為`currency`、`direction`、`channel_code`、`rate_percent`、`fixed_fee`、`reject_fee`、`min_amount`、`max_amount` |
 
-前端 wrapper 建議集中在新增的 `src/api/gsiPay.ts`，語意名稱可為：
+Contract規則：
 
-- `getGsiPayWallets()`
-- `getGsiPayTopUpQuote()`
-- `createGsiPayTopUp()`
-- `createGsiPayWithdrawal()`
-- `getGsiPayWithdrawals()`
-- `getGsiPayPendingWithdrawals()`
-- `getGsiPayRatesAndLimits()`
-- `getGsiPayAccountTransactions()`
-- `exportGsiPayAccountTransactions()`
-
-以上是 frontend wrapper 語意，不是授權自行發明 endpoint path；method、path、params/body、response field 必須以 backend contract 為準。
-
-Contract 規則：
-
-- Request／response types 放在 `src/api/request.type.ts`、`src/api/response.type.ts` 的 GSI Pay 區段，不使用 `any`。
-- Standard request helper generic 使用 caller 消費的 unwrapped payload `T`，不把 raw backend envelope 當 `T`。
-- 若 endpoint 是 `/platform/v1/agent/...`，wrapper 傳 relative path + `{ usePlatform: true }`，由 `src/utils/request.ts` rewrite；不可把 prefix 重複寫進 path。
-- Backend enum 確認後，新增 focused `src/utils/constants/gsiPay.ts` 並由 constants index export namespace；未確認前不猜 enum values。
-- Response type 必須保留但 UI 不 render Ultrapay third-party order number。
-- 所有 create endpoint 必須支援 idempotency／防重複提交，並回傳可辨識的 GSI order number 與狀態。
-- List response 需提供 `{ list, pagination }` 或可映射至 `useSearch()` 的等價結構。
-- 金額／費率請以 backend 的 decimal string 或明確 precision-safe contract 傳輸；實作前確認 number/string/null。
+- 所有path的完整server URL為`/v1/agent/...`，因此wrapper使用normal request mode與上表suffix，不傳`{ usePlatform: true }`，也不重複寫`/v1/agent`。
+- Request／response types放在central GSI Pay區段，不使用`any`；standard helper generic使用caller消費的unwrapped `data` payload。
+- `currency`值域為`MMK／BRL／PHP／INR／PKR／VND`；`wallet_network`為`TRC20／ERC20／BEP20／SOL／POLYGON／AVAX／ARB／OP`。
+- Ledger row至少包含`created_at`、`currency`、`type`、`biz_no`、`net_change`、`balance_before`、`balance_after`、`remark`；前端金額欄讀`net_change`，並以`balance_before + net_change = balance_after`作QA檢核。
+- `biz_no`精準查詢支援`TXN-／PAY-／REV-／WD-`；ledger types正式值為`1..7`，集中在`src/utils/constants/gsiPay.ts`，不可在page散落magic numbers。
+- `start_date`／`end_date`格式為站點時區的`YYYY-MM-DD`且必填，區間最多31天；超限示例為business `code: 100`。`offset`從0開始、`size`預設20。
+- Fee direction為`1`代收、`2`代付；`channel_code === ""`代表通用。所有money／rate／limit欄位均以decimal string處理，合法`"0"`不可當empty。
+- Wallet endpoints的VIEW permission由Apifox標示`A_A_GSIPAY_WALLET_VIEW (3590101)`，buy／withdraw EDIT permission為`A_A_GSIPAY_WALLET_EDIT (3590102)`；route與S／M／A audience如何映射仍須permission owner確認，不得從這兩個值自行推導其他IDs。
+- `POST /v1/callback/gsipay/buy`是GSPay → backend webhook，frontend明確out of scope。
+- 使用者已確認DEV測試站`dobt`已有三幣別餘額、ledger 7 types、withdrawal 3 statuses及各filters資料；正式串接用此站做deterministic API／UI驗證。
 
 ## Timezone / Date contract
 
-- History query 的確切 endpoint path 與 date field names 確認後，若使用 RFC3339 conversion，將其加入 `src/utils/timeFieldRules.ts` 的對應 allowlist。
+- Ledger list／export使用`start_date`與`end_date`，格式為站點時區`YYYY-MM-DD`，不是browser-local timestamp；不把日期自行改成未經contract定義的RFC3339。
 - 顯示時間沿用 `useRfc3339().formatDateTime()`，不可直接以瀏覽器 local timezone 格式化。
-- Backend 必須按站點時區處理 31 天限制與 day boundary；前端的日期限制只作 UX 防呆。
+- Backend按站點時區處理31天限制與day boundary；前端的日期限制只作UX防呆。
 - DST、跨月與 start/end 相同日都需有明確結果；`start > end` 不送 request。
 
 ## 邊界情況 / 例外（Loading / Empty / Error / Concurrency）
 
 - 頁面初次載入：wallet、pending、rates、history 各自有 loading 狀態；單一區塊失敗不應把已成功區塊清空。
-- Create／quote 操作採 dialog-level loading，避免鎖死整頁。
-- 快速變更金額造成多次 quote 時，畫面最終只採用最後一次輸入對應的 response；舊 response 不得覆蓋新 quote。
+- Create操作採dialog-level loading，避免鎖死整頁。
 - Submit 按鈕在 request pending 時 disabled；double click 不可建立兩張單。
-- API 401／403／validation／insufficient balance／quote expired／network error 沿用 repo error handler／notify pattern；不可顯示憑證、raw stack 或第三方敏感 payload。
+- API 401／403／validation／insufficient balance／provider／network error沿用repo error handler／notify pattern；不可顯示憑證、raw stack或第三方敏感payload。
 - Refetch 失敗時保留成功 action 的 GSI order number供使用者查詢，但清楚提示資料更新失敗，不以前端假資料更新餘額。
 
 ## i18n
@@ -345,7 +354,7 @@ Contract 規則：
 
 - GSI Pay 帳戶費率、支援／不支援幣別提示。
 - 當前餘額、買分、提現。
-- quote、匯率、應支付 USDT、quote 過期。
+- 買分下單、付款頁導向、金流商未開通／provider error。
 - 提現金額、wallet network、wallet address、聯繫方式、最近 5 筆紀錄。
 - 審核中、出款成功、已退回。
 - 專屬費率與限額及所有 fee／limit labels。
@@ -386,7 +395,7 @@ Jira 的繁中用語只作語意來源；實作者不得自行發明英文或其
 - Expansion panel：`src/pages/Jackpot/WinningRecords/components/JackpotDetailsDialog.vue`。
 - Filter／pagination：`src/components/query/common.vue`、`src/hook/useSearch.ts`、`src/components/query/pagination.vue`。
 - 完整 report page：`src/pages/Reports/AccountFlowReport.vue`。
-- Export job polling：`src/hook/useExport.ts`，只在 backend export contract 回 job id／UUID 時沿用。
+- Export UUID polling／download：`src/hook/useExport.ts`、`src/api/common.ts`。
 - Platform API path rewrite：`src/utils/request.ts`。
 - Time conversion：`src/utils/timeFieldRules.ts`、`src/composables/useRfc3339.ts`。
 - Rate setting page `src/pages/CashFlow/CryptoExchangeRateSettings.vue` 只可參考 CashFlow page layout／permission style；GSI-85 rate panels 是唯讀，不沿用其 inline edit／toggle 行為。
@@ -401,7 +410,7 @@ Jira 的繁中用語只作語意來源；實作者不得自行發明英文或其
 - 不新增 GSI Pay／Ultrapay credential 管理 UI。
 - 不讓使用者編輯本頁費率或限額。
 - 不新增 table sorting、bulk action、row edit、detail drawer 或自訂報表。
-- 不自動輪詢整頁；只有 quote expiry 或支付流程經 contract 明確要求時才加入局部 polling。
+- 不自動輪詢整頁；只有支付流程經後續正式contract明確要求時才加入局部polling。
 - 不重構 shared query、table、dialog、permission 或 menu architecture。
 - 不檢視或修改 `src/assets/env/environment.json`。
 - 不處理 unrelated ESLint／Prettier 問題。
@@ -425,17 +434,18 @@ Jira 的繁中用語只作語意來源；實作者不得自行發明英文或其
 - [x] HTML concept 已由 spec 作者讀取並把可採用的 layout／interaction 基線與衝突寫入本 spec。
 - [ ] `kiosktopup.pdf` 與費率 Google Sheet 已由實作者讀取，且沒有與 spec 衝突。
 - [x] 頁面維持 CashFlow child；本批次不新增 UI top-level GSI Pay parent。仍需確認正式 route order、icon 與 remote i18n key。
-- [ ] Page View、Buy、Withdraw、Export 的 S／M／A permission IDs 與適用角色。
-- [ ] 所有 API endpoint、method、request／response、decimal precision、enum、pagination、error 與 idempotency contract。
-- [ ] 支援幣別由 backend 動態回傳，或正式固定為 MMK／BRL／PHP／INR／PKR／VND？
-- [ ] 買分 quote validity、rounding、min/max、支付呈現、成功／失敗／逾時與 production-safe 測試方式。
+- [ ] Apifox已提供VIEW `3590101`與EDIT `3590102`；仍需確認Page／Buy／Withdraw／Export在S／M／A audiences的正式permission mapping。
+- [x] 7支endpoint的method、normal request mode、主要request／response、ledger enum／pagination與export UUID contract已由Apifox寫回本spec。
+- [ ] 補齊overview `pending_withdraw.latest／total`、recent withdrawal完整row、`payment_url`允許導向policy、create idempotency及未列出的error contract；不能從sample自行擴欄。
+- [x] Overview動態回`MMK／BRL／PHP／INR／PKR／VND`的`supported_currencies`，站點差集由`unsupported_site_currencies`回傳。
+- [ ] 買分min／max、payment URL有效期限、redirect完成後的返回UX與provider開通後的production-safe測試方式。
 - [ ] BRL／PKR 等 GSI Pay 支援但站點尚未啟用的幣別，是否要顯示 disabled card 與「啟用此幣種」？若要，需補 API、權限與行為；本 spec 預設不做。
 - [ ] 買分／提現 dialog 的幣別 selector 可切換，或鎖定從 card 帶入的幣別？本 spec 暫按 HTML 預選且可切換。
 - [ ] 提現 contact 是單選一種或可輸入多種？各類型格式與必填規則。
 - [ ] 多幣別 pending amount 的分組／篩選／統一換算方案。
-- [ ] 費率／固定費／拒付費／各 channel limit 的正式 schema、precision、單位與 not-applicable 表示法。
+- [ ] Fee settings schema與decimal-string表示已確認；仍需確認`null`／空字串／不適用的完整語意及channel顯示文案。
 - [ ] History 預設日期區間及 backend 是否固定 `created_at DESC`；本 spec 建議預設今日、最新在前。
-- [ ] Export 回 job id／UUID 或 blob，以及檔案格式／命名。
+- [x] 帳變匯出為CSV，回`export_uuid`並走既有`useExport()`下載流程；檔名與最大資料量仍由backend既有流程決定。
 - [ ] 所有啟用語系的精確文案與 remote i18n keys。
 - [ ] Action 成功後是否需要局部 polling／websocket；本 spec 預設只 refetch，不輪詢整頁。
 
@@ -448,17 +458,17 @@ Jira 的繁中用語只作語意來源；實作者不得自行發明英文或其
 - [ ] 所有站點按權限可使用本頁；GSI Pay 與 Ultrapay 同站時互不覆蓋設定或資料。
 - [ ] 不支援提示只列「站點已開通但 GSI Pay 不支援」幣別；全支援時隱藏；無支援幣別時不渲染空卡。
 - [ ] 每個支援且開通幣別顯示正確代碼、名稱、餘額與 permission-gated actions；0、null、loading、error 不混淆。
-- [ ] 買分 modal 以 backend quote 顯示匯率／USDT 金額，處理過期與重複提交，成功建立 `TXN-...`；frontend 不持有整合憑證。
+- [ ] 買分modal直接送`{ currency, amount }`，成功取得合法`payment_url`並導向付款頁；處理provider error與重複提交，frontend不計算USDT、不串callback、不持有整合憑證。
 - [ ] 提現 modal 驗證 amount、network、address、contact，backend 驗證失敗可正確呈現；成功建立 `WD-...` 並 refetch 相關區塊。
 - [ ] 最近 5 筆提現正確顯示 GSI 單號、幣別、金額、三種狀態與站點時區時間。
 - [ ] pending 為 0 時提示隱藏；大於 0 時顯示筆數、已確認的 amount 表達方式與最新一筆；不直接加總不同法幣。
 - [ ] 費率／限額只顯示站點已開通且支援幣別，資料與 Sheet／API 一致，唯讀、0 與 N/A 顯示正確。
 - [ ] History filters、31 天限制、server-side pagination、page reset、no-data／error 行為正確。
 - [ ] History 金額正負色與符號正確，前後餘額及備註完整顯示，時間使用站點時區。
-- [ ] Export 只對有權限者顯示，沿用目前 filters，使用 backend 指定的 job 或 blob contract。
+- [ ] Export只對有權限者顯示，沿用目前filters且不帶pagination，以`export_uuid`接既有`useExport()`下載流程。
 - [ ] UI 只顯示 GSI 單號；Ultrapay 三方單號存在於 typed API response 供 Network 排查，但未 render 到一般 UI／DOM。
 - [ ] Source、client response、Network payload、DOM、console、錯誤訊息皆無 Auth key、secret、bot token 或後台帳密。
-- [ ] 快速 quote／double submit／refetch race 不會顯示舊資料或建立重複訂單。
+- [ ] Double submit／refetch race不會建立重複訂單或以舊資料覆蓋新結果。
 - [ ] Desktop／tablet／mobile 版面無水平溢出，dialog／table／expansion panel 可操作。
 - [ ] 所有新 UI 文字使用已確認的 remote i18n keys；未猜測其他語言、未建立 locale JSON。
 - [ ] 未修改 shared query／dialog／menu behavior、現有 Ultrapay、GSI-86、GSI-87、GSI-88 或其他 out-of-scope surface。
@@ -475,7 +485,7 @@ Repo 目前沒有可用的 Vitest／Jest／Playwright／Cypress 基礎設施，`
 - supported／unsupported currency 交集：全支援、部分支援、完全不支援。
 - money／rate formatter：0、負數、decimal string、null、不同 precision。
 - 提現 amount：0、負數、等於餘額、大於餘額、併發後端 insufficient balance。
-- quote race／expiry／double submit。
+- Buy validation／provider error／double submit／invalid或missing `payment_url`。
 - status／account transaction type mapping 與第三方單號不 render。
 - 31 天 date range boundary、start > end、跨月。
 - filter change reset page、export params 與 list params 一致。
@@ -484,16 +494,17 @@ Repo 目前沒有可用的 Vitest／Jest／Playwright／Cypress 基礎設施，`
 
 ### API fixture / 手動驗證
 
+- DEV測試站使用`dobt`；後端已建立三幣別餘額、ledger 7 types、withdrawal 3 statuses及每個filter都有結果的資料集。
 - 測站點幣別：全六幣、部分六幣、無支援幣別、空 currency list。
 - 測 wallet：正常、0、null、單幣失敗、整體失敗。
-- 測 top-up：quote success／expired／error、create success／duplicate／payment pending／failure。
+- 測top-up：body mapping、validation、double submit、成功`payment_url`shape與provider error；目前金流商未開通時不要求完成真實付款或callback，但error UX仍須驗證。
 - 測 withdrawal：每種 network、無效 address、amount = balance、amount > balance、backend race、三種狀態。
 - 測 pending：0、1、多筆同幣、多筆跨幣，核對最新一筆。
 - 測 rate／limit：0、N/A、INR chargeback、multi-channel limits。
 - 測 history：每種帳變、正負／0、31 天邊界、pagination 20／50／100、empty／error、export。
 - 以 browser Network 驗證 response 有第三方單號但 UI／DOM 無該值；驗證所有 request／response 無整合憑證。
 - 測 desktop／tablet／mobile 與所有啟用語系。
-- 因買分無測試環境，不使用真實資金測試，除非 owner 提供並明確批准 production-safe procedure。
+- 金流商未開通期間不使用真實資金測試；開通後仍須由owner提供並明確批准production-safe procedure。
 
 ### 最小程式驗證
 
