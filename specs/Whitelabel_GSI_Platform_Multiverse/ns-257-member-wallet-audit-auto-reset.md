@@ -2,7 +2,7 @@
 
 > 交接合約：本 spec 是 `Whitelabel_GSI_Platform_Multiverse` 後續實作與 review 的單一依據。需求、backend contract 或全版型範圍若有變更，必須先更新本 spec，再繼續實作。
 >
-> 狀態：**需求已確認／實作完成，待 DEV 驗證**。
+> 狀態：**需求已確認／修正完成，待合併 develop 與 DEV 驗證**。
 
 ## 背景 / 目標
 
@@ -35,7 +35,6 @@ interface WalletAuditResetResult {
   balance: string
   turnover: string
   audit_turnover: string
-  remaining_turnover: string
 }
 
 interface WalletAuditResetResponse {
@@ -72,7 +71,7 @@ requestApi<null, Response.WalletAuditResetResponse>(
 - 在 `src/api/response.type.ts` 新增 additive contracts：
   - `WalletAuditResetResult`
   - `WalletAuditResetResponse`
-- 不修改既有 `Response.UserWallet` 欄位名稱；consumer 直接使用新 API 回傳的 `remaining_turnover` 更新既有 UI/store 欄位，不以 `audit_turnover` 代替，也不在前端自行計算。
+- 不修改既有 `Response.UserWallet` 欄位名稱；reset API response 沒有 `remaining_turnover`，不得將其 raw wallets 直接合併進既有 UI/store。
 - 無 request payload，不在 `src/api/request.type.ts` 建立空 interface。
 
 ### B. 共用會員錢包結果同步
@@ -81,15 +80,11 @@ requestApi<null, Response.WalletAuditResetResponse>(
   - `refreshWalletAuditTurnoverReset`
 - 方法行為：
   1. 呼叫 `userInfoApi.getWalletAuditTurnoverReset`。
-  2. Request success 時，以 `currency_id + wallet_type` 配對既有 `userWalletList`。
-  3. 將配對 wallet 的：
-     - `balance` 更新為 response `balance`。
-     - `remaining_turnover` 更新為 response `remaining_turnover`。
-  4. 保留 response 未提供的既有欄位，例如 `currency_code`、`in_use`、`label`、`withdrawable_balance`。
-  5. 使用既有 store setter／既有 reactive update pattern 更新 wallet list；不得直接替換成不符合 `Response.UserWallet` shape 的 response wallets。
-  6. 即使某筆 `reset=false`，仍使用該筆 backend 回傳的 `balance` 與 `remaining_turnover`，因為它們是本次檢查後的最新 authoritative result。
-  7. Response 中找不到對應既有 wallet 的資料不得錯配到其他 wallet，也不得造成頁面 crash。
-  8. HTTP request failure 時保留原有 wallet state，回傳 failure／`null` 供 caller 判斷，但不自行顯示需求外文案。
+  2. Reset request success 時，立即呼叫既有 `refreshUserWalletList()`，重新查詢 `GET /v1/player/center/wallets`。
+  3. 由 wallet list response 透過既有 setter 完整更新 `userWalletList`；提現畫面使用其中的 `balance` 與 `remaining_turnover`。
+  4. Reset response 的 `balance`、`turnover`、`audit_turnover` 僅代表本次檢查結果，不直接合併進 `Response.UserWallet`，也不在前端自行計算 `remaining_turnover`。
+  5. Reset HTTP request failure 時不呼叫額外 wallet refresh，保留原有 wallet state，回傳 failure／`null` 供 caller 判斷，但不自行顯示需求外文案。
+  6. Reset success、後續 wallet refresh failure 時，沿用 `refreshUserWalletList()` 的既有失敗處理並保留原有 wallet state；提現流程仍繼續初始化。
 - 將方法從 `useUserInfo()` return object 暴露給共用提現流程使用；不要新增全域 event、route guard 或 template-specific adapter。
 
 ### C. 全版型提現進入流程
@@ -179,10 +174,9 @@ rg -l 'getWithdralPaymentList\(\)' template --glob '*.vue'
 
 - 使用新 endpoint，不以既有 `GET /v1/player/center/wallets` 代替：backend contract 明確指定會員端稽核歸零觸發 API；一般 wallet list query 不等同觸發歸零。
 - API wrapper 放 `src/api/userInfo.ts`：endpoint 屬 player wallet domain，且最接近既有 `getUserWalletList()`；不為單一 endpoint 新增 domain file。
-- 將 API 結果先同步至既有 `userWalletList`：所有提現 templates 已依賴該 store shape，集中同步可避免每個 template 自行處理新 endpoint response。
-- 直接同步 response `remaining_turnover`：這是 backend 回傳的最新剩餘流水，也是現有提現 UI 顯示「剩餘稽核」所讀的欄位；前端不以 `audit_turnover` 代替，也不以 `audit_turnover - turnover` 自行計算。
-- 使用 `currency_id + wallet_type` 配對：同幣別可同時存在現金、撲滿、贈金 wallets，只用 `currency_id` 會覆蓋錯誤錢包。
-- `reset=false` 仍更新畫面：它表示未執行歸零的正常結果，不代表 response 數值不是最新資料。
+- Reset 成功後重查既有 wallet endpoint：`GET /v1/player/center/wallets` 才提供完整 `Response.UserWallet` shape 與 authoritative `remaining_turnover`；reset endpoint 僅負責觸發檢查／歸零。
+- 不從 reset response 合併 wallet：其 response 沒有 `currency_code`、`remaining_turnover`、`in_use`、`withdrawable_balance` 等既有欄位，直接合併會把 `remaining_turnover` 寫成 `undefined`。
+- 不在前端計算 `audit_turnover - turnover`：剩餘流水直接採用 wallet API 的 `remaining_turnover`，避免重複 backend domain logic 與財務小數運算。
 - 共用修正而非逐 template patch：需求本身是全版型，且所有提現 callers 已經共用 `useBank`；逐一 patch 會增加遺漏與行為漂移風險。
 - 稽核 API failure 不阻擋提現初始化：本 feature 是進頁重新檢查，不能因額外檢查服務失敗讓既有提現頁完全不可用；錯誤呈現沿用 global request handling，不新增 Toast／Modal。
 - 不在前端判斷五項歸零條件、不直接把數值寫成 `0`：資格、原子歸零與競態處理由 backend authoritative transaction 負責。
@@ -205,19 +199,16 @@ rg -l 'getWithdralPaymentList\(\)' template --glob '*.vue'
 ### API 與 contracts
 
 - [ ] `src/api/userInfo.ts` 新增 `GET /platform/v1/player/wallet/audit-turnover-reset` wrapper，request 為 `null`，使用既有 token，沒有 full-response helper 或額外 header。
-- [ ] `src/api/response.type.ts` 的 response types 完整包含 `currency_id`、`wallet_type`、`reset`、`skip_reason`、`balance`、`turnover`、`audit_turnover`、`remaining_turnover` 與 `{ wallets }` wrapper。
+- [ ] `src/api/response.type.ts` 的 reset response types 完整包含 `currency_id`、`wallet_type`、`reset`、`skip_reason`、`balance`、`turnover`、`audit_turnover` 與 `{ wallets }` wrapper，且沒有 backend 未回傳的 `remaining_turnover`。
 - [ ] 沒有為空 request 新增 request interface，沒有改動既有 `UserWallet` contract。
 
 ### Wallet state 同步
 
-- [ ] Request success 後以 `currency_id + wallet_type` 配對並更新既有 wallet 的 `balance` 與 `remaining_turnover`。
-- [ ] `remaining_turnover` 的值直接來自 response `remaining_turnover`；前端沒有以 `audit_turnover` 代替、自行計算或直接寫死 `0`。
-- [ ] `balance` 與 `remaining_turnover` 保持 backend decimal string，不轉成 JavaScript number 後再寫入 store。
-- [ ] `reset=true`、`reset=false` 與帶 `skip_reason` 的 wallet 都使用 backend 回傳的最新數值。
-- [ ] 既有 `currency_code`、`in_use`、`label`、`withdrawable_balance` 等 response 未提供欄位保持不變。
-- [ ] Response 有未知／無對應 wallet 時不 crash、不錯配；既有未出現在 response 的 wallets 保持不變。
-- [ ] Response 出現重複 key 時，該 wallet 不更新並保留原資料，其他唯一 key 的 wallets 仍正常更新，且有 `console.warn` 記錄重複 key。
-- [ ] HTTP request failure 時保留原 wallet state，不顯示成功、不清成 `0`。
+- [ ] Reset request success 後重新呼叫既有 `GET /v1/player/center/wallets`，且呼叫順序為 reset → wallets → withdrawal payment list。
+- [ ] Store 的 `balance`、`remaining_turnover` 與其他 wallet 欄位完整來自 wallet list response；沒有從 reset response 合併或自行計算。
+- [ ] Reset response contract 與 consumer 都沒有讀取 backend 未回傳的 `remaining_turnover`。
+- [ ] Reset HTTP request failure 時不額外重查 wallet、不修改原 wallet state，且仍繼續 withdrawal payment list。
+- [ ] Reset success、wallet refresh failure 時保留原 wallet state，且仍繼續 withdrawal payment list。
 
 ### 全版型進入流程
 
@@ -238,12 +229,9 @@ rg -l 'getWithdralPaymentList\(\)' template --glob '*.vue'
 
 ## 邊界情況 / 例外
 
-- Response `wallets=[]`：視為成功但沒有可同步資料，繼續既有提現初始化。
-- 同幣別不同 wallet types：必須分別配對，不可互相覆蓋。
-- Response wallet 順序與 store 順序不同：依 key 配對，不依 array index。
-- Response 含未知 `wallet_type` 或未知 `currency_id`：不得錯配或 crash；既有資料保持不變。
-- Response 含重複 key（同一 `currency_id + wallet_type` 出現兩筆以上）：不採用任何一筆，該 wallet 保留原有資料，並以 `console.warn` 記錄 contract mismatch 的 key 清單。三筆以上重複同樣不得重新加回。其他唯一 key 的 wallets 仍照常更新。選擇「全部不採用」而非「取第一筆／最後一筆」，是因為 backend contract 保證 key 唯一，重複即代表資料異常，猜測優先順序可能把錯誤數值寫進提現畫面。
-- `balance`、`remaining_turnover` 為 decimal string；不得轉成 JavaScript number 後再存回，避免精度／格式變化。
+- Reset response `wallets=[]`：仍視為 request success 並重新查詢完整 wallet list，再繼續既有提現初始化。
+- Reset response 的順序、未知 wallet 或重複 key：consumer 不直接合併 raw wallets，因此不得影響既有 store。
+- Wallet list response 的 `balance`、`remaining_turnover` 為 decimal string；沿用既有 setter 原值保存，不得轉成 JavaScript number 後再存回。
 - `skip_reason` 可能是空字串或未知字串；本會員端 UI 不顯示它，不建立前端 mapping。
 - Endpoint 可能因 provider 查詢耗時；不得在前端自行假定 5 秒即失敗，沿用既有 request timeout／error handling。
 - 使用者在 request 尚未完成前離開頁面：不得在已卸載元件新增 template-local state write；shared store 是否接受 response 依既有 request lifecycle pattern，不新增需求外 cancel framework。
@@ -253,12 +241,9 @@ rg -l 'getWithdralPaymentList\(\)' template --glob '*.vue'
 - Repo 現況沒有一般 feature test script；不得為本 feature引入新的 test framework，也不得執行 `tsc --noEmit`。
 - 仍須建立並執行最小 temporary test artifact，完成驗證後移除或 unstage，不納入 production commit。至少覆蓋：
   - API wrapper method、path、request `null` 與 response contract。
-  - Wallet merge：`currency_id + wallet_type` 正確配對。
-  - 同幣別 cash／reward 不互相覆蓋。
-  - response 順序不同、部分 wallets、空陣列、未知 wallet、`reset=false`／`skip_reason`。
-  - 重複 key：該 wallet 不更新且保留原資料，同 response 中其他唯一 key 照常更新；三筆以上重複不得重新加回；無重複時不得誤發 warning。
-  - response `remaining_turnover` 原字串寫入 store `remaining_turnover`，不以 `audit_turnover` 代替，也不由前端計算／寫死 `0`。
-  - API success 時呼叫順序：audit reset → withdrawal payment list。
+  - Reset response contract 不宣告 backend 未回傳的 `remaining_turnover`。
+  - API success 時呼叫順序：audit reset → wallet list refresh → withdrawal payment list。
+  - Reset response 不直接合併至既有 wallet store，也不在前端計算 `remaining_turnover`。
   - API failure 時仍呼叫 withdrawal payment list，且原 wallet state 不變。
 - Focused validation：
 
