@@ -12,7 +12,7 @@ This repo has its own `AGENTS.md` describing structure, scope, and Nx/Nuxt tooli
 
 ## Page Migration
 
-- When migrating pages from the old Multiverse member side into this NX repo, reuse the original i18n translation keys. Do not invent, rename, or replace translation keys. If the original page has no matching key for required text, explicitly call it out and ask the user how to handle it.
+- When migrating pages from the old Multiverse member side into this NX repo, reuse the original i18n translation keys. Do not rename or replace compatible keys. If the original page has no matching key for required text, follow the common WOW/GSI remote-i18n search, reuse, create, and report flow instead of inventing a local key or stopping at the gap.
 
 ## Tooling
 

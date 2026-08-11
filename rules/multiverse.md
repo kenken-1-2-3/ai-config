@@ -21,6 +21,7 @@ Apply these rules to `Whitelabel_GSI_Platform_Multiverse`.
 - Do not search, edit, or create local locale JSON files.
 - Preserve existing `$t(...)` and `t(...)` calls unless the user provides an exact replacement.
 - If the user provides a remote i18n key, use it directly.
+- If a requirement needs copy but has no remote key, follow the common WOW/GSI remote-i18n search, reuse, create, and report flow; do not stop after merely identifying the gap.
 
 ## Deployment (發版)
 

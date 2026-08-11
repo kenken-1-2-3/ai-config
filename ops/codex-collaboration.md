@@ -2,6 +2,8 @@
 
 寫於 2026-07-03。前提事實（先懂這個，其他才說得通）：
 
+> **Current Codex-side override (2026-08-10):** Codex 暫時不得透過 `cc:*`、Claude CLI 或 tracked job 把工作交給 Claude Code；需要委派時使用當前 session 的原生 subagent。只有使用者針對當次任務明確指定 Claude Code 才可覆蓋。下方跨模型預設分工與互審對 Codex 端暫停套用，但不限制使用者自行開啟的 Claude Code session。
+
 - 兩個 agent **不會直接對話**。協作靠三種媒介：spec 檔（`specs/<project>/<feature>.md`）、程式碼 diff、以及使用者轉述。所有交接內容必須落在檔案裡，不能假設對方「知道剛剛討論了什麼」。
 - 規則同步機制：`install.sh` 把 `rules/*.md` 同時生成 `CLAUDE.local.md`（Claude 讀）和 `AGENTS.override.md`（Codex 讀）——**專案規則兩邊對稱**。
 - 但 **Codex 讀不到**：`~/.claude/CLAUDE.md`、`ops/` 全部、Claude 的記憶機制。所以交給 Codex 的 spec 必須自包含（spec-driven-workflow skill 已要求「實作者不需回頭問需求」——對 Codex 這不是建議，是硬條件）。

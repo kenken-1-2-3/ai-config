@@ -1,11 +1,11 @@
 ---
 name: multiverse-cross-template-bugfix
-description: 在 Whitelabel_GSI_Platform_Multiverse 中，當同一個 bug 可能出現在多個 templates、或需要確認「哪些 templates 受影響」時使用。若確定只有單一 template 受影響，請勿使用。
+description: Use when a Whitelabel_GSI_Platform_Multiverse bug may affect multiple templates or reaches shared `src/common` hooks, composables, provider adapters, renderer mappings, or configuration used by multiple templates. If evidence confirms the code path is template-local, do not use this skill.
 ---
 
 # Multiverse Cross-Template Bugfix
 
-當任務是修一個可能跨多個 templates 存在的 bug 時使用。錯誤地只修一個 template、或重複 patch 已正確的 template，都是此任務最常見的失敗。
+當任務是修一個可能跨多個 templates 存在的 bug，或表面上是單一 template、實際進入 shared code 時使用。錯誤地只修一個呼叫面、只查 sibling templates，或重複 patch 已正確的 template，都是此任務最常見的失敗。
 
 ## 必要規格
 
@@ -14,11 +14,12 @@ description: 在 Whitelabel_GSI_Platform_Multiverse 中，當同一個 bug 可�
 - Bug 的 root cause：是 shared code（`src/common`）還是 template-local 實作錯誤？
 - 已知受影響的 template 是哪些？（使用者提到的）
 - 有無 sibling templates 可能共用相同 code path？（需要用 `rg` 確認）
+- Shared hook、composable、provider adapter、renderer mapping 或 configuration 的 all callers 是哪些？
 - Fix 應落在 shared code 還是 template-local？
 
 ## 先做的 scoped 搜尋
 
-**永遠先搜尋，再決定修哪裡。**
+**永遠先搜尋，再決定修哪裡。** 同時搜尋 `src/common/` 與 `template/`；不要因使用者只提到一個站點就假設 root cause 是 template-local。
 
 ```bash
 # 找出哪些 templates 使用了有問題的 composable / function
@@ -26,18 +27,32 @@ rg "useH5MenuListCms|h5MenuList" template/ --include="*.vue" --include="*.ts" -l
 
 # 找出哪些 templates 有相同的錯誤 pattern
 rg "錯誤的 import 或用法" template/ -l
+
+# 找出 shared implementation family 與所有 callers
+rg "具體的 hook|adapter|renderer map|config key" src/common/ template/ --include="*.vue" --include="*.ts" -n
 ```
 
 ## 流程
 
-1. **確認 root cause**：先讀 shared source（`src/common/composables/`、`src/common/hooks/`）以及已知受影響的 template 檔案。
-2. **全局搜尋影響範圍**：用 `rg` 在 `template/` 下搜尋相同的錯誤 pattern，列出所有受影響的 templates。
+1. **確認 root cause**：先讀 shared source（`src/common/composables/`、`src/common/hooks/`、provider adapters／mappings）以及已知受影響的 template 檔案。
+2. **全局搜尋影響範圍**：用 `rg` 搜尋 `src/common/` 與 `template/` 的相同錯誤 pattern、shared symbol 與 all callers，列出所有受影響的 templates／call sites。
 3. **排除已正確的 templates**：對照搜尋結果，確認哪些 templates 已使用正確 code path，不要 patch 它們。
 4. **決定 fix 位置**：
    - Root cause 在 shared code → 修 `src/common`，確認不破壞已正確的 templates。
    - Root cause 是 template-local 的錯誤實作 → 逐一修每個受影響的 template。
 5. **逐一修復**，完成後用同一個 `rg` 指令確認錯誤 pattern 已消失。
 6. **回報**：受影響 templates 清單、fix 位置（shared vs template-local）、哪些 templates 已正確不需修改。
+
+## Provider language implementation family
+
+修正 BETBY 或其他 provider 的語系問題時，要把以下項目視為同一個 implementation family，一次盤點與驗證：
+
+- launch/request language mapping；
+- renderer initialization mapping；
+- fallback behavior；
+- shared hook／adapter／mapping 的 all callers。
+
+只驗證 endpoint payload、只看到 Launch API 正確，不能證明 Renderer 初始化已使用同一語系。完成前必須分別取得 request 與 renderer evidence，並確認 fallback 不會把已支援語系降回預設語系。
 
 ## Template 家族慣例
 

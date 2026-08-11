@@ -1,69 +1,102 @@
 ---
 name: spec-driven-workflow
-description: 當使用者明確要求把一份需求轉成規格書／spec 交給另一個 agent 實作時使用（例如「幫我把這需求寫成 spec」「產規格給 codex」「產規格給 claude」）。不是每次讀需求都套用；只有使用者明確要走 spec 交接工作流時才觸發。
+description: Use when the user explicitly asks to author, update, hand off, or audit a spec for fidelity and requirement drift. Do not use for direct implementation, branch management, commit, push, release, deploy, simple repository lookup, or general questions.
 ---
 
 # Spec-Driven Workflow
 
-把一份需求轉成一份精確的 spec，作為 spec 作者、實作者與 reviewer 之間的交接合約。Claude 與 Codex 的角色可以互換：可能是 Claude 寫 spec、Codex 實作，也可能是 Codex 寫 spec、Claude 實作，或由其中一方 review。
+把 spec 當成需求方、實作者與 reviewer 之間的可驗證合約。實作者只需要讀 spec，不依賴原對話或完整 task history。
 
-## 角色分工
+## Phase exit
 
-```
-需求 (Notion / 口述)
-   │  Spec 作者：讀懂 + 寫 spec（Claude 或 Codex）
-   ▼
-~/wow/ai-config/specs/<project>/<feature>.md   ← 交接合約（唯一真實來源，版控於 ai-config）
-   │  實作者：照 spec 在依 git flow 命名的工作分支實作（Claude 或 Codex）
-   ▼
-程式碼 diff
-   │  Reviewer：對照驗收條件 review → 回修 → 通過（Claude 或 Codex）
-   ▼
-通過後依 git flow 推進（合併前需使用者確認）
-```
+- 此 skill 只負責 spec contract 的撰寫、更新、交接與需求漂移稽核。
+- 最新要求改成 direct implementation、branch management、commit、push、release 或 deploy 時，退出此 skill；依該回合的新 outcome 重新選擇流程。
+- 實作者可以 read an approved spec without loading the spec-authoring workflow。只有需要修改、稽核或重新交接 spec 時才再次觸發。
 
-- Spec 作者與實作者可以是不同 agent；不要假設一定是 Claude 寫 spec、Codex 實作。
-- 實作者不靠對話記憶，只靠 spec 檔；所以 spec 要寫到「實作者不需回頭問需求」。
-- spec 檔放在 ai-config repo（`~/wow/ai-config/specs/<project>/<feature>.md`）並 commit，跟著 ai-config 版控與跨機同步；不要放進專案 repo。
-- spec 或實作完成後，不得自行 commit；每一次 commit 都必須先取得使用者針對該次提交的明確確認。
-- Review 時對照 spec 的驗收條件，逐條判斷過／不過，不憑感覺。
+## 核心不變量：需求必須對稱
+
+- **來源 → spec 完整**：原需求的每個功能、欄位、入口、狀態與限制，都要有 `REQ-ID`。
+- **spec → 來源可追溯**：spec 新增的每個產品概念，都要指回來源 anchor 或使用者決策；API 技術名詞不可自行升級成產品功能或 UI 名稱。
+- **UI ↔ persistence 分開判斷**：需求要求的控制項必須保持 enabled、selectable、editable；API、schema、endpoint 或 persistence 缺口不得作為 hide、pre-disable 或 lock 的理由。使用者完成輸入並嘗試動作後，若後端拒絕或無法持久化，保留表單狀態並明確提醒哪些值未儲存及原因；不得顯示假成功或靜默丟值。權限、破壞性操作確認、in-flight 防重複、loading lock 與客觀無效輸入仍可阻擋互動或送出。
+- **明確決策才可縮 scope**：只有使用者核准的排除項能標成 `OUT_OF_SCOPE_APPROVED`；「repo 現在沒有」「API 還沒提供」都不是刪需求的理由。API-blocked fallback 與核准排除都必須連到 `DEC-ID`。
+
+## 來源各管什麼
+
+| 來源 | 責任 | 不可反推的事 |
+| --- | --- | --- |
+| 使用者、Notion、issue | 產品範圍、行為、欄位語意、驗收 | 不由 API 是否存在決定 |
+| Figma、mock、截圖、參考圖 | 資訊架構、UI、視覺與畫面狀態 | 不自行增加／刪除產品行為 |
+| API、schema、PDF、live response | endpoint、payload、enum、持久化能力與局部 blocker | 不決定整頁或核心 UI 是否需要 |
+| 目標 repo | 現況、既有 pattern、可重用元件與整合位置 | 現況不是需求上限 |
+| 使用者明確決策 | 覆蓋前述來源的已核准選擇 | 以 Responsibility = `User decision` 的 Source ID 記錄，並連到 Decision Log 與受影響的 `REQ-ID` |
+
+不同責任的來源不互相否決。同一責任內若來源互斥，標記 `SOURCE_CONFLICT`，列出差異並問使用者；不可私自選一份。每份來源都要記錄 snapshot／版本／日期，避免後續拿不同版本重新推翻已確認結論。Source inventory 以可獨立漏掉的 section、frame、asset 或 state 為粒度，不以「整份 Notion」「整個 mock」各包成一列；每個 Source ID 都必須被矩陣引用。
+
+## Requirement status
+
+| Status | 用途 | 可否 handoff |
+| --- | --- | --- |
+| `CONFIRMED` | 來源一致或使用者已確認 | 可以 |
+| `UI_REQUIRED_API_BLOCKED` | UI／流程與需求控制項保持可操作；使用者嘗試動作後，只有對應 persistence 可回報失敗並保留輸入 | 可以，需用 `DEC-ID` 寫清楚 post-action reminder、未儲存範圍與 blocker |
+| `PROVISIONAL` | 暫定推論，仍待確認 | 不可以 |
+| `SOURCE_CONFLICT` | 同一責任的來源互斥 | 不可以 |
+| `OUT_OF_SCOPE_APPROVED` | 使用者已明確核准排除 | 可以，矩陣與 Decision Log 必須以 `DEC-ID` 雙向對映 |
 
 ## 產 spec 的步驟
 
-1. 讀懂需求。釐清要做什麼、為什麼、影響哪一端（會員端 = Multiverse，代理端 = Dashboard）。需求有歧義時先問使用者，不要自行假設。
-2. 把 spec 寫到 `~/wow/ai-config/specs/<project>/<feature>.md`：`<project>` 是目標 repo 名稱，`<feature>` 用簡短 kebab-case 描述。
-3. 依本 skill 的範本（見 `spec-template.md`）填齊所有欄位，特別是：
-   - **Out of scope**：明確寫出不做什麼，配合 Scope Control 規則。
-   - **驗收條件**：逐條、可勾選、可客觀判斷。這是 review 的依據。
-   - **受影響範圍**：註明會員端／代理端與對應 repo、檔案或模組。
-   - **跨站影響**：若需求是單一代理／站點／template/siteKey，寫明是否會碰共用程式、共用設定或共用預設值；只要會影響其他站點，先提出並等使用者確認。
-   - **參考實作**：點出要模仿的現有程式，讓實作者風格架構一致。
-   - **關鍵決策與理由**：把討論中做的隱含決定明寫出來（含為什麼），避免實作者重新決定而走偏。這是縮小「實作者缺需求討論 context」落差的關鍵。
-   - **Git Flow**：寫明這個 feature 的基底分支、實作者開始前必須開出的工作分支名稱（依 git flow 命名），以及推進路徑（develop → staging → main）。
-4. spec 寫完後，交給使用者確認再交給指定的實作者。
+1. **固定來源版本**：建立 Source Responsibilities 表；每個可獨立遺漏的需求 section、畫面、frame、asset、state 或 API snapshot 各有 Source ID。本地圖片／PDF 放到可交接的位置並使用相對連結。
+2. **先抽需求、後看技術名詞**：從需求與畫面逐項抽成原子 `REQ-ID`，保留使用者用語。API 的 `group`、`entity` 等名稱只能先放在 API / persistence 欄。
+3. **建立追蹤矩陣**：每列都填來源 anchor／asset、UI surface、API / persistence、status、Decision ID、Acceptance ID、Verification ID。非 UI、非持久化或不需決策時也要明寫 `N/A + 理由`，不可只寫 `N/A`。
+4. **做雙向 read-back**：
+   - 逐段讀原需求／每張圖，確認都有 `REQ-ID`。
+   - 逐列讀矩陣，確認 spec 的每個功能都有來源。
+   - 特別檢查入口、list/create/edit/detail、主要區塊、空／錯誤／loading／permission 狀態，避免因 API 缺口整段消失或把需求控制項預先停用。
+5. **一個 feature 只留一份 canonical spec**：canonical spec 持有完整 source inventory 與所有 `REQ-ID`；大型需求只用 Active REQ IDs 拆 execution slices／新 tasks，不另建會分散真相的 child specs。既有或外部限制下的 slice spec 要標 `SLICE` 並連回 canonical，且永遠不可宣稱 feature complete。
+6. **定義客觀驗收與驗證**：每個 `REQ-ID` 至少連到一個 `AC-ID` 與 `VT-ID`。驗收寫可觀察結果；驗證寫指令、操作、截圖或 Network evidence 的取得方式。
+7. **記錄決策並請使用者確認**：所有縮 scope、命名、fallback 與來源衝突決策都寫入 Decision Log，並以 `DEC-ID` 對映回受影響的 `REQ-ID`。API-blocked fallback 與 `OUT_OF_SCOPE_APPROVED` 的 Approval / source 必須引用 Responsibility = `User decision` 的 Source ID，API／repo source 不能充當核准。使用者確認後立即更新矩陣，不讓決策只留在對話。
 
-## 交接給實作者
+依 [`spec-template.md`](./spec-template.md) 建立 `~/wow/ai-config/specs/<project>/<feature>.md`。spec 或實作完成後不得自行 commit；每次 commit／merge 都要取得使用者針對該次操作的明確確認。
 
-指實作者讀 spec 檔執行，例如：
-> 「依照 `~/wow/ai-config/specs/<project>/<feature>.md` 實作。先 pull `main`，再依 git flow 的分支命名規則（`feat/`、`fix/`、`perf/`、`refactor/`、`chore/`，依工作類型選用）開工作分支。」
+## Deterministic gate
 
-spec 必須已寫明實作者要從哪個基底分支開出哪個工作分支；實作者不可直接在 `main`、`develop`、`staging` 或其他共享分支上實作。
+先做結構檢查：
 
-實作者會載入該專案的共用規則（git flow、scope control、必須寫測試驗證，但 commit 不含測試檔等），行為與規則一致。
+```bash
+node ~/wow/ai-config/scripts/check-spec.js ~/wow/ai-config/specs/<project>/<feature>.md
+```
 
-## Review
+使用者確認矩陣、Handoff Readiness 改為 `READY` 後，再跑：
 
-在實作者完成的分支上，對照 spec 做 review：
-> 「對照 `~/wow/ai-config/specs/<project>/<feature>.md` 的驗收條件 review 目前的 diff。」
+```bash
+node ~/wow/ai-config/scripts/check-spec.js --ready ~/wow/ai-config/specs/<project>/<feature>.md
+```
 
-- 逐條檢查驗收條件是否滿足。
-- 檢查是否有超出 Out of scope 的改動。
-- 檢查是否符合共用規則（scope、git flow、測試不可省略但測試檔不進 commit 等）。
-- 有問題回報給實作者修，再 review，直到驗收條件全過。
-- Commit 前必須取得使用者針對該次提交的明確確認；先前的確認不可沿用。
-- 合併到任何分支前都要先跟使用者確認。
+`--ready` 必須通過才可交給實作者。只有目前 slice 的 `REQ-ID` 放進 Active REQ IDs；checker 會拒絕不存在或已核准排除的 active ID。
 
-## 注意
+要宣稱整個 feature 完成前，必須在 `CANONICAL` spec 上確認所有非排除需求都已驗收，且不能仍有 API-blocked／未決狀態，再跑：
 
-- 一份 spec 對應一個可獨立實作與驗收的單位。需求太大時先拆成多個 spec。
-- spec 是合約：實作或 review 過程中若發現需求需要調整，先更新 spec，再繼續。
+```bash
+node ~/wow/ai-config/scripts/check-spec.js --complete ~/wow/ai-config/specs/<project>/<feature>.md
+```
+
+checker 負責 spec role、ID、必要章節、source coverage、User decision authority、決策雙向對映、active IDs、狀態、驗收／驗證引用、本地素材與 completion evidence；`SLICE` spec 不能通過 `--complete`。語意是否忠於來源仍由雙向 read-back 與使用者確認負責。
+
+## 交接與 task 切分
+
+交接只傳：
+
+1. spec 絕對路徑；
+2. 本次 active `REQ-ID`；
+3. 目標 repo、基底／工作分支；
+4. 已知 blocker 與預期回報格式。
+
+不要貼整段原始對話，也不要為了方便直接 fork 全 history。需求整理、各 coherent implementation slice、review／merge 是不同 outcome；前一階段完成或 context 已累積大量圖片／工具輸出時，開新 task 並靠 spec 傳遞已凍結的決策。只有同一個小型、連續 outcome 才留在原 task。
+
+## Review 與完成條件
+
+- 先核對 active `REQ-ID`，再逐條核對其 `AC-ID` 與 `VT-ID`；不得用「大致完成」取代逐條結果。
+- 檢查是否遺漏來源要求、是否出現無來源的新功能、是否把局部 API blocker 擴大成 UI 刪除／預先停用，或在失敗時清掉輸入、顯示假成功。
+- 檢查 Out of scope 與 Decision Log，避免實作者重新決定已凍結事項。
+- 每個通過項要附實際 command、截圖、Network 或 read-back evidence；未驗證就明寫未驗證，不得宣稱完成。
+- Slice 完成只能宣稱 active `REQ-ID` 完成。整個 feature 只有在 `CANONICAL` spec 中每個非 `OUT_OF_SCOPE_APPROVED` 的需求都有已勾選 AC／VT evidence、Remaining / blocked REQ IDs 精確等於 `NONE`，且 `--complete` 通過時才能宣稱完成。
+- 發現需求變更時先更新 Source snapshot、矩陣、Decision Log、AC／VT，再繼續實作或 review。

@@ -1,73 +1,64 @@
 ---
 name: locale-entry-maintenance
-description: 在 whitelabel-gsi-locale-manager 中，當使用者要求依提供的 locale key 與英文/繁中/簡中文案新增、更新或刪除翻譯項目時使用；包含「新增 locale key」「刪除 key」「給 key 中英文直接新增/刪除」等情境。
+description: Use when the user asks to add or update specific Locale Manager locale keys, or delete an exact locale key, or when implementing a remote-i18n requirement reveals a missing key that must be searched, reused, or created in the frontend/member or backstage/agent dataset. Covers English, Traditional Chinese, and Simplified Chinese copy. Do not use for whole-dataset Auto Translate monitoring.
 ---
 
 # Locale Entry Maintenance
 
-Use this skill in `whitelabel-gsi-locale-manager` when the user asks to add, update, or delete locale entries by key.
+Maintain specific keys through the Locale Manager API. Keep writes bounded and report only read-back evidence as complete.
 
-## Trigger Shape
+## Scope and routing
 
-Use this skill when the request includes any of:
+- Trigger on a locale key/path, supplied copy, or direct add/update/delete wording.
+- Trigger when consumer-project implementation discovers a missing remote-i18n key, even if the user did not separately ask to maintain Locale Manager data.
+- Resolve frontend/member versus backstage/agent from the request or current page; ask only when genuinely unknown.
+- Whole-dataset Auto Translate monitoring is outside this CRUD skill unless the user also requests specific key changes.
+- A Google Sheets-backed API does not trigger the standalone spreadsheet skill. Never edit the backing sheet or generated CSV as the main workflow.
 
-- A locale key/path such as `menu.foo.bar`, `common.btn.submit`, or `payment.status.pending`.
-- English and Chinese copy for a key.
-- Direct wording such as `新增 locale`, `刪除 locale`, `加 key`, `delete key`, `remove translation`.
+## API facts
 
-## Current Implementation Facts
+Treat `src/composables/useI18n.ts` as the API truth source:
 
-- Data is managed through the Locale Manager API, not local CSV/spreadsheet edits.
-- Frontend and backstage use different API URLs/pages.
-- `src/composables/useI18n.ts` is the API truth source:
-  - Fetch all data: `useI18nQuery(apiUrl)` → `GET apiUrl?all=true`
-  - Save add/edit: `useI18nSave(apiUrl)` → `POST apiUrl` with `{ path, en, "zh-TW", "zh-CN", ... }` or an array of those objects.
-  - Delete: `useI18nDelete(apiUrl)` → `GET apiUrl?method=DELETE&path=<key>`
-- Priority locales are `en`, `zh-TW`, and `zh-CN` (`src/constants/Locale.ts`).
+- Fetch: `GET apiUrl?all=true`
+- Add/update: `POST apiUrl` with `{ path, en, "zh-TW", "zh-CN", ... }` or an array
+- Delete: `GET apiUrl?method=DELETE&path=<key>`
 
-## Add Or Update Flow
+Priority locales are `en`, `zh-TW`, and `zh-CN`.
 
-When the user provides a key plus English/Traditional Chinese/Simplified Chinese values:
+When running from a consumer project, locate `whitelabel-gsi-locale-manager` through `~/wow/ai-config/projects.json` and use its API integration. Do not expect API code or locale JSON inside the consumer repository.
 
-1. Do not ask for another approval to create the entry.
-2. Determine the target set:
-   - If the user says frontend/member-side/current frontend page, use the frontend locale set.
-   - If the user says backstage/backend/agent/admin, use the backstage locale set.
-   - If the current task context clearly points to one page/set, use that set.
-   - If the target set is genuinely unknown, ask only that one question.
-3. Fetch current API data first and check for the exact key.
-4. Also search existing rows for the provided English and Chinese copy. Treat exact matches and obvious near-matches as possible duplicates.
-5. If the exact key exists, update only the requested values.
-6. If the exact key does not exist and no reusable duplicate exists, create a row with:
-   - `path`: the requested key
-   - `en`: provided English
-   - `zh-TW`: provided Traditional Chinese
-   - `zh-CN`: provided Simplified Chinese
-7. If only one Chinese value is provided, infer whether it is `zh-TW` or `zh-CN` from the script. Ask only for the missing Chinese value if it cannot be inferred safely.
-8. Do not invent English or Chinese copy. If required copy is missing, ask for exactly the missing field.
+## Requirement-driven missing-key flow
 
-## Delete Flow
+1. Inventory the requirement's user-facing copy and target frontend/member or backstage/agent dataset.
+2. Search current consumer-repo key usage and neighboring namespaces, then search shared or legacy locale sources and the target remote dataset by exact key and normalized copy.
+3. Reuse a compatible key when meaning and translations match. Do not create a feature-specific duplicate or reuse a misleading partial match.
+4. If none exists, derive the key from existing neighboring namespace conventions and create it through the bounded add flow below. Use only requirement-supplied or user-confirmed `en`, `zh-TW`, and `zh-CN` copy; ask only for a missing value.
+5. Return a per-requirement mapping with target dataset, `REUSED`/`CREATED`/`BLOCKED`, key, all priority-locale values, and read-back evidence. Never report `CREATED` from a proposed payload alone.
 
-When the user asks to delete a locale key:
+## Add or update
 
-1. Do not ask for another approval when the key and target set are clear.
-2. Fetch current API data first and confirm the key exists in the target set.
-3. Delete by key using the existing delete API behavior.
-4. If the key does not exist, report that no deletion was performed.
-5. Do not delete by copy text alone unless the user explicitly confirms the exact key.
+1. Do not request another approval when target and copy are clear.
+2. Fetch the target dataset once as a full snapshot before writing. Build local exact-key and normalized-copy indexes; do not re-fetch per key.
+3. Detect exact keys and reusable exact/near copy matches. Compute the complete delta before writing.
+4. Update only requested values on existing keys. Create absent keys only when no compatible duplicate exists.
+5. Do not invent missing copy. Infer a single supplied Chinese script only when safe; otherwise ask for the missing value.
+6. Send only the delta in batches of at most 10 entries.
+7. After every successful batch, perform one read-back and verify only the affected keys, even if the API returns the full dataset. For ambiguous or quota failures, use the bounded read-back rules below.
 
-## Verification
+## Failure and resume contract
 
-After add, update, or delete:
+- For an ambiguous non-quota response, perform one read-back and classify no write, partial write, or complete write. Allow at most one retry per operation, and retry only the remaining delta.
+- Treat `單日叫用下列服務的次數過多：translate` or an equivalent Google Apps Script Translate daily-quota response as quota exhaustion.
+- On the first Translate quota error, stop issuing new writes. Perform one read-back, then report persisted and remaining entries as a resumable remaining-key list. Do not shrink batches or try single-key writes that turn.
+- On a later resume turn, fetch a fresh target-dataset snapshot, recompute the delta from the remaining-key list, and send only keys that are still missing or mismatched under the same batch and quota limits.
 
-1. Re-fetch the affected API data.
-2. For add/update, verify the key exists and `en`, `zh-TW`, and `zh-CN` match the requested values.
-3. For delete, verify the key is absent from the affected data.
-4. Report the target set, key, and final values or deletion result.
+## Delete
 
-## Guardrails
+Fetch once, confirm the exact key, delete by key, then verify absence. If absent initially, report that no deletion occurred. Never delete by copy text alone.
 
-- Never edit `data/translations/*.csv` or Google Sheets manually as the main workflow.
-- Never commit `.env`, tokens, generated locale output, or temporary export files.
-- If API URL, token, permissions, or network access are missing, stop and report the blocker.
-- Keep changes scoped to the requested locale keys.
+## Completion report
+
+- Report target set, verified persisted keys, exact remaining keys, and final values or deletion result.
+- For add/update, require every requested `en`, `zh-TW`, and `zh-CN` value to match read-back.
+- Report `COMPLETE` only when all requested keys pass. Otherwise report `PARTIAL` or `BLOCKED` with the resumable remaining-key list.
+- Never expose API URLs, credentials, or tokens; never commit `.env`, generated locale output, or temporary exports.

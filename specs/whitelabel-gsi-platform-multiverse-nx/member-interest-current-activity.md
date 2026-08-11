@@ -1,180 +1,236 @@
-# R017 會員中心利息寶－當前活動 tab
+# R017 會員中心利息寶完整頁面
 
 > 交接合約：Spec 作者產出，實作者依此實作，reviewer 對照「驗收條件」逐條 review。
-> 本次只實作 `member/interest` 的「當前活動」tab；「詳情」tab 留待後續 spec。
+> 本版涵蓋 `/member/interest` 的「當前活動」「詳情」兩個 tab，以及說明、最低本金、確認領回彈窗。
 
 ## 背景 / 目標
 
-- 會員端新世代 Nx 專案需新增 R017 利息寶頁面的第一階段功能，讓已登入會員可瀏覽目前利息活動、查看方案利率、試算利息並存入本金。
-- 原始需求：[Notion－前端 AI Agent 考題](https://app.notion.com/p/AI-Agent-390075a7f6b280d69520fb854ae25b2e)。Notion 明列：R017 利息寶頁面、需實際串接 API、需為 RWD 頁面、檔案放置位置合理；指定實作分支為 `ai-agent-test`。
-- 設計來源（視覺 source of truth）：
-  - PC：[Figma node `13771:119371`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=13771-119371)
-  - 平板：[Figma node `15047:97926`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=15047-97926)
-  - H5：[Figma node `14982:47055`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=14982-47055)
+- 在會員端新世代 Nx 專案完成 R017 利息寶頁面，讓登入會員可瀏覽活動、查看利率方案、試算利息、存入本金、查看參加紀錄並申請領回。
+- 原始需求：[Notion－前端 AI Agent 考題](https://app.notion.com/p/AI-Agent-390075a7f6b280d69520fb854ae25b2e)。Notion 明列：R017 利息寶頁面、實際串接 API、RWD、檔案位置合理；指定基底為 `ai-agent-test`。
+
+## Figma 視覺來源
+
+### 當前活動 tab
+
+- PC：[node `13771:119371`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=13771-119371)
+- 平板：[node `15047:97926`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=15047-97926)
+- H5：[node `14982:47055`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=14982-47055)
+
+### 彈窗
+
+- 最低本金提示：PC [node `14982:63233`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=14982-63233)、H5 [node `14982:63278`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=14982-63278)
+- 利息寶說明：PC [node `15047:93263`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=15047-93263)、H5 [node `14978:9638`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=14978-9638)
+- 確認申請領回：PC node `14982:31884`、H5 node `14982:31915`（位於使用者提供的利息寶 Figma canvas 內，為詳情 tab「領回」操作的必要狀態）。
+
+### 詳情 tab
+
+- 寬版 PC：[node `15047:94409`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=15047-94409)
+- 窄版 PC／平板水平捲動狀態：[node `15047:95242`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=15047-95242)
+- 使用者提供的 H5 連結 [canvas node `6279:103257`](https://www.figma.com/design/VTP9b24C87Yyir5R7E1tqo/R017_%E5%84%AA%E5%8C%96%E4%B8%AD?node-id=6279-103257) 指向整個「⭕ 利息寶」canvas；實際 H5 詳情 frame 為子節點 `14978:25226`（`mb/利息寶/詳情`，375 × 809）。實作與視覺驗收以該子節點為準。
 
 ## 範圍
 
-- 在 R017 tenant 建立會員路由 `/member/interest`，沿用會員中心既有 layout、會員登入保護、aside/navigation 與手機返回行為。
-- 頁面顯示「當前活動」與「詳情」兩個 tab；本次僅讓「當前活動」具備內容與互動。「詳情」只保留可辨識的 tab 外觀，不實作其資料表與流程。
-- 「當前活動」內容包含：
-  - 頁面標題「利息寶」與「說明」入口（說明內容／dialog 不在本次範圍）。
-  - 活動輪播：活動圖片、活動期間、依目前 locale 選出的活動標題、前後導覽；選中卡片需有 accent border。
-  - 活動方案矩陣：存放額度、存放時間（日）、各本金／天數組合的利率，以及「利息上限／出款流水倍數／活動支援幣別」摘要。
-  - 存放試算：存放時間、存放額度、試算按鈕、年利率與利息結果。
-  - 存放本金：本金輸入與存入按鈕。
+- 在 R017 tenant 提供會員路由 `/member/interest`，沿用會員中心既有 layout、登入保護、desktop aside 與 H5 返回行為。
+- 顯示「當前活動」「詳情」兩個 tab；預設為「當前活動」，切換不建立新 route。
+- 當前活動包含活動輪播、方案矩陣、存放試算、存放本金、說明入口與最低本金提示。
+- 詳情包含活動紀錄、狀態、分頁、PC table、窄版 table 水平捲動、H5 accordion card 與領回操作。
 - 實際串接既有 shared interest API：
-  - GET `ENDPOINT_PATHS.INTEREST.ACTIVITY_LIST`：取得活動清單與 plans。
-  - POST `ENDPOINT_PATHS.INTEREST.APPLY_ACTIVITY`：送出 `{ activity_id, principal }`。
-- 使用 TanStack Query 既有 `useApiQuery`／`useApiMutation` pattern 管理 loading、response selection、mutation 與成功後 refresh。
-- 活動標題／圖片依目前 locale 從 `contents` 選取；無完全相符語系時，沿用專案既有 localized-content fallback，不另造翻譯文字。
-- 日期使用專案既有 RFC3339／UTC offset 格式化方式，不直接顯示未格式化 API 字串。
-- 所有 UI 文案使用既有 remote/local i18n key；不得在 template/composable 新增硬編碼翻譯。若缺 key，先回報並向使用者確認各語系文案。
-- RWD 必須分別符合指定 PC、平板、H5 節點；尺寸、間距、字級、行高、色彩、圓角、陰影與 breakpoint 行為以各節點完整子樹量測值為準，不得以近似 spacing/token 取代。
+  - GET `ENDPOINT_PATHS.INTEREST.ACTIVITY_LIST`
+  - GET `ENDPOINT_PATHS.INTEREST.ACTIVITY_DESCRIPTION`
+  - GET `ENDPOINT_PATHS.INTEREST.ACTIVITY_DETAIL_LIST`
+  - POST `ENDPOINT_PATHS.INTEREST.APPLY_ACTIVITY`
+  - POST `ENDPOINT_PATHS.INTEREST.APPLY_ACTIVITY_REDEMPTION`
+- 使用既有 `requestFn`、TanStack Query `useApiQuery`／`useApiMutation`、query keys、shared types 與共用 error handling。
+- 活動內容依目前 locale 從 `contents` 選取；日期使用既有 RFC3339／UTC offset formatter。
+- 所有 UI 固定文案使用既有或經使用者確認的 i18n keys；說明內容使用 description API 的 locale 對應資料，不把 Figma 範例文字硬編碼進 component。
 
 ## Out of scope
 
-- 不實作「詳情」tab 的紀錄列表、日期篩選、分頁、狀態顯示、贖回／提前贖回及其 dialog。
-- 不實作「說明」內容取得、說明 dialog 或 CMS rich text；本次只保留 Figma 所示入口。
-- 不新增或修改全新後端 endpoint；API contract 以 repo 既有 wrapper 為準。
-- 不修改其他 tenant、代理端 Dashboard、舊版 Multiverse 或 Capacitor native shell。
-- 不重構 Base components、PrimeVue preset、Tailwind preset、全域 theme token 或 shared member-center 架構。
-- 不自行補造任何 i18n 翻譯或更名既有 translation key。
-- 不額外增加動畫、transition、微互動或 Figma 未定義的視覺效果。
+- 不新增或改動後端 endpoint、payload 或 response contract。
+- 不新增詳情日期篩選；API 雖接受 `start_time`／`end_time`，Figma 未提供對應控制項。
+- 不修改其他 tenant、代理端 Dashboard、舊版 Multiverse 或 Capacitor shell。
+- 不修改 shared 預設導覽、全域顯示條件、Base component API、PrimeVue preset、Tailwind preset 或全域 theme tokens；若為符合設計必須改 shared surface，先提出跨站影響並取得確認。
+- 不自行補造翻譯、改名既有 i18n key，或硬編碼 Figma 中的中文範例資料。
+- 不增加 Figma 未定義的動畫、transition 或額外成功頁面。
 
 ## 受影響範圍
 
 - 端別：會員端 `whitelabel-gsi-platform-multiverse-nx`。
-- tenant：`apps/r017`。
-- 預期路由／入口：`apps/r017/src/pages/member/interest.vue`、既有會員導覽的 interest route/key。
+- tenant：僅 `apps/r017` 掛載 route；shared feature 技術上可供其他 tenant 使用，但不得讓其他 tenant 自動顯示此頁。
+- 預期 route：`apps/r017/src/pages/member/interest.vue`。
 - 預期 shared 實作面：
   - `libs/shared/ui-layer/src/lib/components/interest/`
   - `libs/shared/ui-layer/src/lib/composables/useInterest/`
   - `libs/shared/ui-layer/src/lib/api/hooks/useInterestQueries.ts`
   - `libs/shared/ui-layer/src/lib/constants/tanstackQueryKeys/interestKeys.ts`
-  - 既有 `interest_getInterestActivityList.ts`、`interest_applyInterestActivity.ts`
-- 跨站影響：shared layer 技術上可被其他 tenant 載入，但本需求只授權 R017 route 使用。不得修改 shared 預設導覽、全域顯示條件或其他 tenant route；若實作需要改變其他站點可見行為，先停下並取得使用者確認。
+  - `libs/shared/ui-layer/src/lib/constants/enums/interestStatus.ts`
+  - 既有 `interest_*` API wrappers。
+- 跨站影響：僅允許新增 R017 route wrapper 與不改變其他 consumer 行為的 shared feature。任何共用預設值或既有元件 API 變更都需先停下確認。
 
-## 參考實作 / 要遵循的現有 pattern
+## 參考實作 / 既有 pattern
 
-- 以 `origin/ai-agent-test` 目前存在的下列結構作為檔案責任與 project pattern 參考，不代表可直接視為已驗收：
-  - `apps/r017/src/pages/member/interest.vue`：tenant route 僅組裝 shared feature。
+- 以 `origin/ai-agent-test` 的下列結構作為責任邊界參考，不把既有檔案視為已通過驗收：
+  - `apps/r017/src/pages/member/interest.vue`
   - `libs/shared/ui-layer/src/lib/components/interest/InterestPage.vue`
-  - `libs/shared/ui-layer/src/lib/components/interest/InterestActivityPanel.vue`
-  - `libs/shared/ui-layer/src/lib/components/interest/InterestPlanMatrix.vue`
-  - `libs/shared/ui-layer/src/lib/components/interest/InterestCalculatorCards.vue`
-  - `libs/shared/ui-layer/src/lib/composables/useInterest/index.ts`
-  - `libs/shared/ui-layer/src/lib/composables/useInterest/helpers.ts`
+  - `InterestActivityPanel.vue`、`InterestPlanMatrix.vue`、`InterestCalculatorCards.vue`
+  - `InterestRecordsPanel.vue`
+  - `InterestDescriptionDialog.vue`、`InterestMinPrincipalDialog.vue`、`InterestRedeemDialog.vue`
+  - `libs/shared/ui-layer/src/lib/composables/useInterest/`
   - `libs/shared/ui-layer/src/lib/api/hooks/useInterestQueries.ts`
-- 沿用 `MemberContainer`、`MemberAsideInfo`、`useMemberAsideNavigation`、`useCustomBreakpoints`、`BaseTab`、`BaseSwiper`、`BaseInput`、`BaseBtn`、`BaseIcon` 等既有元件與 composable API。
-- API wrapper 沿用 `requestFn`、`ENDPOINT_PATHS.INTEREST` 與 shared type；不可在頁面內自行建立 axios/fetch 呼叫。
+- 沿用 `MemberContainer`、`MemberAsideInfo`、`useMemberAsideNavigation`、`useCustomBreakpoints`、`BaseTab`、`BaseSwiper`、`BaseInput`、`BaseBtn`、`BaseDialog`、`BasePagination` 與既有 mobile list/card pattern。
+- tenant page 保持薄層，只組裝 shared feature；禁止在 page/component 內直接建立 axios/fetch 呼叫。
 
-## 關鍵決策與理由 (Key decisions)
+## 關鍵決策與理由
 
-- 本次交付單位固定為「當前活動」tab，因使用者明確要求先做此 tab；詳情紀錄與贖回流程拆到後續，避免把第一階段擴成整頁功能。
-- tenant page 保持薄層、主要 feature 放 shared UI layer，因 repo 既有會員功能採 tenant route 組裝 shared feature 的結構；但只在 R017 掛載，避免擴散到其他站點。
-- 活動卡、矩陣與計算／存入區依當前選中活動同步更新；這是畫面資料關係，也是 POST 必須帶正確 `activity_id` 的前提。
-- 試算為前端純計算，不新增試算 API：依選中活動 plans 找到符合存放額度與天數的方案，年利率取 `interest_rate`，利息依既有 helper 的公式計算；若找不到方案，結果回到空／零值，不猜測利率。
-- 存入必須呼叫實際 apply API；不得以 mock、timeout 或只更新前端狀態代替。成功後清空本金欄位並重新取得活動清單。
-- 多活動時顯示左右導覽並可切換；單一活動不顯示無效導覽且卡片置中。
-- H5 採設計稿的垂直資訊順序：標題／說明 → tabs → 活動卡 → 方案矩陣 → 存放試算 → 存放本金。PC／平板則將試算與存入卡並排，且 PC 活動內容區維持設計指定寬度。
-- Figma 精確值優先於一般 utility scale；實作者需讀完整子節點並使用量測值（必要時保留 Tailwind arbitrary values）。
+- 同一頁完成兩個 tab，因使用者已將詳情 tab 加入本次需求；舊版 spec 中「詳情 out of scope」作廢。
+- 說明內容來自 `ACTIVITY_DESCRIPTION` API，而非複製 Figma 中文，確保 locale 與後端設定一致；Figma只定義 dialog 視覺與排版。
+- 最低本金提示同時服務試算與存入：兩者低於當前活動最低 plan principal 時皆阻止後續動作並開啟同一提示 dialog。
+- 詳情資料首次切到詳情 tab 才抓取，之後分頁依 offset/size refetch，避免當前活動初次載入時發送不需要的 detail request。
+- PC 用 9 欄表格；容器不足以顯示完整欄位時只讓表格區水平捲動。H5 改為 accordion card，避免把桌面 table 壓縮成不可讀欄位。
+- 僅 `ACTIVE` 狀態允許領回；其他狀態按鈕 disabled。確認後才呼叫 redemption API，以免誤操作。
+- Figma 精確值優先於一般 utility scale；須讀完整子節點並保留必要的 Tailwind arbitrary values，不得自行圓整。
 
 ## 功能與狀態規格
 
-### 活動清單
+### 當前活動與活動切換
 
-- 進入頁面後取得活動清單，請求期間顯示既有 loading 視覺。
-- API 回傳空陣列時顯示 i18n empty state；不顯示矩陣、試算與存入表單。
-- 卡片期間由 `start_time` 與 `end_time` 組成；圖片使用既有 image base resolver，完整 HTTP(S) URL 可直接使用。
-- 切換活動時同步切換方案矩陣、footer 摘要與 apply 的 activity id，並重設試算結果及存入本金，避免沿用上一活動輸入／結果。
+- 進入頁面取得 activity list，請求期間顯示既有 loading；空清單顯示 i18n empty state，不顯示矩陣與表單。
+- 活動卡顯示 locale title/image 與格式化 `start_time - end_time`；圖片使用既有 image base resolver，完整 HTTP(S) URL 可直接使用。
+- 多活動顯示左右導覽；單活動置中且不顯示無效導覽。
+- 切換活動同步更新 plans、footer 與 apply activity id，並清除上一活動的試算結果與存入本金。
 
 ### 方案矩陣
 
-- 從選中活動的 `plans` 推導唯一天數（由小到大）與本金門檻（數值由小到大），交叉格顯示對應 `interest_rate` 加 `%`。
-- 找不到交叉方案的格子顯示 `-`，不得帶用相鄰方案。
-- footer 顯示 `maximum_interest_limit`、`audit_rate`、`currency_code`；利息上限缺值或為 0 時顯示 `--`。
-- H5 需在 375px 設計寬度完整呈現指定三個天數欄，不得造成整頁水平捲動；若 API 欄數超過設計容量，僅矩陣容器允許水平捲動。
+- 從當前活動 `plans` 推導唯一天數與本金門檻並以數值升冪排列；交叉格顯示對應 `interest_rate%`，找不到組合顯示 `-`。
+- footer 顯示 `maximum_interest_limit`、`audit_rate`、`currency_code`；利息上限缺值或 0 顯示 `--`，不得出現 `undefined`／`null`。
+- 超過設計容量時僅矩陣容器可水平捲動，不得造成整頁水平溢出。
 
 ### 存放試算
 
-- 存放時間只接受正整數；存放額度只接受正數／正小數，需沿用 input normalization helper。
-- 缺少任一必要輸入、輸入非正數或無選中活動時，按試算不產生無效數字，結果維持 `0` 與 `0.00`（或專案既有等價空結果）。
-- 輸入本金低於最低方案本金時，不執行試算；錯誤呈現須沿用既有 feedback/dialog pattern，文案必須來自已確認 i18n key。
-- 有匹配方案時顯示年利率與利息，結果不得為 `NaN`、`Infinity` 或科學記號。
+- 存放時間只接受正整數；存放額度只接受正數／正小數，沿用 normalization helper。
+- 缺值、非正數或無當前活動時，結果維持 `0`／`0.00`；不得產生 `NaN`、`Infinity` 或科學記號。
+- 合法輸入依當前 plans 找到匹配方案，顯示年利率與利息；公式沿用既有 helper 與需求定義，不新增試算 API。
+- 本金低於最低門檻時不試算，開啟最低本金提示 dialog。
 
 ### 存放本金
 
-- 本金只接受正數／正小數；0、空值、非法值時存入按鈕 disabled。
-- 低於最低方案本金時不可呼叫 API，需以既有 feedback/dialog pattern 告知最低本金。
-- 送出期間顯示 loading 並防止重複送出。
-- POST payload 必須是目前活動 id 與 normalized principal：`{ activity_id, principal }`。
-- API 成功後清空本金並 refresh 活動清單；API 失敗沿用共用 request/mutation error handling，不吞錯、不顯示假成功。
+- 本金只接受正數／正小數；空值、0、非法值時按鈕 disabled。
+- 低於最低門檻時不可呼叫 API，開啟最低本金提示 dialog。
+- 送出時顯示 loading、防止重複提交；payload 精確為 `{ activity_id, principal }`。
+- 成功後清空本金並 refresh activity list；失敗沿用共用 error handling，不顯示假成功。
+
+### 最低本金提示 dialog
+
+- 觸發：試算金額或存入本金低於當前活動最低 principal。
+- PC 固定寬 550px；H5 在 375px viewport 中寬 343px、左右各 16px。
+- 標題為 i18n「提示」，內容語意為「存入本金額度不得低於最低門檻」，右上 close 與底部單一全寬 primary「確定」皆可關閉。
+- dialog 高度、header/content/footer、20px padding、12px radius、文字規格與 48px button 依 Figma node 精確實作。
+
+### 利息寶說明 dialog
+
+- 點擊頁面「說明」後開啟；PC／平板入口位於內容標題右側，H5 位於頁面標題同列右側。
+- 開啟時使用 locale 對應的 description API content；loading、空內容與失敗不得造成 dialog runtime error。
+- PC 寬 550px；H5 寬 343px。右上 close 與底部全寬「確定」皆可關閉。
+- API description 若為 rich text，使用專案既有安全渲染方式；不得直接信任並執行 script/event attributes。
+- Figma 的規則清單是排版範例，不作為硬編碼翻譯來源。
+
+### 詳情清單與分頁
+
+- 第一次切換到「詳情」後 GET detail list；參數使用 `offset`、`size`，預設 page 1，page size 沿用 shared hook 常數。
+- PC table 欄位依序為：活動名稱、存入時間、存入金額、幣別、利率、存放時間(日)、可領利息、狀態、操作。
+- 欄位映射：locale content title（fallback `activity_name`）、formatted `apply_time`、`principal`、`currency_code`、`interest_rate%`、`days`、`expected_interest`、status i18n、領回。
+- table 使用深淺交錯 row、狀態 pill 與右下 pagination；無資料使用既有 no-data pattern，loading/失敗不可殘留上一頁錯誤資料。
+- PC 寬度足夠時完整顯示 9 欄；較窄容器維持表格最小寬並顯示水平 scrollbar，pagination 固定在可視容器右下，不隨 table 寬度跑出畫面。
+- 換頁更新 offset 後 refetch；total/page count 使用 API `pagination.total`，不得以目前 list length 推算總筆數。
+
+### H5 詳情 accordion
+
+- 每筆紀錄以 343px 寬 accordion card 顯示；collapsed summary 依序為幣別 pill、活動名稱（副標「活動名稱」）、存入金額（副標「存入金額」）、chevron。
+- 點擊唯一 card header 展開／收合；expanded body 顯示存入時間、幣別、利率、存放時間(日)、可領利息、狀態及領回按鈕。
+- expanded card 右側狀態色 border 與狀態 tag 顏色需依 Figma／status mapping；collapsed cards 仍保留相同狀態辨識邊線。
+- 列表可垂直捲動且不得被底部 mobile navbar 遮住；不得出現整頁水平捲動。
+
+### 領回與確認 dialog
+
+- 僅 `INTEREST_STATUS_ENUMS.ACTIVE` 顯示 enabled「領回」；其他狀態顯示 disabled。PC table 與 H5 expanded card 規則一致。
+- 點擊 enabled 領回只開啟確認 dialog，不立即發 API。
+- dialog 標題語意為「確認申請領回？」；內容依 Figma 說明未滿一日會放棄利息；右上 close／「取消」只關閉並清除 pending record。
+- 點擊「確定」呼叫 redemption API，payload 精確為 `{ application_id: selectedRecord.id }`；mutation 期間防止重複送出並呈現 loading。
+- 成功後關閉 dialog、清除 pending record 並 refetch 當前 detail page；失敗保留可理解狀態並沿用共用 error handling，不擅自改 status。
+- PC dialog 寬 550px；H5 343px；footer 為等寬取消 border button與確定 primary button。
 
 ## 視覺 / RWD 規格
 
-- PC (`1014 × 948` 節點)：tabs 位於內容卡上方；標題／說明靠左；活動卡置中、左右導覽靠容器兩側；方案矩陣滿寬；試算與存入等寬並排。
-- 平板 (`755 × 948` 節點)：結構同 PC，但活動卡、矩陣、並排卡依 755px 容器縮放；不得裁切右側內容或造成頁面水平捲動。
-- H5 (`375 × 1202` 節點)：頂部顯示手機返回鍵、利息寶與說明；tabs 各佔一半；活動卡寬度與卡內圖片按 Figma；矩陣緊接卡片；試算與存入改為單欄，試算結果兩格橫向排列。
-- 所有 breakpoint：背景、tab active gradient、容器深色層級、card/border accent、表頭／內容底色、input、button gradient、字級、行高、padding、gap、radius 與 shadow 均須對照指定節點完整子樹逐項實作。
+- 當前活動 PC (`1014 × 948`)：tabs 在內容卡上方、活動卡置中、導覽靠兩側、矩陣滿寬、試算／存入等寬並排。
+- 當前活動平板 (`755 × 948`)：維持並排卡但按容器縮放，不裁切、不產生頁面水平捲動。
+- 當前活動 H5 (`375 × 1202`)：返回鍵＋標題＋說明、雙等寬 tabs、活動卡、矩陣、單欄試算／存入；試算結果兩格橫排。
+- 詳情寬版 PC (`15047:94409`)：完整 9 欄、6 筆可視 row、右下 pagination。
+- 詳情窄版 PC／平板 (`15047:95242`)：表格局部水平捲動並呈現 scrollbar；容器、標題與 pagination 不水平位移。
+- 詳情 H5 (`14978:25226`, 375 × 809)：雙等寬 tabs、343px accordion list、展開內容與固定 mobile navbar 安全區。
+- 彈窗：desktop 550px、H5 343px；背景 overlay、定位、header shadow、色彩、padding、gap、radius、字級、行高與 button 均逐節點量測。
+- 所有 breakpoint 的 spacing、font-size、line-height、尺寸、色彩、border、radius、shadow、圖片裁切與 overflow 必須對照完整 Figma 子樹，不以慣用值近似。
 
 ## 驗收條件
 
-- [ ] 實作者從 `origin/ai-agent-test` 建立／切換到本 spec 指定工作分支後才開始修改，未直接在 `main`、`develop`、`staging` 上實作。
-- [ ] R017 登入會員可由既有會員導覽進入 `/member/interest`，桌面會員 aside 與 H5 返回會員中心行為正確。
-- [ ] 頁面顯示「當前活動」「詳情」tab，預設 active 為「當前活動」；本次沒有實作或假造詳情資料表／贖回功能。
-- [ ] GET activity list 為實際 API 請求，loading、成功、空清單、失敗狀態均不造成 runtime error。
-- [ ] 活動卡顯示 locale 對應 title/image、格式化期間與選中態；多活動可透過左右控制切換，單活動置中且無無效導覽。
-- [ ] 切換活動後，卡片、矩陣、footer、試算與 POST 使用的 activity id 全部同步，上一活動的試算結果與存入本金已重設。
-- [ ] 方案矩陣由 API plans 動態產生天數、本金與利率；缺少交叉方案顯示 `-`，footer 顯示利息上限、流水倍數與支援幣別。
-- [ ] 試算輸入經過 normalization；合法且匹配方案時年利率／利息正確，非法、非正數、低於最低本金或無方案時不出現 `NaN`／`Infinity`／錯誤利率。
-- [ ] 存入按鈕僅在合法本金與選中活動時可用；送出期間 loading 且不可重複送出。
-- [ ] 存入使用 POST apply activity 實際 API，payload 精確為當前 `activity_id` 與 normalized `principal`；成功後清空輸入並 refresh 清單，失敗不顯示假成功。
-- [ ] 所有新增／修改 UI 文案均使用既有且已確認的 i18n key，無硬編碼翻譯、無自行發明語系文案。
-- [ ] PC 在 Figma `13771:119371` 對應 viewport 截圖比對無明顯差異。
-- [ ] 平板在 Figma `15047:97926` 對應 viewport 截圖比對無明顯差異，無頁面水平捲動或裁切。
-- [ ] H5 在 375px 寬度與 Figma `14982:47055` 截圖比對無明顯差異；內容順序、雙等寬 tabs、矩陣、單欄 cards 與橫排結果格正確，無頁面水平捲動。
-- [ ] 實作檔案責任符合 tenant thin route + shared feature/API/composable pattern，未在 page 內直接發 request，未改動其他 tenant 可見行為。
-- [ ] focused lint/build 與瀏覽器 smoke test 通過；若 repo 既有非本次造成的 ESLint 問題，需列出但不順手修復。
-- [ ] 測試檔已用於驗證，但 commit 前已移除或 unstage，不包含在提交內容。
+- [ ] 本地工作分支名稱為 `feat/interest-current-activity`，基底仍為最新 `origin/ai-agent-test`；未直接在共享分支實作。
+- [ ] R017 登入會員可進入 `/member/interest`，desktop aside 與 H5 返回會員中心正確。
+- [ ] 兩個 tab 均可切換，預設當前活動；詳情首次切換才發 detail request。
+- [ ] Activity list、description、detail list、apply、redemption 五個流程均使用既有真實 API wrapper，無 mock／component 內直接 request。
+- [ ] 當前活動 loading、empty、success、failure 均無 runtime error；活動切換同步卡片、矩陣、footer、試算與 apply id。
+- [ ] plans 動態產生正確矩陣；試算 normalization、匹配利率與計算結果正確，所有非法／缺 plan 輸入不產生無效數字。
+- [ ] 低於最低本金時，試算與存入都不繼續並開啟 Figma 對應提示 dialog；close／確定可關閉。
+- [ ] 說明入口開啟 locale API 內容的 dialog；desktop／H5 尺寸與排版符合指定節點，rich text 安全渲染。
+- [ ] Apply payload 為當前 `{ activity_id, principal }`，loading 防重複；成功清空並 refresh，失敗無假成功。
+- [ ] PC 詳情 9 欄映射、交錯 row、status pill、enabled/disabled 領回與 pagination 正確。
+- [ ] 窄版詳情只在 table 區水平捲動，整頁、標題與 pagination 不橫向溢出。
+- [ ] H5 詳情使用 accordion card；summary、展開欄位、chevron、狀態 border/tag、領回按鈕與底部安全區符合 `14978:25226`。
+- [ ] 僅 ACTIVE 可領回；點擊先開確認 dialog，取消／close 不發 API，確定 POST `{ application_id }` 並防重複。
+- [ ] 領回成功 refetch 目前頁並反映新狀態；失敗不擅自改 UI status。
+- [ ] detail pagination 以 API total 計算，換頁 offset 正確；empty/loading/failure 不顯示 stale 或錯位內容。
+- [ ] 所有固定 UI 文案使用既有且已確認的 i18n key；API localized content 有 fallback，無硬編碼翻譯或自行發明文案。
+- [ ] 當前活動 PC／平板／H5、詳情寬版／窄版／H5，以及三種 dialog 的 Playwright screenshots 對照 Figma 皆無明顯差異。
+- [ ] 實作符合 tenant thin route + shared feature/API/composable pattern，未改動其他 tenant 可見行為。
+- [ ] R017 focused lint、build、browser smoke test 通過；未執行 `tsc --noEmit`，未順手修 unrelated ESLint。
+- [ ] 測試已執行；依 repo 規則，測試檔在 commit 前移除或 unstage，不包含於提交。
 
 ## 邊界情況 / 例外
 
-- 活動 `contents` 缺目前 locale、title 或 image 時，使用既有 fallback；無任何可用內容時不得 crash，圖片區使用專案既有 fallback／空態。
-- `plans` 空陣列、重複 plan、非排序資料、缺特定本金×天數組合時，矩陣仍可穩定渲染。
-- `maximum_interest_limit` 缺值／0、`audit_rate` 或 `currency_code` 缺值時不得顯示 `undefined`／`null`。
-- API 回傳超過三種天數或多個本金級距時，矩陣資料不可被截斷；容器可局部水平捲動，但不得讓整頁橫向溢出。
-- 使用者快速切換活動或連點存入，不得將 apply 套到錯誤 activity 或發出重複 mutation。
-- 本 spec 不定義未提供的多語翻譯；發現缺 key 必須停下確認，不可自行翻譯。
+- `contents` 缺目前 locale/title/image、description 缺 locale/內容、activity list/detail list 空資料時均不得 crash。
+- plans 空、重複、未排序、缺交叉組合或超過設計欄數時仍可讀、可局部捲動。
+- detail status 不在 enum mapping 時顯示安全 fallback（如 `-`），領回 disabled；不得猜測狀態。
+- 快速切活動、切 tab、換頁、展開多筆或連點 mutation，不得套用錯誤 id、發重複 request 或讓舊 response 覆蓋新狀態。
+- redemption 後目前頁已無資料時，頁碼需回到仍有效的最後一頁並重新查詢，不留空白失效頁。
+- API 缺 `maximum_interest_limit`、`audit_rate`、`currency_code` 或 detail 欄位時不得顯示 `undefined`／`null`。
+- 缺少必要 i18n key 時停止並請使用者確認各語系，不自行翻譯。
 
 ## 測試計畫
 
-- 單元測試（使用 repo 既有 test infrastructure；不得為此另建測試框架）：
-  - plans 的 unique days/principals 排序與 matrix lookup。
-  - 合法、非法、邊界本金／天數的利息試算。
-  - positive integer／decimal normalization。
-  - locale content fallback 與缺圖／缺標題情況。
-- 元件／composable 測試：
-  - activity list loading／empty／data 狀態。
-  - 切換活動重設結果並更新 apply payload。
-  - apply disabled、loading、防重複送出、成功 refresh 與失敗路徑。
-- Focused validation：對 R017 執行其 `project.json` 既有 lint 與 build target；本 repo禁止執行 `tsc --noEmit`。
-- Browser smoke test：以實際或可控測試 API 資料驗證 `/member/interest`，至少覆蓋 PC、755px 平板、375px H5。
-- 視覺驗證：每個 breakpoint 產生 Playwright screenshot，逐項比較 Figma 的 spacing、font-size、位置、尺寸、顏色、圓角、字重、行高、圖片裁切與狀態；修正後重拍直到無明顯差異。回報三張 screenshot 絕對路徑與仍存在的差異（若無則明寫「無明顯差異」）。
-- 依專案規則，測試不可省略，但 test files 不得包含在 commit；commit 前移除或 unstage。
+- 單元測試（使用 repo 既有 infrastructure）：plans 排序/matrix lookup、利息計算、input normalization、locale fallback、status mapping、pagination offset。
+- Composable/component 測試：
+  - activity loading/empty/data 與切換重設。
+  - 低本金 dialog 的試算／存入兩條觸發路徑。
+  - description loading/locale/empty/error。
+  - detail lazy fetch、換頁、empty/error、ACTIVE 與 disabled statuses。
+  - H5 accordion 展開／收合與單筆 pending selection。
+  - apply/redemption disabled、loading、防重複、payload、成功 refresh、失敗路徑。
+- Focused validation：從目標 branch 的 `apps/r017/project.json` 取得正確 Nx target，執行 R017 lint 與 build；禁止 `tsc --noEmit`。
+- Browser smoke：使用真實或可控測試 API，驗證 PC、窄版 PC／平板、375px H5；涵蓋兩 tab、三 dialog、分頁與領回確認。
+- 視覺驗證：對所有 Figma source 節點產生 Playwright screenshot，逐項比較 spacing、font、位置、尺寸、顏色、圓角、陰影、overflow、圖片裁切與互動狀態；修正後重拍直到無明顯差異，回報 screenshot 絕對路徑與剩餘差異。
+- 測試不可省略，但 test files 不進 commit；commit 前移除或 unstage。
 
 ## Git Flow
 
-- 指定基底：`origin/ai-agent-test`（依 Notion 題目指定；開始前先 fetch 並確認 remote 可達）。
-- 工作分支名稱：`feat/ai-agent-test/interest-current-activity`。
-- 實作者開始前必須從最新 `origin/ai-agent-test` 建立／切換到上述工作分支；不得直接在 `main`、`develop`、`staging` 或其他共享分支上實作。
-- 本考題交付先回到使用者指定的 `ai-agent-test` 流程；若後續要進正式環境，仍須依 repo Git Flow 另行確認並依序推進 `develop` → `staging` → `main`，不可跳階段。
-- Commit 前需取得使用者針對該次提交的明確確認；本 spec 的產出不等於 commit 授權。
-- 合併到任何分支與 push 前均需依專案規則取得使用者確認；發生 conflict 時停止，不自行解 conflict 或改策略。
+- 指定基底：最新 `origin/ai-agent-test`（依 Notion 題目；fetch 前先依 repo 規則做 HTTPS non-interactive auth probe）。
+- 工作分支名稱：`feat/interest-current-activity`（已由 `feat/ai-agent-test/interest-current-activity` 改回 repo 原本習慣）。
+- 實作者開始前必須切換到上述分支，確認其基底與工作區；不得直接在 `main`、`develop`、`staging` 或其他共享分支實作。
+- 既有 `stash@{0}` 保留，標籤仍記錄建立時舊分支名；需要續作時只在 `feat/interest-current-activity` 上套回，套回前先確認 stash 內容與工作區乾淨。
+- 本考題先依使用者指定的 `ai-agent-test` 流程交付；若後續進正式環境，需另行確認並依序推進 `develop` → `staging` → `main`。
+- Commit、push、merge 均需取得使用者對該次操作的明確確認；conflict 時停止，不自行解 conflict 或改策略。
 
 ## 交接備註給實作者
 
-- 先讀本 spec 與 repo `AGENTS.md`，fetch 後從 `origin/ai-agent-test` 建立 `feat/ai-agent-test/interest-current-activity`，再開始實作。
-- 開始前用 `git status --short`、targeted `rg` 與 `git diff origin/ai-agent-test...HEAD` 確認工作區與既有實作；保留使用者未相關的變更。
-- Figma 三個節點需取得完整 design context／子節點，而非只看 screenshot 或外層 frame。
-- `origin/ai-agent-test` 已有 interest 相關檔案；先逐檔對照本 spec 與 Figma，修正缺口，不以「檔案已存在」視為完成。
-- 實作中若發現 API contract、i18n key、Figma 狀態或跨站影響與 spec 不一致，先回報並更新 spec，再繼續。
+- 先讀本 spec 與 repo `AGENTS.md`，切到 `feat/interest-current-activity`，確認 base 與 stash 後才開始。
+- `origin/ai-agent-test` 與 stash 中已有 interest 相關檔案；逐檔對照本 spec 與 Figma，不以「檔案已存在」視為完成，也不要誤刪本版重新納入的 records/dialog 元件。
+- Figma H5 詳情應讀子節點 `14978:25226`，不要用整個 canvas `6279:103257` 做 screenshot baseline。
+- 所有指定節點需讀完整 design context／子節點，不可只看外層 frame 或縮圖。
+- 發現 API contract、i18n、Figma 狀態或跨站影響與 spec 矛盾時，先更新 spec／取得確認再繼續。

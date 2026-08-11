@@ -1,20 +1,20 @@
 # Model Dispatch Rules (Claude Code binding)
 
-Scope: this file binds the shared dispatch core to the **Claude Code harness** (its agent types, model names, tool mechanics). The harness-agnostic core — three-part dispatch, two-retry cap, escalation-with-trail, verify-not-self — lives in `rules/agent_dispatch.md`, loaded by both Claude and Codex via install.sh; that file is the authority for the core rules, this file only adds Claude-specific bindings. If you are NOT running in Claude Code (e.g. Codex), use the core file alone — the model names and tools below do not exist in your harness.
+Scope: this file binds the shared dispatch core to the **Claude Code harness** (its agent types, model names, tool mechanics). The harness-agnostic delegation gate、minimal context envelope、two-retry cap 與 proportional verification lives in `rules/agent_dispatch.md`, loaded by both Claude and Codex via install.sh; that file is the authority for the core rules, this file only adds Claude-specific bindings. If you are NOT running in Claude Code (e.g. Codex), use the core file alone — the model names and tools below do not exist in your harness.
 
 For the main-session model ("the commander"). Goal: the main conversation holds decisions and conclusions, not raw file contents. Written 2026-07-03; tool facts re-verified against the live harness 2026-07-05 — if a tool/param named here errors as unknown, trust the error and update this file per ops/maintenance.md.
 
-## 1. The commander does not do bulk work
+## 1. Apply the core delegation gate before choosing an agent
 
-Delegate to a subagent (Agent tool) instead of doing it yourself when the step is any of:
+先依 `rules/agent_dispatch.md` 列出至少兩個彼此獨立、可平行且各自可驗收的 subtasks；列不出來就由 commander 處理。檔案數量、輸出長度或「bulk work」本身都不是委派理由，一個 sequential 30-file refactor 仍是一個 coherent task。
 
-- Reading **more than 3 files** (read threshold; the batch-edit threshold below is a separate number) or any file you only need a summary of.
-- Repo-wide exploration: "find where X happens", naming-convention sweeps, dependency tracing → `Explore` agent.
-- Web research of more than one page → `general-purpose` agent (it returns conclusions; raw pages never enter your context).
-- Batch edits following a known pattern across **more than 5 files** → implementation agent with the pattern spelled out.
-- Anything whose raw output you'd immediately compress (long logs, big diffs, survey reports).
+通過 gate 後才套用本檔的 Claude-specific binding：
 
-Do it yourself when: single known file, single targeted grep, an edit you can specify exactly, or anything where explaining the task costs more than doing it.
+- Repo-wide independent survey → `Explore`。
+- Independent web research／implementation → `general-purpose` 或對應 agent。
+- 已完全定義的 mechanical subtask 可用較小 model；語意或風險較高時依下方 model table。
+
+若兩個候選 subtask 會讀寫同一可變狀態、需要彼此產物，或都需要完整 history，就不要為了平行而硬拆。
 
 ## 2. What actually exists in this harness (do not invent)
 
@@ -32,11 +32,12 @@ Do it yourself when: single known file, single targeted grep, an edit you can sp
 | Standard: search/survey, implement a scoped feature, write tests, summarize docs | `sonnet` | Default. Most work lands here |
 | Hard: cross-cutting refactor design, debugging with unclear cause, review of risky changes, anything that failed once at sonnet | `opus` | Also for second opinions |
 
-## 4. Every dispatch carries three things (no exceptions)
+## 4. Every dispatch carries four things (no exceptions)
 
 1. **Goal + why**: what to produce and what it will be used for (the "why" lets the agent make sane micro-decisions).
-2. **Acceptance criteria**: checkable conditions — "report includes X per repo", "tests T pass", "no file outside dir D modified".
-3. **Report format**: exact structure of the reply. Long artifacts go to a file; the reply carries the path + a ≤10-line summary.
+2. **Exact scope**: paths、active `REQ-ID` 與必要 source anchors；不附完整 transcript。
+3. **Acceptance criteria**: checkable conditions — "report includes X per repo", "tests T pass", "no file outside dir D modified".
+4. **Report format**: exact structure of the reply. Long artifacts go to a file; the reply carries the path + a ≤10-line summary.
 
 Ready-made prompts: `~/wow/ai-config/ops/delegation-templates.md`. Use them; don't improvise from scratch.
 
@@ -53,13 +54,11 @@ Ready-made prompts: `~/wow/ai-config/ops/delegation-templates.md`. Use them; don
 - `opus` (or you) solves it and the fix is a repeatable pattern → write the pattern + one worked example into the dispatch prompt and batch-apply at `haiku`/`sonnet`.
 - Hard cap: **two retry rounds per approach** on the same subtask. After that, the approach is presumed wrong — consult `ops/judgment-rubrics.md` §"wrong direction" instead of retrying a third time.
 
-## 7. Verification is never self-verification
+## 7. Verification is proportional to risk
 
-The context that produced the work must not be the only context that approves it.
-
-- **Files written**: dispatch a fresh `Explore`/`general-purpose` agent to read the file back and check it against the acceptance criteria verbatim (give it the criteria, not your summary of them).
-- **Code changed**: run the project's smallest relevant validation (see each repo's rules/AGENTS.md) or actually run the app. A subagent saying "should work" is not verification.
-- **High-risk judgment calls** (cross-site impact, irreversible actions, spec interpretation): get a second opinion from a fresh `opus` agent, or generate 2–3 candidate answers and have a fresh agent pick with reasons. If second opinions disagree → that's a stop-and-ask-the-user signal.
+- **Ordinary files/code**: deterministic read-back、test、build、typecheck、lint 或實際 app check 就是有效 evidence；不要只因為寫了檔案再開一個 fresh agent。
+- **High-risk judgment calls**（金流／權限／安全、不可逆 migration、大範圍 cross-site、仍有歧義的 spec interpretation）或使用者明確要求時，才用 fresh `opus` 做第二意見。只交必要 diff、spec path、active `REQ-ID` 與 acceptance，不傳 full history。
+- A subagent saying "should work" is not verification. 第二意見若與 deterministic evidence 或第一判斷衝突，停止並請使用者決定。
 
 ## 8. Parallelism
 

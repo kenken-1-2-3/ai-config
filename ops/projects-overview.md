@@ -19,7 +19,7 @@ Terminology: 會員端 = member side (Multiverse repos), 代理端 = agent side 
 - **Stack**: Nx 18, Nuxt 3, TS 5.3, PrimeVue, Pinia, TanStack Vue Query; **pnpm**.
 - **Layout**: `apps/<tenant>/` (currently `r001`, `r017`); `libs/shared/ui-layer/` = shared components/composables/stores/i18n/SCSS; `android/` Capacitor shell; `scripts/` (e.g. r017 theme generation).
 - **Commands**: `dev:r017` / `build:r017` at root; otherwise `nx serve <app>`, `nx build <app>`, `nx run-many -t <target>`.
-- **Gotchas**: no `tsc --noEmit`; full reference structure lives on branch `test/init-project-sturcture-1769408493481-localdummy` per AGENTS.md; `nx.json` `affected.defaultBase` says `master` but default branch is `main` (mismatch affects `nx affected`); reuse old-Multiverse i18n keys when migrating pages, never invent keys.
+- **Gotchas**: no `tsc --noEmit`; full reference structure lives on branch `test/init-project-sturcture-1769408493481-localdummy` per AGENTS.md; `nx.json` `affected.defaultBase` says `master` but default branch is `main` (mismatch affects `nx affected`); reuse old-Multiverse i18n keys when compatible, otherwise follow the remote lookup/reuse/create/report flow and never invent a local-only key.
 - **Docs**: AGENTS.md, CLAUDE.local.md, README.md, SKILL.md.
 
 ## Whitelabel_GSI_Dashboard — 代理端 (admin backoffice)

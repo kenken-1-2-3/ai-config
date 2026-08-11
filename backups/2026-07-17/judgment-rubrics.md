@@ -62,10 +62,6 @@ Checklist (all repos; project rules may add more, never less):
 - [ ] Fresh-context read-back done for any file whose content IS the deliverable (specs, rules, docs).
 - [ ] Report states what was NOT verified.
 
-Lessons:
-
-- (2026-07-17) Before any batch write/overwrite of files across dirs → per-file existence check first (`test -f` or `ls` per path), never trust a compound-glob check. Why: zsh aborts the whole command on the FIRST failed glob, so later patterns are never evaluated — a "no matches" result proved nothing about the other paths, and an existing untracked `~/own/bitfinexLending/.claude/settings.local.json` was overwritten and lost. Evidence: `(eval):1: no matches found: /Users/kenyu/own/*/.claude/settings.json` while `settings.local.json` existed in 2 of 4 dirs.
-
 ## 6. Honest limits (what this file cannot fix)
 
 Rubrics recover execution quality, not taste. For genuinely ambiguous product/design/wording judgment ("does this interaction feel right", "which of these two valid architectures"), a weak model following this file will still be mediocre. In those cases the correct outputs are, in order: (1) present 2–3 options with trade-offs and ask the user; (2) escalate to the strongest available model for a recommendation; (3) say plainly "this is a taste call I can't make reliably". Producing a confident single answer is the failure mode.

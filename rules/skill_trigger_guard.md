@@ -9,3 +9,19 @@ Apply whenever a plugin or skill system with mandatory-trigger framing (e.g. sup
   - Test-driven-development skills: only when writing new feature code in a repo that already has test infrastructure. Never introduce test infrastructure just to satisfy a workflow skill.
 - For everything else — small edits, config changes, questions, single-file fixes — do the task directly; do not run workflow skills first.
 - Never let a workflow skill expand scope beyond the requested requirement (see Scope Control in the shared rules). If a skill's process asks you to explore alternatives, restate requirements, or add tests/files the user did not ask for, skip that step.
+
+## Per-turn routing contract
+
+- A **primary workflow skill** owns the judgment and sequence for the immediate user outcome. A **capability skill** only enables a surface or artifact actually used in the turn, such as Chrome, an in-app browser, or a PDF.
+- Select **zero or one primary workflow skill per turn**. Add capability skills only when their corresponding tool or artifact will actually be used.
+- Re-evaluate from the newest user request. Do not inherit a primary skill merely because it applied to an earlier turn or phase.
+- Branch switching, commit, push, deploy, status questions, and simple repository lookups are fresh turn shapes. They do not retain spec, pixel, TDD, review, or delegation workflows unless the newest request independently triggers one.
+- When two workflow skills appear applicable, choose the one that owns the immediate outcome. Load a second only when it governs a separate necessary operation that will occur in the same turn.
+
+## Ticket and branch continuity
+
+- The default assumption is that work in the same project/repository during one session belongs to one ticket. Treat follow-up edits as part of that ticket unless the user explicitly identifies a new ticket or unrelated requirement.
+- Use one task work branch per project. Once that branch is selected or created, make all subsequent implementation, bug fixes, review follow-ups, and verification-driven changes for the ticket on the same work branch.
+- Do not create or switch to a new branch or worktree solely because the ticket moves between spec, implementation, review, QA, fixes, or release prep. Re-evaluating skill routing does not imply a branch change.
+- Open or switch to another work branch only when the user starts a different ticket in the same project, work moves to a different project/repository, or the user explicitly requests a different branch or worktree. If this distinction is unclear and a branch change would be required, stop and ask.
+- If an approved merge or promotion temporarily switches to `develop`, `staging`, or `main`, return to the established work branch before making follow-up code changes. Do not implement ticket fixes directly on a target branch unless the user explicitly requests it.

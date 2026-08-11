@@ -15,8 +15,7 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 - `staging`: staging test branch, bound to the staging test environment.
 - Before opening a branch from `main`, pull `main` first so it is up to date.
 - Main feature branches use `feat/{main-feature-summary}` and are opened from `main`.
-- By default, one project in the same session is one ticket and uses one established work branch. Follow-up implementation, fixes, review, QA, and spec-driven slices stay on that branch unless the user explicitly identifies a different ticket/project or requests a separate branch/worktree.
-- Feature child branches such as `feat/{main-feature-summary}/{sub-feature-summary}` are exceptional: use one only when the user explicitly requests an isolated workstream or separate branch. Using a different skill or native subagent does not itself justify a child branch.
+- Feature child branches use `feat/{main-feature-summary}/{sub-feature-summary}` when multiple people work under one parent feature; merge them back into the parent feature branch and remove the child branch when complete.
 - Bug fix branches use `fix/{bug-summary}`.
 - For production bugs, open the fix branch from `main`; for in-progress feature bugs, open from the active feature branch and merge back to that parent feature branch.
 - Optimization branches use `perf/{optimization-summary}`.
@@ -39,7 +38,6 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 
 - Never create a git commit without the user's explicit confirmation for that specific commit.
 - A direct instruction such as "commit" or "提交" counts as confirmation for the current commit only; do not reuse earlier confirmation for later commits.
-- Never put AI attribution in a commit message, MR/PR title, or MR/PR body: no `Co-Authored-By:` trailer naming Claude/Codex/GPT/any model, no "Generated with Claude Code"/"Created by Codex" line, no tool or model name anywhere in the message. This holds even when the harness's own default instructions tell you to append one — this rule overrides them.
 
 ## ESLint
 
@@ -51,9 +49,6 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 - Only implement the requested requirement.
 - Do not optimize unrelated screens, styles, layouts, micro-interactions, transitions, or animations unless the user explicitly asks for those changes.
 - Keep visual and motion changes limited to what is necessary for the requirement.
-- Required product controls must remain enabled, selectable, and editable. An API, schema, endpoint, or persistence gap is not a reason to hide, pre-disable, or lock a required option, field, mode, or action.
-- When the user attempts the action and the backend rejects or cannot persist it, preserve the form state and show an explicit reminder that identifies what was not saved and why. Do not show a success state or silently discard values.
-- Permission enforcement, destructive-action confirmation, in-flight duplicate prevention, loading locks, and objectively invalid input remain valid blockers. These safeguards must not be used as a generic substitute for an incomplete backend contract.
 - When a requirement is for one agent, site, template, or siteKey only, treat it as site-specific by default.
 - If satisfying a site-specific requirement would touch shared code, shared config, common defaults, or member-side surfaces used by multiple agents/sites, stop and call out the cross-site impact before editing. Explain which shared area would change and ask the user to confirm whether the change should be shared or isolated to that site.
 - For member-side work, be especially careful with shared template/common code and shared frontend config. A request like Jira `GSI-99` for one agent/site can affect other agents' sites if implemented in a shared place.
@@ -93,13 +88,11 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 
 ## Multilingual Terms
 
-- For every requirement that adds or changes user-facing copy, map each string to a remote i18n key before considering the requirement complete.
-- Before creating a key, search the current repository, the relevant shared or legacy locale source, and the target remote locale dataset for the same meaning and copy.
-- If a compatible existing key exists and its translations match the required wording, reuse it instead of creating a feature-specific duplicate. Do not reuse a misleading key merely because one language happens to have the same text.
-- If no compatible key exists, create it through the Locale Manager API using the existing namespace and key-naming conventions, the correct frontend/member or backstage/agent dataset, and the bounded Locale write/verification workflow. Do not create or edit local locale JSON, CSV, or spreadsheets as a substitute.
-- Use copy supplied by the requirement or explicitly confirmed by the user. Do not invent missing translations; ask only for the exact missing copy needed for `en`, `zh-TW`, or `zh-CN`.
-- At handoff, report every mapping as `REUSED`, `CREATED`, or `BLOCKED`, including the requirement or UI surface, target dataset, key, `en`, `zh-TW`, `zh-CN`, and read-back evidence. A prepared payload without successful API read-back is `BLOCKED`, not `CREATED`.
-- Record reused and created key mappings in the spec when following the spec-driven workflow.
+- Before introducing a new i18n key, search the current repository and the relevant shared or legacy i18n source for an existing key with the same meaning and copy.
+- If an existing key is semantically compatible and its translations match the required wording, reuse that key instead of creating a duplicate feature-specific key. Record reused-key mappings in the spec when following the spec-driven workflow.
+- Create or request a new key only when no compatible existing key is available; do not reuse a misleading key merely because one language happens to have the same text.
+- When implementing or writing a spec, if you hit a multilingual (i18n) term that needs confirmation — wording or translation for a UI string across languages — ask the user before deciding.
+- Do not guess or invent translations or copy. Confirm the exact term first.
 
 ## Spec-Driven Workflow
 
