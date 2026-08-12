@@ -49,11 +49,13 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 ## Scope Control
 
 - Only implement the requested requirement.
+- Do not introduce or change user-visible behavior based only on API／schema／response or repository fields. Placeholder, hint, tooltip, validation／error copy, masking, automatic clearing, default／preselection, sorting, disabled state, acceptance criteria, and test expectations require a ticket／Notion／user requirement, visual source, or explicit user decision that directly specifies the behavior. Otherwise record only the technical fact and leave the UI unchanged; ask only when implementation truly requires a product decision.
 - Do not optimize unrelated screens, styles, layouts, micro-interactions, transitions, or animations unless the user explicitly asks for those changes.
 - Keep visual and motion changes limited to what is necessary for the requirement.
 - Required product controls must remain enabled, selectable, and editable. An API, schema, endpoint, or persistence gap is not a reason to hide, pre-disable, or lock a required option, field, mode, or action.
 - When the user attempts the action and the backend rejects or cannot persist it, preserve the form state and show an explicit reminder that identifies what was not saved and why. Do not show a success state or silently discard values.
 - Permission enforcement, destructive-action confirmation, in-flight duplicate prevention, loading locks, and objectively invalid input remain valid blockers. These safeguards must not be used as a generic substitute for an incomplete backend contract.
+- A backend constraint may still be enforced, but any new frontend validation rule, message, hide／disable state, or other user-perceived presentation remains subject to the product-authority rule above.
 - When a requirement is for one agent, site, template, or siteKey only, treat it as site-specific by default.
 - If satisfying a site-specific requirement would touch shared code, shared config, common defaults, or member-side surfaces used by multiple agents/sites, stop and call out the cross-site impact before editing. Explain which shared area would change and ask the user to confirm whether the change should be shared or isolated to that site.
 - For member-side work, be especially careful with shared template/common code and shared frontend config. A request like Jira `GSI-99` for one agent/site can affect other agents' sites if implemented in a shared place.

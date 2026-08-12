@@ -22,6 +22,12 @@ const COMPLETION_BLOCKING_STATUSES = new Set([
   "SOURCE_CONFLICT",
 ]);
 
+const PRODUCT_AUTHORITATIVE_SOURCE_ROLES = new Set([
+  "scopebehavior",
+  "uivisual",
+  "userdecision",
+]);
+
 const REQUIRED_SECTIONS = [
   "Spec Governance",
   "Scope",
@@ -229,6 +235,10 @@ function isPlaceholder(value) {
   );
 }
 
+function isExplicitNonUi(value) {
+  return /^N\/A\s*[-—:+：]\s*\S/i.test(cleanInline(value));
+}
+
 function extractIds(value, prefix) {
   const matches =
     value.match(new RegExp(`\\b${prefix}-[A-Z0-9][A-Z0-9-]*\\b`, "gi")) || [];
@@ -430,6 +440,25 @@ function validateSpec(specPath, mode) {
         if (!sourceIds.has(sourceId)) {
           errors.push(`${reqId} references unknown source ID ${sourceId}`);
         }
+      }
+
+      const uiSurface = row.uisurface || "";
+      const hasUserVisibleUi =
+        !isPlaceholder(uiSurface) && !isExplicitNonUi(uiSurface);
+      const allRowSourcesAreKnown =
+        rowSources.length > 0 &&
+        rowSources.every((sourceId) => sourceIds.has(sourceId));
+      const hasProductAuthoritativeSource = rowSources.some((sourceId) =>
+        PRODUCT_AUTHORITATIVE_SOURCE_ROLES.has(sourceRoles.get(sourceId)),
+      );
+      if (
+        hasUserVisibleUi &&
+        allRowSourcesAreKnown &&
+        !hasProductAuthoritativeSource
+      ) {
+        errors.push(
+          `${reqId} has a user-visible UI surface but no product-authoritative source; cite at least one Scope / behavior, UI / visual, or User decision source`,
+        );
       }
 
       const status = cleanInline(row.status || "").toUpperCase();

@@ -89,28 +89,31 @@ for ((i = 0; i < project_count; i++)); do
   installed_skills=()
   skill_count="$(json_has_key "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); console.log((data.projects[$i].skills || []).length);")"
   if [[ "$skill_count" != "0" ]]; then
-    # Install into <project>/.claude/skills/ — the only path Claude Code
-    # auto-discovers project skills from (docs: code.claude.com/docs/en/skills).
-    # A plain <project>/skills/ dir is NOT scanned unless the repo is a plugin.
+    # Install into both native discovery paths:
+    # - .agents/skills: Codex repo skill discovery
+    # - .claude/skills: Claude Code compatibility
+    mkdir -p "$project_path/.agents/skills"
     mkdir -p "$project_path/.claude/skills"
     for ((s = 0; s < skill_count; s++)); do
       skill_name="$(json_value "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); console.log(data.projects[$i].skills[$s]);")"
       skill_source="$SKILLS_DIR/$skill_name"
-      skill_target="$project_path/.claude/skills/$skill_name"
+      codex_skill_target="$project_path/.agents/skills/$skill_name"
+      claude_skill_target="$project_path/.claude/skills/$skill_name"
       if [[ ! -d "$skill_source" ]]; then
         echo "missing skill: $skill_name" >&2
         exit 1
       fi
-      mkdir -p "$skill_target"
-      cp -R "$skill_source/." "$skill_target/"
-      installed_skills+=(".claude/skills/$skill_name/")
+      mkdir -p "$codex_skill_target" "$claude_skill_target"
+      cp -R "$skill_source/." "$codex_skill_target/"
+      cp -R "$skill_source/." "$claude_skill_target/"
+      installed_skills+=(".agents/skills/$skill_name/" ".claude/skills/$skill_name/")
     done
   fi
 
   # Append a generated Skills Index to the rule outputs so every agent session
   # sees the repo's full skill inventory (ai-config-shared + repo-native) and
-  # each skill's trigger. Runs after the copy above so .claude/skills/ is
-  # already populated; scans both .claude/skills/ and <project>/skills/.
+  # each skill's trigger. Runs after the copy above so native skill paths are
+  # already populated; scans .agents/skills, .claude/skills, and <project>/skills/.
   skill_index="$(node "$ROOT_DIR/scripts/gen-skill-index.js" "$project_path")"
   if [[ -n "$skill_index" ]]; then
     for rules_out in "$claude_output" "$agents_output" "$codex_output"; do

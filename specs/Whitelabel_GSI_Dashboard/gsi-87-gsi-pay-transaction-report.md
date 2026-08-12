@@ -119,12 +119,12 @@
 - 初始顯示report controls與「請選擇報表類型及日期區間」empty state；未產生前不顯示mock results。
 - Controls：
   - Report type：Daily、Monthly、Volume、Fee、Chargeback／Reversal、Withdrawal。
-  - Currency：六種report均必填單一currency，只能從GSI-85 overview回傳的本站enabled cards選擇；不提供`All`。
+  - Currency：A／B／E／F必填單一本站enabled currency；C／D提供`All`，選取時省略`currency`以取得各幣別聚合列。
   - Start／End dates。
   - 「產生報表」。
 - 只有valid report成功產生後才顯示summary／table與Export button。
 - 切換report type時清除前一type不相容的summary／rows／pagination／validation，不顯示stale results。
-- Report type改變時依formal config更新date limit；六種type的currency都保持required。
+- Report type改變時依formal config更新date limit；切入C／D預設`All`，切回A／B／E／F時不得殘留`All`。
 
 ### Responsive／visual baseline
 
@@ -160,7 +160,7 @@
 
 - Date limit：最多31個inclusive calendar days，只支援整日。
 - Summary：代收筆數、代付筆數、日均交易筆數、峰值日。
-- Currency必填單一值；response `items`恆為該currency的單列，不支援All currencies。
+- Currency可為單一enabled value或`All`；`All`時request省略`currency`，response `items`為各幣別聚合列。
 - 日均筆數分母是全部selected inclusive calendar days，backend固定回兩位小數decimal string。
 - 峰值日由backend回YYYY-MM-DD；同筆數tie時backend取先遇到的最大值，frontend不得自行重排或重算。
 - Rows：幣別、代收筆數／金額、代付筆數／金額、總筆數；`total_cnt=deposit_count+payout_count`由backend回傳。
@@ -169,7 +169,7 @@
 
 - Date limit：最多31個inclusive calendar days。
 - Summary：無。
-- Currency必填單一值；response `items`恆為該currency的單列，不支援All currencies。
+- Currency可為單一enabled value或`All`；`All`時request省略`currency`，response `items`為各幣別聚合列。
 - Rows：幣別、代收手續費、代付手續費、拒付手續費、合計。
 - type2／3讀`total_fee`，type4讀`chargeback_fee`；backend回decimal strings及total，frontend不混用欄位或重算。
 
@@ -196,24 +196,26 @@
 
 ## 多幣別與期間語意
 
-- 六種報表的`currency`均必填且單選；不提供`All currencies`，避免不同fiat直接相加。
+- A／B／E／F的`currency`必填且單選；C／D可選`All currencies`，選取時省略`currency`並由backend按幣別分列聚合，frontend不得跨fiat加總金額。
 - 幣別選項沿用GSI-85 `GET /gsipay/wallet/overview`的`cards[]`，只顯示`enabled:true`；不可使用placeholder固定MMK／PHP／INR／VND或自行補六幣。
 - B／F及所有summary語意都是「所選期間」，不是固定自然月；現有「本月」hardcode須改成不誤導的所選期間文案，但remote i18n key仍待產品提供。
 - Inclusive days以站點時區calendar days計算；1日=同一日期，31日不可允許32個日曆日。
 
 ## Query / Pagination / Export
 
-- 六種查詢共用required filters：`currency`、`start_date`、`end_date`。
-- `currency`為本站enabled GSI Pay currency code；`start_date`／`end_date`為站點時區calendar date，格式`YYYY-MM-DD`。
+- 六種查詢共用required dates：`start_date`、`end_date`。A／B／E／F另required `currency`；C／D的`currency` optional，省略代表All。
+- 單一`currency`為本站enabled GSI Pay currency code；`start_date`／`end_date`為站點時區calendar date，格式`YYYY-MM-DD`。
 - A／B／E／F查詢另帶`offset`、`size`並使用server-side pagination；初始`offset=0`、`size=20`，UI沿用20／50／100。C／D不送pagination，response也沒有`pagination`。
 - Generate前驗證required fields、`start_date <= end_date`及inclusive day limit；A最多1日，B～F最多31日。Backend會再次驗證，超限回business `code:100 BAD_REQUEST`。
 - Report type是frontend endpoint dispatch值，不送`report_type`query param。切type／currency／date後重新Generate必須回第1頁並清除舊summary／rows。
 - Backend執行所有aggregate、decimal、sort與pagination；frontend不從當頁rows回算summary。
-- Export只在成功Generate後顯示；使用相同`currency/start_date/end_date`，不送`offset/size`，匯出全部matched rows。
+- Export只在成功Generate後顯示；沿用查詢的currency語意與相同dates，不送`offset/size`，匯出全部matched rows；C／D選All時export也省略`currency`。
 - 6支export皆為非同步CSV job，response回`export_uuid`；沿用`useExport().getExportPath(export_uuid)`取得既有下載路徑，不實作blob下載或自行產CSV。
 - Export request pending時button loading＋disabled，防重複提交；失敗沿用repo Notify pattern。
 
 ## API / 資料契約（2026-07-28 Apifox＋DEV實測）
+
+> 2026-08-11需求變更：使用者要求先開放C／D All並以省略`currency`試接。Apifox文件目前仍標示`currency`必填；本次Web Debug因既有JWT失效先回`401 / code 901003`，尚未進入參數驗證，因此All的backend acceptance與多列response仍需部署後以有效登入實測，不得宣稱已由後端驗證。
 
 ### Endpoint matrix
 
@@ -246,6 +248,12 @@ API wrapper規則：
 ```ts
 interface GetGsiPayReportFilter {
   currency: string
+  startDate: string // YYYY-MM-DD
+  endDate: string   // YYYY-MM-DD
+}
+
+interface GetGsiPayAggregateReportFilter {
+  currency?: string // C／D省略代表All
   startDate: string // YYYY-MM-DD
   endDate: string   // YYYY-MM-DD
 }
@@ -440,7 +448,7 @@ interface GsiPayWithdrawReport {
 
 - 六支export共同response：`data.export_uuid: string`。
 - A／E／F是逐筆型，backend單次匯出上限10萬列；超限錯誤顯示backend `msg`。
-- B為逐日聚合（最多31列），C／D固定單列；backend不套10萬列檢查。
+- B為逐日聚合（最多31列）；C／D為按幣別聚合，單一currency時單列、All時多列；backend不套10萬列檢查。
 - Export欄位與各report明細一致，匯出當前filters全量且不含pagination。
 - 取得`export_uuid`後走現行下載流程；DEV已實測可換得CSV path。
 
@@ -448,7 +456,7 @@ interface GsiPayWithdrawReport {
 
 - 串接成功後整檔刪除`src/pages/CashFlow/GSIPayTransactionReport/placeholder.ts`。
 - `types.ts`中的API DTO移到central request／response types；只保留純UI型別（summary card tone、report config等），若無剩餘consumer則整檔刪除。
-- `placeholderCurrencyOptions`改為GSI-85 overview的enabled cards；C／D原本`currencyMode:"disabled"`改為required。
+- `placeholderCurrencyOptions`改為GSI-85 overview的enabled cards；C／D加入`All`並預設選取，單一幣別選項仍只來自enabled cards。
 - `generateReport()` placeholder switch改成typed endpoint dispatch；保留現有type-specific columns／slots，但field names全面對齊backend snake_case。
 - Export alert／Notify stub改成`useSearch(exportWrapper)`＋`useExport().getExportPath(export_uuid)`。
 - A／B／E／F使用server-side pagination；C／D隱藏pagination，不製造假的total。
@@ -510,7 +518,7 @@ interface GsiPayWithdrawReport {
 - 不實作GSI-86 billing ledger UI或frontend aggregation。
 - 不實作GSI-88 Telegram Bot／Webhook／status transitions。
 - 不實作Withdrawal remark寫入（本批12支API沒有write endpoint）。
-- 不直接加總多幣別、不以目前費率回算歷史、不在frontend計算財務summary。
+- 不直接加總多幣別金額；C／D的All由backend按幣別分列聚合，不以目前費率回算歷史、不在frontend計算財務summary。
 - 不新增charts、saved reports、scheduled reports、custom columns、sorting UI或row detail。
 - 不把HTML mock rows、client pagination、alert export或silent MMK fallback帶入production。
 - 不改會員端、Ultrapay既有UI／flow、shared architecture或`src/assets/env/environment.json`。
@@ -522,7 +530,7 @@ interface GsiPayWithdrawReport {
 - 延續既有`feat/gsi-pay-transaction-report`並在使用者批准後補入最新parent foundation：保留UI-first歷史，同時重用85／86已驗收API／export／currency patterns。
 - 六種discriminated report contracts：各report columns／summaries不同，避免巨型optional DTO。
 - Aggregation由backend負責：確保precision、timezone、status與跨頁完整性。
-- 六種currency都必填單選：Apifox已解決multi-currency gate，不同fiat不直接相加。
+- A／B／E／F維持currency必填單選；C／D可省略currency查All並由backend按幣別分列，不同fiat不直接相加。
 - Plain date contract：API吃`YYYY-MM-DD`且backend按站點時區切日，frontend不得轉RFC3339或二次轉response time。
 - Withdrawal remark唯讀：12支contract沒有write endpoint／Edit permission／audit，不能在report頁自行新增mutation。
 - View與Export共用`A_A_GSIPAY_WALLET_VIEW`：backend沒有獨立report permission node，frontend不得繼續借CashFlow permission或自行發明Export ID。
@@ -532,7 +540,8 @@ interface GsiPayWithdrawReport {
 
 - [x] GSI-85／86 shared foundation已整合至`feat/gsi-pay`。
 - [x] 六種query／export endpoints、filters、response DTO、date limits、pagination與export UUID contract。
-- [x] 六種currency均為required single-select；enabled source為GSI-85 overview。
+- [x] A／B／E／F為required single-select；C／D支援All（省略currency），單一幣別來源仍為GSI-85 overview enabled cards。
+- [ ] 以有效DEV／STG登入實測C／D省略currency的query與export；確認backend接受並按幣別回多列。Apifox現有文件仍標示currency必填。
 - [x] A balance／fee、C average／peak、E rate denominator／timestamp、F date／status／processed_at語意。
 - [x] View／Export permission：`A_A_GSIPAY_WALLET_VIEW`（3590101）。
 - [x] Export為CSV job；A／E／F上限10萬列，B／C／D為聚合結果。
@@ -547,7 +556,7 @@ API integration已不再blocked；未提供的remote i18n keys不授權自行發
 - 分支基底偏離備註：使用者指示 GSI-86 UI-first commit「先不合回」`feat/gsi-pay`，因此 `feat/gsi-pay-transaction-report` 從只含 GSI-85 的 `feat/gsi-pay`（55652a80）建立，GSI-86 留在 `feat/gsi-pay-billing-center`（d3298647）。整合時 86／87 在 routes.ts 同一插入點會有 trivial append conflict，屆時依 Git Flow 規則回報處理。
 - 批准範圍：route／child tab、report controls（六種報表類型、幣別、起訖日期、產生報表）、type 連動 date limit 與 hint、初始／驗證／結果 empty states、六種報表的 summary cards 與對應 table、pagination、export button stub、withdrawal address 截斷＋copy。
 - Placeholder 生命週期：display-only 假資料集中在 feature-local `placeholder.ts`，檔頭標明「串接後整檔移除」；數值僅版面示意，不當帳務真相，frontend 不做任何 aggregate 計算。
-- Production收斂：placeholder整檔移除；六種幣別均必選單一enabled currency；C／D不再disabled。
+- Production收斂：placeholder整檔移除；A／B／E／F必選單一enabled currency；C／D提供All並可改選單一enabled currency。
 - F Withdrawal remark 唯讀顯示；不實作寫入。
 - Permission：UI-first暫借的CashFlow IDs必須替換為`A_A_GSIPAY_WALLET_VIEW`（3590101）；Export與View共用此permission。
 - i18n：新文案 hardcode 已提供之繁中並標 TODO；沿用既有 remote keys。
@@ -559,14 +568,14 @@ API integration已不再blocked；未提供的remote i18n keys不授權自行發
 - [ ] 新route為CashFlow sibling，未修改85／86或CashFlow redirect。
 - [ ] Route permission使用`A_A_GSIPAY_WALLET_VIEW`（3590101），不再借CashFlow IDs；Export不自行發明獨立permission。
 - [ ] `src/api/gsiPay.ts`新增12個typed wrappers，使用normal mode suffix paths，沒有`/v1/agent`重複或`usePlatform:true`。
-- [ ] Controls完整顯示report type、required enabled currency、dates與Generate；六種都不可選All，切type不殘留stale results。
+- [ ] Controls完整顯示report type、currency、dates與Generate；C／D可選All且切入時預設All，A／B／E／F不可選All，切type不殘留stale results。
 - [ ] Currency options只來自overview `cards[].enabled === true`，沒有placeholder固定清單或silent MMK fallback。
 - [ ] A送單一calendar day；B～F最多31個inclusive calendar days；start>end／32日等在frontend阻擋且backend `code:100`正常呈現。
 - [ ] Request送plain `YYYY-MM-DD`，未加入`timeFieldRules`或轉RFC3339；response站點時間未二次轉換。
 - [ ] A summary／全type rows／ASC順序／type4 fee／wallet `balance_after`依contract顯示。
 - [ ] B summary與逐日rows使用backend全區間結果；不從當頁加總，`day`保持YYYY-MM-DD。
-- [ ] C為required single currency、固定單列、無pagination；daily average／peak直接顯示backend值。
-- [ ] D無summary、固定單列、無pagination；三種fee與total不由frontend重算。
+- [ ] C可選All或單一currency、無pagination；All時省略currency並逐幣別顯示，daily average／peak直接顯示backend值。
+- [ ] D可選All或單一currency、無summary／pagination；All時省略currency並逐幣別顯示，三種fee與total不由frontend重算。
 - [ ] E rate不再乘100或補`%`，PAY／REV欄位mapping正確，狀態固定紅色「已沖銷」。
 - [ ] F使用`PENDING_REVIEW/SUCCESS/REJECTED`，空`processed_at`顯示N/A，address截斷顯示但copy完整值且成功／失敗分流。
 - [ ] F remark唯讀，沒有edit input／mutation／Edit permission。
@@ -588,7 +597,7 @@ API integration已不再blocked；未提供的remote i18n keys不授權自行發
 ### 暫存測試（不提交）
 
 - 12個wrapper endpoint／method／normal-mode path及request mapping。
-- Report type config：A 1日、B～F 31日、六種currency required、pagination matrix、summary／columns mapping。
+- Report type config：A 1日、B～F 31日、A／B／E／F currency required、C／D支援All、pagination matrix、summary／columns mapping。
 - Inclusive1／31日、32日、start>end、跨月、date-only不受browser timezone偏移。
 - A／B／E／F list帶offset/size，C／D不帶；所有export不帶pagination且filters一致。
 - 六種discriminated DTO mapping、空items、0／空字串／N/A／negative decimal／large value。

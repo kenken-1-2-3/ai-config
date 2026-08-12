@@ -211,6 +211,46 @@ const weakeningScenarios = [
     id: "pixel-functional-screenshot-non-trigger",
     message: "make functional screenshots an explicit discovery non-trigger",
   },
+  {
+    name: "Figma-linked UI repair omitted from pixel triggering",
+    file: "skills/figma-pixel-implementation/SKILL.md",
+    from: "a Figma node or image is the authoritative source for a user-visible UI implementation or visual fix",
+    to: "the user explicitly says pixel-perfect",
+    id: "pixel-visual-authority-trigger",
+    message: "trigger whenever Figma or an image is authoritative for a user-visible implementation or visual fix",
+  },
+  {
+    name: "pixel inventory ignores ancestor shell constraints",
+    file: "skills/figma-pixel-implementation/SKILL.md",
+    from: "量測目標節點、直到 viewport 的 ancestor／layout shell，以及會改變可用空間的 sibling",
+    to: "只量測目標節點",
+    id: "pixel-measurement-scope",
+    message: "measure the target, ancestor layout shell, and space-affecting siblings",
+  },
+  {
+    name: "pixel verification accepts build and source-string tests",
+    file: "skills/figma-pixel-implementation/SKILL.md",
+    from: "build、lint、unit test、class/source 字串斷言都不是視覺完成證據",
+    to: "build、lint、unit test、class/source 字串斷言可作為視覺完成證據",
+    id: "pixel-completion-gate",
+    message: "reject build and source-string assertions as visual completion evidence",
+  },
+  {
+    name: "pixel completion omits rendered DOM dimensions",
+    file: "skills/figma-pixel-implementation/SKILL.md",
+    from: "每個 frozen state 都有實際 rendered page 的 viewport、getBoundingClientRect 與 computed style read-back",
+    to: "每個 frozen state 都有 build 結果",
+    id: "pixel-completion-gate",
+    message: "require rendered viewport, DOM dimensions, and computed styles for every frozen state",
+  },
+  {
+    name: "unreproducible pixel state reported complete",
+    file: "skills/figma-pixel-implementation/SKILL.md",
+    from: "任何 frozen state 無法開啟、登入、載入資料、截圖或量測時，完成狀態只能是 `UNVERIFIED`",
+    to: "無法重現時可依 Figma 推定完成",
+    id: "pixel-completion-gate",
+    message: "mark unreproducible visual states UNVERIFIED instead of complete",
+  },
 ];
 
 for (const scenario of weakeningScenarios) {

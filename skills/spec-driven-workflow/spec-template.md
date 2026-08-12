@@ -36,11 +36,13 @@
 
 來源責任：需求來源決定產品範圍；視覺來源決定 UI；API 來源決定持久化能力；repo 只提供現況與 pattern。不得因 API、schema、endpoint 或 persistence 缺口預先 disable、hide 或 lock 需求控制項；使用者嘗試動作後若無法持久化，保留輸入並明確提醒未儲存範圍。同一責任的來源若互斥，先標 `SOURCE_CONFLICT` 並請使用者決定。
 
-一個來源文件可拆多列；每個可能被獨立漏掉的 section、frame、asset 或 state 各一列，並由至少一個 `REQ-ID` 引用。刪除沒有使用的範例列（沒有決策時也刪除 `SRC-DEC-001`），不要用一個粗粒度 Source ID 包住整份需求。
+一個來源文件可拆多列；每個可能被獨立漏掉的 section、frame、asset 或 state 各一列，並由至少一個 `REQ-ID` 引用。產品權威來源的 Location 必須指到直接明示該行為的 section、frame 或 user message；只有整份文件 URL／標題不算直接 anchor。刪除沒有使用的範例列（沒有決策時也刪除 `SRC-DEC-001`），不要用一個粗粒度 Source ID 包住整份需求。
 
 ## Requirement Traceability Matrix / 需求追蹤矩陣
 
 Status 只能使用：`CONFIRMED`、`UI_REQUIRED_API_BLOCKED`、`PROVISIONAL`、`SOURCE_CONFLICT`、`OUT_OF_SCOPE_APPROVED`。
+
+UI surface 不是 `N/A + 理由` 時，Source anchor / asset 至少引用一個 Responsibility = `Scope / behavior`、`UI / visual` 或 `User decision` 的來源。技術來源獨有的欄位只記在 API / persistence；例如 API 回 `format_example` 但產品來源未要求顯示時，UI surface 寫 `N/A — 產品來源未要求呈現`，不得新增 placeholder／hint AC。
 
 | REQ-ID | Source anchor / asset | UI surface | API / persistence | Status | Decision ID | Acceptance ID | Verification ID / evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -70,7 +72,7 @@ Status 只能使用：`CONFIRMED`、`UI_REQUIRED_API_BLOCKED`、`PROVISIONAL`、
 
 ## Acceptance Criteria / 驗收條件
 
-> 每條可客觀判斷，並被至少一個 `REQ-ID` 引用。
+> 每條可客觀判斷，並被至少一個 `REQ-ID` 引用。不得加入該 REQ 所引用產品來源沒有授權的 user-visible 行為。
 
 - [ ] AC-001: `<從使用者可觀察結果描述，不寫籠統的「功能正常」>`
 
@@ -81,6 +83,7 @@ Status 只能使用：`CONFIRMED`、`UI_REQUIRED_API_BLOCKED`、`PROVISIONAL`、
 - error / API unavailable：`<控制項保持可操作；動作失敗時保留輸入，明確提醒哪些值未儲存及原因；不得假成功或靜默丟值>`
 - permission：`<...>`
 - 合法阻擋：`<權限、破壞性操作確認、in-flight 防重複、loading lock、客觀無效輸入；不得用 API 缺口冒充合法阻擋>`
+- 後端 constraint：`<可記錄既有 enforcement；新增前端 validation、copy、hide／disable state 仍須通過 UI authority gate>`
 - create / edit / detail / copy 等相關狀態：`<...>`
 
 ## Verification Plan / 驗證計畫

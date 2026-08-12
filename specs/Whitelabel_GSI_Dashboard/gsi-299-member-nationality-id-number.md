@@ -132,13 +132,9 @@
   - `player_center_display`
   - `agent_create_display`
   - `agent_edit_display`
-- 對某 surface 而言，身分證欄位實際顯示條件為：
-  1. `nationality` row 在該 surface 的 `*_display = true`；且
-  2. 身分證字號 row 在該 surface 的 `*_display = true`；且
-  3. 會員已選國籍；且
-  4. 該國籍 `id_check = true`。
-- 身分證字號 row 的 `*_required` 只在上述四個顯示條件皆成立時生效；欄位隱藏時不得觸發 required validation。
-- 若身分證字號 row 已開啟 display、但 `nationality` row 在同一 surface 隱藏，身分證欄位仍必須隱藏且 required 不生效；前端不得猜測國籍。
+- 對某 surface 而言，身分證欄位實際顯示只取決於身分證字號 row 在該 surface 的 `*_display = true`。
+- 是否有 `nationality` row、會員是否已選國籍及該 option 的 `id_check` 都不得控制身分證欄位顯示。
+- 身分證字號 row 的 `*_required` 在該 surface 的 display 開啟時直接生效，不受 nationality / `id_check` 影響；只有 display 關閉時不觸發 required validation。
 - `player_center_edit` / `agent_edit_edit` 繼續沿用既有可編輯設定。
 - `nationality` 列新增設定按鈕，開啟「國籍－下拉選項設定」彈窗。
 - 身分證字號列**不提供**獨立國家規則設定按鈕；舊附件中的齒輪與獨立規則彈窗作廢。
@@ -195,10 +191,9 @@
 ### 4. 代理端新增會員
 
 - 國籍欄位必須是 `SELECT`，options 只包含該代理已啟用的國家，value 使用穩定國家代碼，不使用顯示文字作 payload。
-- 若會員尚未選國籍，身分證欄位不顯示、不觸發必填。
-- 選到未開啟身分證檢查的國籍時，身分證欄位不顯示、不觸發必填。
-- 選到已開啟身分證檢查的國籍，且 `agent_create_display = true` 時，顯示身分證欄位；`agent_create_required` 決定是否必填。
-- 新增過程若由「有檢查」國籍改成「無檢查」國籍，清掉尚未提交的身分證值，避免 hidden stale value 被送出。
+- `agent_create_display = true` 時直接顯示身分證欄位；`agent_create_required` 決定是否必填。
+- 未選國籍或選到未開啟身分證檢查的國籍時仍顯示身分證欄位；`id_check` 只控制後端格式檢查。
+- 新增過程只要國籍改變或清空，就清掉尚未提交的身分證值，避免把舊國籍證號送給新國籍。
 - 送出時國籍代碼與身分證字號必須在同一次 request 中提交。
 - 前端不實作 16 國 regex、標準化或唯一性預檢；以後端回應為準。
 
@@ -212,8 +207,8 @@
   - 一旦使用者主動變更國籍，必須從目前啟用的國家 options 選擇正式代碼，不能再儲存任意自由文字。
 - 會員原有國籍與身分證皆未改變時，即使現有 form 原樣回送全部 dynamic fields，也不得在前端主動重驗；後端必須以 DB 舊值判斷是否真的變更。
 - 國籍主動變更時，立即清掉舊身分證值：
-  - 新國籍已開檢查且 `agent_edit_display = true`：重新顯示欄位，並依 `agent_edit_required` 要求輸入新證號。
-  - 新國籍未開檢查：保持證號清空且欄位隱藏。
+  - `agent_edit_display = true` 時欄位保持顯示，並依 `agent_edit_required` 要求輸入新證號，不受新國籍 `id_check` 影響。
+  - `agent_edit_display = false` 時欄位維持隱藏且 required 不生效。
 - 站長日後開啟某國檢查，不回溯既有會員；既有會員沒有主動變更國籍或身分證時不受影響。
 - API 回傳 `id_number` 全碼。代理端 read-only 顯示需遮罩至僅露出尾 4 碼，且不可改寫原始 form model；具 edit 權限且欄位可編輯時使用全碼 input，避免把遮罩字串送回後端。
 
@@ -283,7 +278,7 @@
 - 國籍 payload 一律使用 `value` 的 ISO code。
 - label 解析順序：locale `zh-tw` 使用 `zh_tw`、`en` 使用 `label`、其他語系使用 `langs[locale]`，缺值 fallback `label`。
 - 下發新增 `column_name = "id_number"` row，包含該入口既有的顯示／必填／可編輯設定；Dashboard 不以 `uid` 或 KYC `document_number` 當 member-form fallback。
-- `id_number` row 是否實際渲染仍同時要求 row 已由 display 總閘下發、已選國籍且該 option `id_check = true`。
+- `id_number` row 是否實際渲染只依該入口的 display 總閘；未選國籍或 option `id_check = false` 時仍直接顯示。
 - `format_example` 只作即時輸入提示；前端不複製 regex。
 
 ### C. Member create / detail / update contract
@@ -293,8 +288,8 @@
 - 身分證輸入可含分隔符並原樣送出；後端負責標準化。
 - 編輯表單未變更時原樣回送安全，後端不重驗。
 - 主動變更國籍且原有證號時：
-  - 新國籍 `id_check = true` 且 `id_number` required：前端清除舊值並要求新證號；未送回傳 `407035`。
-  - 其餘情況後端會自動清空舊證號；前端同步清除本地 stale value。提示屬建議 UX，待 PM 提供確切 copy / remote key 後再加。
+  - 前端清除舊值；若 `id_number` display / required 開啟，就直接要求新證號，不受新國籍 `id_check` 影響；未送回傳 `407035`。
+  - `id_check` 只決定後端是否執行該國格式檢查。提示屬建議 UX，待 PM 提供確切 copy / remote key 後再加。
 - 會員端另有 `POST /v1/player/user` body 頂層 `id_number`、`PUT /v1/player/center/basic/info` 的 `customize_column.id_number`，但其 UI 實作不在 Dashboard repo 範圍。
 
 ### D. 驗證與錯誤契約
@@ -425,7 +420,7 @@
 - [ ] 沒有獨立規則彈窗、規則版本、自訂條件、regex editor、規則預覽或全部檢查按鈕。
 - [ ] 沒有網站設定 edit 權限時，既有 overlay / read-only 行為仍能阻止修改與送出。
 - [ ] account / phone registration mode 切換不會改壞 nationality / ID-number row 的 flags 或 disable state。
-- [ ] `nationality` row 在某 surface 隱藏時，即使身分證字號 row 的 display / required 開啟，該 surface 仍不顯示身分證欄位且不觸發 required。
+- [ ] `nationality` row 在某 surface 隱藏、未選國籍或 option.id_check=false 時，只要身分證字號 row 的 display 開啟，該 surface 仍直接顯示身分證欄位並依其 required 設定驗證。
 - [ ] 後端回 `column_name = "uid"` 時，設定頁對該 row 顯示各 surface 原本適用的 controls：會員註冊 required / display、會員中心 required / display / edit、後台新增 required / display、後台編輯 required / display / edit；既有 UID exclusions 已逐一盤點並只保留仍有產品理由的限制。
 - [ ] `memberColumnName.ts` 保留 `UID = "uid"` 並新增不同值的 `ID_NUMBER = "id_number"`；設定頁與 member form 各用自己的正式 key。
 
@@ -433,11 +428,9 @@
 
 - [ ] 代理端身分證字號動態欄位只以 `column_name = "id_number"` 辨識；不使用設定頁 `uid` 或 KYC `document_number` 作 fallback。
 - [ ] 國籍欄位為 select，且只顯示目前代理已啟用的國家；payload 使用國家代碼。
-- [ ] 未選國籍時身分證欄位不顯示，也不觸發 required。
-- [ ] 選到未開檢查國籍時身分證欄位不顯示，也不觸發 required。
-- [ ] 選到已開檢查國籍，且 `agent_create_display = true` 時顯示身分證欄位。
-- [ ] 上述欄位顯示後，`agent_create_required = true` 才觸發必填。
-- [ ] 從有檢查國籍切到無檢查國籍時，未提交身分證值被清除，不會以 hidden value 送出。
+- [ ] `agent_create_display = true` 時直接顯示身分證欄位，不受 nationality 是否已選或 option.id_check 影響。
+- [ ] 欄位顯示後，`agent_create_required = true` 直接觸發必填。
+- [ ] 國籍改變或清空時，未提交身分證值被清除；欄位依 display 設定保持顯示。
 - [ ] 國籍代碼與身分證字號能在同一 create request 中正確提交。
 - [ ] 前端沒有 16 國 regex、標準化或唯一性 hardcode。
 
@@ -449,8 +442,8 @@
 - [ ] 國籍未改、身分證未改時，即使完整 dynamic form 原樣回送也不觸發新格式／唯一性驗證。
 - [ ] 國籍不變、使用者只修改身分證字號時，會提交新值並由後端重新執行該國格式與唯一性驗證；前端能顯示對應錯誤。
 - [ ] 國籍主動變更會清掉舊證號，不會把舊國籍證號留給新國籍。
-- [ ] 新國籍已開檢查且 agent edit display / required 開啟時，顯示並要求重新輸入新證號。
-- [ ] 新國籍未開檢查時，舊證號清空且欄位隱藏。
+- [ ] agent edit display / required 開啟時，無論新國籍是否開啟檢查，都顯示並要求重新輸入新證號。
+- [ ] 新國籍未開檢查時，舊證號清空，但欄位仍依 agent edit display 設定顯示。
 - [ ] 站長事後開啟某國檢查，不會使未修改資料的既有會員無法儲存其他欄位。
 - [ ] 沒有 member-list edit 權限時，國籍與身分證都保持 read-only，且 submit 不會送出變更。
 - [ ] Read-only 身分證只顯示尾 4 碼；form model 仍保留 API 全碼，具 edit 權限時不會把遮罩字串送出。
@@ -494,7 +487,7 @@
 - Legacy nationality 文字剛好等於某個新 option label：只有後端明確提供正式 code 時才視為正式值，不以 label 猜 code。
 - 國籍切換多次：每次離開原國籍都不得復原或偷偷保留先前證號。
 - 身分證欄位 display 關閉但 API detail 有舊值：不顯示、不要求清空，除非使用者主動變更國籍；避免回溯改資料。
-- 身分證 required 開啟但所選國籍未開檢查：欄位仍隱藏且 required 不生效。
+- 身分證 required 開啟但所選國籍未開檢查：欄位仍顯示且 required 生效；`id_check` 只影響後端格式檢查。
 - 不支援格式規則的國家：不可開檢查，但可正常成為國籍選項。
 - 後端回 duplicate / format error 後，保留使用者可修正的 form state；不要整頁清空。
 - API 全碼只用於授權編輯流程，不寫入 log、toast 或 analytics payload。

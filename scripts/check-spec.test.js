@@ -11,13 +11,19 @@ const checkerPath = path.join(__dirname, "check-spec.js");
 
 function validSpec(overrides = {}) {
   const {
+    assetPath = "./assets/reference.png",
+    sourceRows = [
+      "| SRC-REQ | 2026-08-06 | Scope / behavior | https://example.test/requirements |",
+      `| SRC-UI | 2026-08-06 | UI / visual | [reference](${assetPath}) |`,
+      "| SRC-API | v3 | API / persistence | https://example.test/api |",
+      "| SRC-DEC-001 | 2026-08-06 | User decision | task message approving DEC-001 |",
+    ],
     matrixRows = [
-      "| REQ-001 | SRC-REQ; SRC-UI; SRC-API; SRC-DEC-001 | Edit form remains visible | Save is disabled until the endpoint exists | UI_REQUIRED_API_BLOCKED | DEC-001 | AC-001 | VT-001 |",
+      "| REQ-001 | SRC-REQ; SRC-UI; SRC-API; SRC-DEC-001 | Edit form remains interactive | PUT may reject after submit; preserve input | UI_REQUIRED_API_BLOCKED | DEC-001 | AC-001 | VT-001 |",
     ],
     decisionRows = [
-      "| DEC-001 | 2026-08-06 | REQ-001 | Keep the complete UI and disable only unavailable persistence | SRC-DEC-001 |",
+      "| DEC-001 | 2026-08-06 | REQ-001 | Keep the complete UI interactive and report rejected persistence after submit | SRC-DEC-001 |",
     ],
-    assetPath = "./assets/reference.png",
     handoffStatus = "READY",
     userConfirmation = "2026-08-06 / user approved in task",
     activeReqIds = "REQ-001",
@@ -26,7 +32,11 @@ function validSpec(overrides = {}) {
     featureStatus = "INCOMPLETE",
     remainingReqIds = "REQ-001",
     acceptanceChecked = false,
+    acceptanceDescription =
+      "The complete edit form remains interactive and preserves input after rejected persistence.",
     verificationChecked = false,
+    verificationDescription =
+      "Render the edit form with the save endpoint unavailable.",
     evidence = "PENDING",
     matrixHeader = "| REQ-ID | Source anchor / asset | UI surface | API / persistence | Status | Decision ID | Acceptance ID | Verification ID / evidence |",
   } = overrides;
@@ -60,10 +70,7 @@ Sample goal.
 
 | Source ID | Snapshot / Revision | Responsibility | Location |
 | --- | --- | --- | --- |
-| SRC-REQ | 2026-08-06 | Scope / behavior | https://example.test/requirements |
-| SRC-UI | 2026-08-06 | UI / visual | [reference](${assetPath}) |
-| SRC-API | v3 | API / persistence | https://example.test/api |
-| SRC-DEC-001 | 2026-08-06 | User decision | task message approving DEC-001 |
+${sourceRows.join("\n")}
 
 ## Requirement Traceability Matrix / 需求追蹤矩陣
 
@@ -81,15 +88,15 @@ ${decisionContent}
 
 ## Acceptance Criteria / 驗收條件
 
-- [${acceptanceChecked ? "x" : " "}] AC-001: The complete edit form remains visible when persistence is unavailable.
+- [${acceptanceChecked ? "x" : " "}] AC-001: ${acceptanceDescription}
 
 ## Edge Cases / 邊界與狀態
 
-- API unavailable: preserve the UI and disable only save.
+- API unavailable: keep the action available; after rejection, preserve input and report what was not saved.
 
 ## Verification Plan / 驗證計畫
 
-- [${verificationChecked ? "x" : " "}] VT-001: Render the edit form with the save endpoint unavailable. Evidence: ${evidence}
+- [${verificationChecked ? "x" : " "}] VT-001: ${verificationDescription} Evidence: ${evidence}
 
 ## Git Flow
 
@@ -138,6 +145,66 @@ test("a handoff-ready spec accepts a locally blocked API without removing its UI
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /valid.*1 requirement/i);
+});
+
+test("user-visible behavior cannot be authorized by an API field alone", (t) => {
+  const spec = validSpec({
+    sourceRows: [
+      "| SRC-API | v3 | API / persistence | nationality option includes format_example |",
+    ],
+    matrixRows: [
+      "| REQ-001 | SRC-API | ID-number input shows format_example as its placeholder | nationality option returns format_example | CONFIRMED | N/A — no decision needed | AC-001 | VT-001 |",
+    ],
+    decisionRows: [],
+    acceptanceDescription:
+      "The ID-number input shows format_example as its placeholder.",
+    verificationDescription:
+      "Render the ID-number input and compare its placeholder with format_example.",
+  });
+  const result = runChecker(makeFixture(t, spec));
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /REQ-001.*user-visible UI surface.*Scope \/ behavior.*UI \/ visual.*User decision/i,
+  );
+});
+
+test("user-visible behavior cannot be authorized by an implementation pattern alone", (t) => {
+  const spec = validSpec({
+    sourceRows: [
+      "| SRC-CODE | main@abc123 | Implementation pattern | existing input has a tooltip |",
+    ],
+    matrixRows: [
+      "| REQ-001 | SRC-CODE | New ID-number tooltip | N/A — no persistence | CONFIRMED | N/A — no decision needed | AC-001 | VT-001 |",
+    ],
+    decisionRows: [],
+    acceptanceDescription: "The ID-number input shows the new tooltip.",
+    verificationDescription: "Render the ID-number input and inspect its tooltip.",
+  });
+  const result = runChecker(makeFixture(t, spec));
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /REQ-001.*user-visible UI surface.*product-authoritative source/i);
+});
+
+test("non-UI API facts remain valid without a product-authoritative source", (t) => {
+  const spec = validSpec({
+    sourceRows: [
+      "| SRC-API | v3 | API / persistence | response includes format_example |",
+    ],
+    matrixRows: [
+      "| REQ-001 | SRC-API | N/A — ticket does not require presenting this field | Response type includes format_example | CONFIRMED | N/A — no decision needed | AC-001 | VT-001 |",
+    ],
+    decisionRows: [],
+    acceptanceDescription:
+      "The response contract records format_example without adding UI behavior.",
+    verificationDescription:
+      "Inspect the response type and confirm no UI requirement is introduced.",
+  });
+  const result = runChecker(makeFixture(t, spec));
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
 test("traceability references must resolve to registered sources, acceptance criteria, and verification items", (t) => {

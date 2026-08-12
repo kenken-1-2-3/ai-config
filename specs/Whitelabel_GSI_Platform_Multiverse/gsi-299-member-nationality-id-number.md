@@ -38,7 +38,7 @@
 
 ## 背景 / 目標
 
-註冊與會員中心的國籍欄位改為後端下發的國家選項，payload 一律送 option 的 ISO code。只有同一份欄位設定中存在 `id_number` row，且會員目前選到的國籍 option 為 `id_check = true`，才顯示身分證字號欄位並套用該 row 的 required / edit 設定。
+註冊與會員中心的國籍欄位改為後端下發的國家選項，payload 一律送 option 的 ISO code。同一份欄位設定只要存在 `id_number` row，就直接顯示身分證字號欄位並套用該 row 的 required / edit 設定；是否已選國籍及 nationality option 的 `id_check` 不得控制欄位顯示。
 
 前端只負責顯示、必填與 payload；格式驗證、標準化與唯一性由後端負責。本功能不是 KYC，不驗證證件真偽或政府資料。
 
@@ -99,6 +99,7 @@ interface NationalityOption {
   - 其他 locale：`langs[locale]`，缺值 fallback `label`。
 - API 另新增 `column_name = "id_number"` row，沿用 dynamic row 的 `required`、`edit`、`type`、`lang` 等欄位。
 - `id_number` row 是否存在即為該入口的 display 總閘；前端不自行補造未下發的 row。
+- nationality option 的 `id_check` 只描述後端是否對該國證號執行格式檢查，不是 `id_number` 欄位的顯示開關。
 - `format_example` 來自目前選中 nationality option，只能作 placeholder / hint；前端不得把它轉成 regex。
 
 ### 2. 註冊 request
@@ -136,30 +137,25 @@ interface NationalityOption {
 
 ### B. 註冊條件渲染
 
-身分證欄位顯示需同時成立：
-
-1. API 有下發 `id_number` row。
-2. API 有下發 `nationality` row。
-3. 使用者已選 nationality。
-4. 對應 option 的 `id_check = true`。
+身分證欄位的唯一顯示條件是 API 有下發 `id_number` row。即使沒有 `nationality` row、尚未選 nationality，或選中 option 的 `id_check = false`，也不得隱藏 `id_number`。
 
 規則：
 
-- 未選國籍或 `id_check = false`：隱藏 `id_number`，required 不生效。
-- `id_check = true`：顯示 `id_number`，required 完全依 `id_number` row 的 `required`。
-- 國籍由有檢查改成無檢查、清空或改成另一國：立即清掉尚未送出的 `id_number`，避免 hidden stale value。
-- 國籍由一個有檢查國家改成另一個有檢查國家：也清掉舊值，顯示新國籍的 `format_example`。
+- `id_number` 一律依 row 的 `required` 判斷是否必填，不受 `id_check` 影響。
+- 國籍改成另一國或清空：立即清掉尚未送出的 `id_number`，避免將舊國籍證號送給新國籍。
+- 選中 nationality option 時顯示該國籍的 `format_example`；未選、無匹配 option 或未提供範例時沿用一般 placeholder。
+- `id_check = false` 時欄位仍顯示；前端不執行格式檢查，由後端依 option 設定決定是否檢查。
 - `format_example` 只作即時 placeholder / hint；不執行前端格式 validation。
 - `id_number` 以一般文字輸入處理，允許分隔符；不可強制 numeric inputmode。
 
 ### C. 會員中心條件渲染與編輯
 
-- 顯示條件與註冊相同，但使用 `type=center` 下發的 `id_number` row。
+- 顯示條件與註冊相同：只要 `type=center` 有下發 `id_number` row 就直接顯示，不受 nationality / `id_check` 影響。
 - `edit=false` 時維持 read-only；`edit=true` 才可修改。
 - 會員原有 nationality / id_number 未改時，保留全碼 raw model，原樣回送安全；前端不得自行重驗。
 - 主動改 nationality 時立即清空 raw `id_number`：
-  - 新國籍 `id_check=true`：重新顯示空白欄位，依 row.required 要求新證號。
-  - 新國籍 `id_check=false` 或無匹配 option：保持欄位隱藏與空值；後端負責清除 DB 舊證號。
+  - 無論新國籍的 `id_check` 為何，欄位保持顯示並依 row.required 要求新證號。
+  - 無匹配 option 或清空 nationality 時，欄位仍顯示但不提供 `format_example`。
 - 國籍變更清除證號的額外 UX 警告屬建議項，因未提供確切 copy / key，本次不新增提示。
 - 未主動變更的舊會員、legacy nationality、後續才開啟 id_check 的會員不得被回溯要求補填。
 
@@ -226,15 +222,15 @@ interface NationalityOption {
 ## 邊界情境
 
 1. `nationality` row 存在、`id_number` row 不存在：只顯示國籍。
-2. `id_number` row 存在、`nationality` row 不存在：不顯示身分證，也不 required。
-3. nationality 未選：不顯示身分證。
-4. option `id_check=false`：不顯示身分證。
-5. option `id_check=true`、row.required=false：顯示但選填。
-6. option `id_check=true`、row.required=true：顯示且必填。
+2. `id_number` row 存在、`nationality` row 不存在：顯示身分證，required 依 row 設定。
+3. nationality 未選：身分證仍顯示，required 依 row 設定。
+4. option `id_check=false`：身分證仍顯示；前端不做格式檢查。
+5. row.required=false：無論 `id_check` 為何皆顯示但選填。
+6. row.required=true：無論 `id_check` 為何皆顯示且必填。
 7. zh-tw / en / 其他 locale 缺 label：依 contract fallback，不顯示 i18n key 字串。
 8. `format_example` 為空：不顯示錯誤的 `undefined` / 空 hint，沿用一般 placeholder。
 9. nationality 由 A 改 B：即使 A、B 都開檢查，也要清空舊證號。
-10. legacy nationality 不在 options：顯示原值、不顯示身分證、不阻擋其他欄位更新。
+10. legacy nationality 不在 options：顯示原值與身分證欄位、不提供 `format_example`，且不阻擋其他欄位更新。
 11. read-only `id_number`：只顯示尾 4 碼；raw form 不被改寫。
 12. 短於或等於 4 碼的 legacy 異常值：遮罩 helper 不 throw；不得把值寫回 model。
 13. API 407035 / 407036 / 407037：顯示 remote 翻譯（若存在）或已確認的 zh-tw / en fallback。
@@ -254,18 +250,18 @@ interface NationalityOption {
 
 - [ ] 25 個現有 dynamic-registration 版型都使用相同條件判斷。
 - [ ] nationality 選項依 locale contract 顯示，form 值與 payload 是 ISO code。
-- [ ] `id_number` 只有在 row 存在且選中 option.id_check=true 時顯示。
-- [ ] 隱藏時不 required、不送 stale value。
+- [ ] `id_number` row 存在時直接顯示，不受 nationality 是否存在／已選或 option.id_check 影響。
+- [ ] row 不存在時不顯示、不 required、不送 stale value。
 - [ ] 改國籍會清空舊證號。
 - [ ] `format_example` 在所有四類註冊 UI 顯示為即時提示。
 - [ ] 前端未新增任何國籍 regex 或標準化規則。
 
 ### 全版型會員中心
 
-- [ ] `type=center` 的 dynamic rows 套用同一顯示條件與 locale resolver。
+- [ ] `type=center` 的 `id_number` row 存在時直接顯示，不受 nationality / option.id_check 影響，並套用相同 locale resolver。
 - [ ] bulk / single update 的 `id_number` 均送在 `customize_column.id_number`，request 頂層沒有 `id_number`。
 - [ ] 未變更 nationality / id_number 的舊會員不被前端重驗或要求補填。
-- [ ] 主動改國籍會清空舊證號；新國籍需檢查時顯示空欄位並套 required。
+- [ ] 主動改國籍會清空舊證號；欄位保持顯示並依 row.required 判斷必填。
 - [ ] read-only text / disabled input 只顯示尾 4 碼；editable input 與 raw model 保留全碼。
 - [ ] legacy nationality 不在 options 時可維持原值並更新其他欄位。
 

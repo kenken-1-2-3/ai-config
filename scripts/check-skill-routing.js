@@ -463,6 +463,63 @@ const CONTRACTS = [
       },
     ],
   },
+  {
+    id: "pixel-visual-authority-trigger",
+    file: "skills/figma-pixel-implementation/SKILL.md",
+    expectedName: "figma-pixel-implementation",
+    patterns: [
+      {
+        target: "description",
+        regex: /a Figma node or image is the authoritative source for a user-visible UI implementation or visual fix/i,
+        message: "trigger whenever Figma or an image is authoritative for a user-visible implementation or visual fix",
+      },
+      {
+        target: "description",
+        regex: /even when the user does not say pixel-perfect/i,
+        message: "do not require the user to repeat the pixel-perfect keyword",
+      },
+    ],
+  },
+  {
+    id: "pixel-measurement-scope",
+    file: "skills/figma-pixel-implementation/SKILL.md",
+    patterns: [
+      {
+        regex: /量測目標節點、直到 viewport 的 ancestor／layout shell，以及會改變可用空間的 sibling/i,
+        message: "measure the target, ancestor layout shell, and space-affecting siblings",
+      },
+      {
+        regex: /viewport → global navigation\/sidebar → page shell → section padding → local aside → gap → target container/i,
+        message: "record the complete runtime width chain",
+      },
+      {
+        regex: /Figma 連結若只指向子節點.*不得用該子節點推定外層 container/is,
+        message: "prevent child-node measurements from authorizing outer containers",
+      },
+    ],
+  },
+  {
+    id: "pixel-completion-gate",
+    file: "skills/figma-pixel-implementation/SKILL.md",
+    patterns: [
+      {
+        regex: /build、lint、unit test、class\/source 字串斷言都不是視覺完成證據/i,
+        message: "reject build and source-string assertions as visual completion evidence",
+      },
+      {
+        regex: /每個 frozen state 都有實際 rendered page 的 viewport、getBoundingClientRect 與 computed style read-back/i,
+        message: "require rendered viewport, DOM dimensions, and computed styles for every frozen state",
+      },
+      {
+        regex: /每個 state 都有 baseline 與 final screenshot.*final screenshot 路徑已寫回 manifest/is,
+        message: "require baseline and final screenshots in the manifest",
+      },
+      {
+        regex: /任何 frozen state 無法開啟、登入、載入資料、截圖或量測時，完成狀態只能是 `UNVERIFIED`/i,
+        message: "mark unreproducible visual states UNVERIFIED instead of complete",
+      },
+    ],
+  },
 ];
 
 function parseFrontmatter(text) {
