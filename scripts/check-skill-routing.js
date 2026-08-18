@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require("node:fs");
+const crypto = require("node:crypto");
 const path = require("node:path");
 
 const CONTRACTS = [
@@ -204,6 +205,134 @@ const CONTRACTS = [
     ],
   },
   {
+    id: "code-change-safety-canonical",
+    file: "rules/code_change_safety.md",
+    expectedSha256: "2c77a2f172fe71fecf46b6decdada919ab7e98828582a93b5adb36b0f87b7912",
+    sha256Message: "keep the reviewed code-change safety policy byte-for-byte canonical",
+    patterns: [],
+  },
+  {
+    id: "dashboard-local-test-canonical",
+    file: "rules/dashboard_local_testing.md",
+    expectedSha256: "55333bb856f8e151013069d8e77205f905c1b502cc517650a076cd722a2240f4",
+    sha256Message: "keep the reviewed Dashboard local-test policy byte-for-byte canonical",
+    patterns: [],
+  },
+  {
+    id: "code-change-deletion-safety",
+    file: "rules/code_change_safety.md",
+    patterns: [
+      {
+        regex: /# Code Change Safety(?:(?!\n# ).)*Before deleting or renaming any import, symbol, function, event handler, route, field, config key, or component.*complete changed file.*relevant repository call sites/is,
+        message: "require complete-file and call-site evidence before deleting a symbol",
+      },
+      {
+        regex: /A partial file read or narrow search is not evidence that a symbol is unused/i,
+        message: "require complete-file and call-site evidence before deleting a symbol",
+      },
+      {
+        regex: /This gate has no import-only, cleanup, or small-change exception/i,
+        message: "forbid exceptions that bypass complete symbol deletion evidence",
+      },
+      {
+        regex: /Delete only when that binding has zero remaining references.*every remaining reference is intentionally updated by the requirement.*Same-spelled symbols bound independently in other scopes do not block the deletion/is,
+        message: "require zero references or intentional call-site updates before deletion",
+      },
+      {
+        regex: /Before commit.*inspect every deleted line in the staged diff.*unexplained or unrelated deletion blocks the commit/is,
+        message: "audit every deleted line before commit",
+      },
+      {
+        regex: /^(?![\s\S]*(?:import-only|cleanup|small-change).{0,80}(?:may|can) skip)[\s\S]*$/i,
+        message: "forbid exceptions that bypass complete symbol deletion evidence",
+      },
+      {
+        regex: /^(?![\s\S]*(?:import-only|cleanup|small(?:-| )change)(?: changes?)?.{0,40}(?:are|is|may be|can be)\s+(?:exempt|optional|not required|allowed to bypass))[\s\S]*$/i,
+        message: "forbid exceptions that bypass complete symbol deletion evidence",
+      },
+    ],
+  },
+  {
+    id: "code-change-verification-safety",
+    file: "rules/code_change_safety.md",
+    patterns: [
+      {
+        regex: /For Vue or TypeScript changes.*repository provides a permitted project-defined type-check command.*run it.*`ts-check` script using `vue-tsc`.*do not substitute a direct compiler command that the repository rules prohibit/is,
+        message: "require type-check evidence for Vue and TypeScript changes",
+      },
+      {
+        regex: /repository provides a permitted project-defined type-check command, run it/i,
+        message: "use the repository-defined type-check command",
+      },
+      {
+        regex: /If no permitted project-defined type-check command exists.*`TYPECHECK_UNAVAILABLE`.*do not invent or install one.*risk-equivalent focused static check.*applicable runtime smoke.*must not be reported as a passing type-check/is,
+        message: "define a non-blocking but explicit fallback when no legal type-check command exists",
+      },
+      {
+        regex: /baseline already fails.*before and after diagnostics.*reject any new error/is,
+        message: "compare type-check diagnostics against a failing baseline",
+      },
+      {
+        regex: /Build, lint, format, and source-string assertions do not substitute for type-check/i,
+        message: "require type-check evidence for Vue and TypeScript changes",
+      },
+      {
+        regex: /Do not dismiss a failing verifier as pre-existing without before\/after evidence, and do not replace a failing broad verifier with a narrower check that cannot detect the edited risk/i,
+        message: "forbid shrinking verification to escape a failure",
+      },
+      {
+        regex: /A small or import-only change is not by itself a reason to skip the applicable type-check or runtime smoke/i,
+        message: "forbid small-change exceptions that bypass type-check",
+      },
+      {
+        regex: /^(?![\s\S]*(?:small|import-only).{0,80}(?:may|can) skip (?:the )?type-check)[\s\S]*$/i,
+        message: "forbid small-change exceptions that bypass type-check",
+      },
+      {
+        regex: /^(?![\s\S]*(?:type-check.{0,100}(?:need not|does not need|is optional|is not required|may be omitted|can be omitted).{0,100}(?:small|import-only)|(?:small|import-only).{0,100}type-check.{0,100}(?:need not|does not need|is optional|is not required|may be omitted|can be omitted)))[\s\S]*$/i,
+        message: "forbid small-change exceptions that bypass type-check",
+      },
+    ],
+  },
+  {
+    id: "code-change-runtime-safety",
+    file: "rules/code_change_safety.md",
+    patterns: [
+      {
+        regex: /changing user interaction or a dependency used during component setup.*imports, stores, composables, and event registration.*component or browser runtime smoke test/is,
+        message: "runtime-smoke user interactions and component setup dependencies",
+      },
+      {
+        regex: /If an applicable required verifier above is missing, blocked, or fails, mark the affected change `UNVERIFIED`/i,
+        message: "block publication when runtime smoke is missing, blocked, or failing",
+      },
+      {
+        regex: /applicable required verifier above is missing, blocked, or fails.*`UNVERIFIED`.*commit, merge, push, deploy, and release are blocked until the user explicitly accepts that exact verification gap/is,
+        message: "block publishing unverified interaction changes without explicit acceptance",
+      },
+      {
+        regex: /`TYPECHECK_UNAVAILABLE` alone is not a failed verifier only when the prescribed risk-equivalent static check and every applicable runtime smoke have completed and passed/i,
+        message: "allow the no-command fallback only after equivalent evidence passes",
+      },
+      {
+        regex: /A small or import-only change is not by itself a reason to skip the applicable type-check or runtime smoke/i,
+        message: "forbid import-only exceptions that bypass runtime smoke",
+      },
+      {
+        regex: /^(?![\s\S]*(?:small|import-only).{0,80}(?:may|can) skip (?:the )?runtime smoke)[\s\S]*$/i,
+        message: "forbid import-only exceptions that bypass runtime smoke",
+      },
+      {
+        regex: /^(?![\s\S]*(?:runtime smoke.{0,100}(?:is optional|is not required|need not|does not need|may be omitted|can be omitted).{0,100}(?:small|import-only)|(?:small|import-only).{0,100}runtime smoke.{0,100}(?:is optional|is not required|need not|does not need|may be omitted|can be omitted)))[\s\S]*$/i,
+        message: "forbid import-only exceptions that bypass runtime smoke",
+      },
+      {
+        regex: /^(?![\s\S]*(?:deploy|release|publish).{0,80}(?:may|can|is allowed to)\s+(?:still\s+)?proceed.{0,120}(?:runtime )?smoke.{0,50}(?:fails?|failed|missing|blocked|without))[\s\S]*$/i,
+        message: "block publishing unverified interaction changes without explicit acceptance",
+      },
+    ],
+  },
+  {
     id: "spec-backend-gap-interaction",
     file: "skills/spec-driven-workflow/SKILL.md",
     patterns: [
@@ -278,6 +407,40 @@ const CONTRACTS = [
         message: "route NX migration gaps through the common remote-i18n flow",
       },
     ],
+  },
+  {
+    id: "dashboard-local-test-project-install",
+    file: "projects.json",
+    expectedProjectCodexRules: [
+      { project: "Whitelabel_GSI_Dashboard", rule: "dashboard_local_testing.md" },
+    ],
+    exclusiveProjectCodexRules: [
+      { rule: "dashboard_local_testing.md", owners: ["Whitelabel_GSI_Dashboard"] },
+    ],
+    expectedProjectFlags: [
+      { project: "Whitelabel_GSI_Dashboard", flag: "localTestLogin" },
+    ],
+    forbiddenProjectFlags: [
+      { project: "Whitelabel_GSI_Platform_Multiverse", flag: "localTestLogin" },
+      { project: "whitelabel-frontend-config", flag: "localTestLogin" },
+      { project: "static-resources", flag: "localTestLogin" },
+      { project: "whitelabel-gsi-platform-multiverse-nx", flag: "localTestLogin" },
+      { project: "whitelabel-gsi-locale-manager", flag: "localTestLogin" },
+    ],
+    patterns: [],
+  },
+  {
+    id: "code-change-safety-project-install",
+    file: "projects.json",
+    expectedProjectRules: [
+      { project: "Whitelabel_GSI_Platform_Multiverse", rule: "code_change_safety.md" },
+      { project: "Whitelabel_GSI_Dashboard", rule: "code_change_safety.md" },
+      { project: "whitelabel-frontend-config", rule: "code_change_safety.md" },
+      { project: "static-resources", rule: "code_change_safety.md" },
+      { project: "whitelabel-gsi-platform-multiverse-nx", rule: "code_change_safety.md" },
+      { project: "whitelabel-gsi-locale-manager", rule: "code_change_safety.md" },
+    ],
+    patterns: [],
   },
   {
     id: "remote-i18n-project-skill-install",
@@ -549,6 +712,17 @@ function runChecks(rootDir) {
     const frontmatter = parseFrontmatter(text);
 
     const issues = [];
+    if (contract.expectedSha256) {
+      const actualSha256 = crypto.createHash("sha256").update(text, "utf8").digest("hex");
+      if (actualSha256 !== contract.expectedSha256) {
+        issues.push({
+          id: contract.id,
+          file: contract.file,
+          message: contract.sha256Message || "keep the reviewed policy byte-for-byte canonical",
+        });
+      }
+    }
+
     if (contract.expectedName && frontmatter.name !== contract.expectedName) {
       issues.push({
         id: contract.id,
@@ -576,6 +750,96 @@ function runChecks(rootDir) {
             id: contract.id,
             file: contract.file,
             message: `install ${expected.skill} for ${expected.project}`,
+          });
+        }
+      }
+    }
+
+    if (contract.expectedProjectRules) {
+      let projects = [];
+      try {
+        projects = JSON.parse(text).projects || [];
+      } catch {
+        issues.push({
+          id: contract.id,
+          file: contract.file,
+          message: "keep projects.json valid JSON",
+        });
+      }
+
+      for (const expected of contract.expectedProjectRules) {
+        const project = projects.find((candidate) => candidate.name === expected.project);
+        if (!project || !(project.rules || []).includes(expected.rule)) {
+          issues.push({
+            id: contract.id,
+            file: contract.file,
+            message: `install ${expected.rule} for ${expected.project}`,
+          });
+        }
+      }
+    }
+
+    if (
+      contract.expectedProjectCodexRules ||
+      contract.exclusiveProjectCodexRules ||
+      contract.expectedProjectFlags ||
+      contract.forbiddenProjectFlags
+    ) {
+      let projects = [];
+      try {
+        projects = JSON.parse(text).projects || [];
+      } catch {
+        issues.push({
+          id: contract.id,
+          file: contract.file,
+          message: "keep projects.json valid JSON",
+        });
+      }
+
+      for (const expected of contract.expectedProjectCodexRules || []) {
+        const project = projects.find((candidate) => candidate.name === expected.project);
+        if (!project || !(project.codexRules || []).includes(expected.rule)) {
+          issues.push({
+            id: contract.id,
+            file: contract.file,
+            message: `install ${expected.rule} as a Codex-only rule for ${expected.project}`,
+          });
+        }
+      }
+
+      for (const expected of contract.exclusiveProjectCodexRules || []) {
+        const actualOwners = projects
+          .filter((project) => (project.codexRules || []).includes(expected.rule))
+          .map((project) => project.name)
+          .sort();
+        const expectedOwners = expected.owners.slice().sort();
+        if (JSON.stringify(actualOwners) !== JSON.stringify(expectedOwners)) {
+          issues.push({
+            id: contract.id,
+            file: contract.file,
+            message: `keep ${expected.rule} exclusive to ${expectedOwners.join(", ")}`,
+          });
+        }
+      }
+
+      for (const expected of contract.expectedProjectFlags || []) {
+        const project = projects.find((candidate) => candidate.name === expected.project);
+        if (!project || project[expected.flag] !== true) {
+          issues.push({
+            id: contract.id,
+            file: contract.file,
+            message: `enable ${expected.flag} only for ${expected.project}`,
+          });
+        }
+      }
+
+      for (const forbidden of contract.forbiddenProjectFlags || []) {
+        const project = projects.find((candidate) => candidate.name === forbidden.project);
+        if (project && project[forbidden.flag] === true) {
+          issues.push({
+            id: contract.id,
+            file: contract.file,
+            message: `keep ${forbidden.flag} disabled for ${forbidden.project}`,
           });
         }
       }

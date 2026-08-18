@@ -14,6 +14,7 @@
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
+        "code_change_safety.md",
         "multiverse.md"
       ],
       "skills": [
@@ -34,8 +35,13 @@
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
+        "code_change_safety.md",
         "dashboard.md"
       ],
+      "codexRules": [
+        "dashboard_local_testing.md"
+      ],
+      "localTestLogin": true,
       "skills": [
         "spec-driven-workflow",
         "figma-pixel-implementation",
@@ -51,6 +57,7 @@
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
+        "code_change_safety.md",
         "frontend_config.md"
       ],
       "skills": [
@@ -67,6 +74,7 @@
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
+        "code_change_safety.md",
         "static_resources.md"
       ],
       "skills": [
@@ -83,6 +91,7 @@
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
+        "code_change_safety.md",
         "multiverse_nx.md"
       ],
       "skills": [
@@ -99,7 +108,8 @@
         "locale_manager.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
-        "agent_dispatch.md"
+        "agent_dispatch.md",
+        "code_change_safety.md"
       ],
       "skills": [
         "spec-driven-workflow",

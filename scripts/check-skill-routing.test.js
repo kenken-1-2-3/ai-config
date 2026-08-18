@@ -23,7 +23,11 @@ function createFixture(t) {
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "skill-routing-"));
   t.after(() => fs.rmSync(fixtureRoot, { recursive: true, force: true }));
 
-  for (const file of new Set(CONTRACTS.map((contract) => contract.file))) {
+  const fixtureFiles = new Set([
+    ...CONTRACTS.map((contract) => contract.file),
+    ...weakeningScenarios.map((scenario) => scenario.file),
+  ]);
+  for (const file of fixtureFiles) {
     const source = path.join(rootDir, file);
     const destination = path.join(fixtureRoot, file);
     fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -34,6 +38,49 @@ function createFixture(t) {
 }
 
 const weakeningScenarios = [
+  {
+    name: "Dashboard local login scope expanded beyond local agent-side testing",
+    file: "rules/dashboard_local_testing.md",
+    from:
+      "This rule applies only when Codex opens or verifies the agent-side Dashboard through a local application origin such as `localhost` or `127.0.0.1`.",
+    to:
+      "This rule also applies when Codex opens remote Dashboard or member-side environments.",
+    id: "dashboard-local-test-canonical",
+    message: "keep the reviewed Dashboard local-test policy byte-for-byte canonical",
+  },
+  {
+    name: "Dashboard Codex-only local login rule removed",
+    file: "projects.json",
+    from: '      "codexRules": [\n        "dashboard_local_testing.md"\n      ],\n',
+    to: "",
+    id: "dashboard-local-test-project-install",
+    message: "install dashboard_local_testing.md as a Codex-only rule for Whitelabel_GSI_Dashboard",
+  },
+  {
+    name: "Dashboard local login opt-in disabled",
+    file: "projects.json",
+    from: '      "localTestLogin": true,',
+    to: '      "localTestLogin": false,',
+    id: "dashboard-local-test-project-install",
+    message: "enable localTestLogin only for Whitelabel_GSI_Dashboard",
+  },
+  {
+    name: "member-side project opts into Dashboard local login",
+    file: "projects.json",
+    from: '        "multiverse.md"\n      ],\n      "skills": [',
+    to: '        "multiverse.md"\n      ],\n      "localTestLogin": true,\n      "skills": [',
+    id: "dashboard-local-test-project-install",
+    message: "keep localTestLogin disabled for Whitelabel_GSI_Platform_Multiverse",
+  },
+  {
+    name: "member-side project loads the Dashboard local login rule",
+    file: "projects.json",
+    from: '        "multiverse.md"\n      ],\n      "skills": [',
+    to:
+      '        "multiverse.md"\n      ],\n      "codexRules": [\n        "dashboard_local_testing.md"\n      ],\n      "skills": [',
+    id: "dashboard-local-test-project-install",
+    message: "keep dashboard_local_testing.md exclusive to Whitelabel_GSI_Dashboard",
+  },
   {
     name: "unused capability loading",
     file: "rules/skill_trigger_guard.md",
@@ -73,6 +120,194 @@ const weakeningScenarios = [
     to: "Required product controls may be pre-disabled when persistence is incomplete.",
     id: "backend-gap-interaction",
     message: "keep required product controls interactive",
+  },
+  {
+    name: "partial file read treated as proof that a symbol is unused",
+    file: "rules/code_change_safety.md",
+    from: "A partial file read or narrow search is not evidence that a symbol is unused.",
+    to: "A partial file read or narrow search is sufficient evidence that a symbol is unused.",
+    id: "code-change-deletion-safety",
+    message: "require complete-file and call-site evidence before deleting a symbol",
+  },
+  {
+    name: "import-only deletion exception bypasses complete reference scan",
+    file: "rules/code_change_safety.md",
+    from: "A partial file read or narrow search is not evidence that a symbol is unused.",
+    to:
+      "A partial file read or narrow search is not evidence that a symbol is unused. Import-only changes may skip this check.",
+    id: "code-change-deletion-safety",
+    message: "forbid exceptions that bypass complete symbol deletion evidence",
+  },
+  {
+    name: "import-only deletion exemption bypasses complete reference scan",
+    file: "rules/code_change_safety.md",
+    from: "This gate has no import-only, cleanup, or small-change exception.",
+    to:
+      "This gate has no import-only, cleanup, or small-change exception. Import-only changes are exempt from the complete-reference gate.",
+    id: "code-change-deletion-safety",
+    message: "forbid exceptions that bypass complete symbol deletion evidence",
+  },
+  {
+    name: "import-only deletion says complete reference gate is not required",
+    file: "rules/code_change_safety.md",
+    from: "This gate has no import-only, cleanup, or small-change exception.",
+    to:
+      "This gate has no import-only, cleanup, or small-change exception. Import-only changes do not require the complete-reference gate.",
+    id: "code-change-safety-canonical",
+    message: "keep the reviewed code-change safety policy byte-for-byte canonical",
+  },
+  {
+    name: "unexplained deleted lines allowed into a commit",
+    file: "rules/code_change_safety.md",
+    from: "an unexplained or unrelated deletion blocks the commit.",
+    to: "unexplained or unrelated deletions may be committed.",
+    id: "code-change-deletion-safety",
+    message: "audit every deleted line before commit",
+  },
+  {
+    name: "build accepted as a Vue or TypeScript type-check substitute",
+    file: "rules/code_change_safety.md",
+    from: "Build, lint, format, and source-string assertions do not substitute for type-check.",
+    to: "Build, lint, format, and source-string assertions may substitute for type-check.",
+    id: "code-change-verification-safety",
+    message: "require type-check evidence for Vue and TypeScript changes",
+  },
+  {
+    name: "direct tsc allowed despite a project-defined type-check command",
+    file: "rules/code_change_safety.md",
+    from: "repository provides a permitted project-defined type-check command, run it",
+    to: "run `tsc --noEmit` directly",
+    id: "code-change-verification-safety",
+    message: "use the repository-defined type-check command",
+  },
+  {
+    name: "small Vue change exception bypasses type-check",
+    file: "rules/code_change_safety.md",
+    from: "A small or import-only change is not by itself a reason to skip the applicable type-check or runtime smoke.",
+    to:
+      "A small or import-only change is not by itself a reason to skip the applicable type-check or runtime smoke. Small Vue changes may skip type-check.",
+    id: "code-change-verification-safety",
+    message: "forbid small-change exceptions that bypass type-check",
+  },
+  {
+    name: "small Vue change says type-check need not run",
+    file: "rules/code_change_safety.md",
+    from: "Build, lint, format, and source-string assertions do not substitute for type-check.",
+    to:
+      "Build, lint, format, and source-string assertions do not substitute for type-check. Type-check need not be run for small Vue changes.",
+    id: "code-change-verification-safety",
+    message: "forbid small-change exceptions that bypass type-check",
+  },
+  {
+    name: "small Vue change calls type-check unnecessary",
+    file: "rules/code_change_safety.md",
+    from: "Build, lint, format, and source-string assertions do not substitute for type-check.",
+    to:
+      "Build, lint, format, and source-string assertions do not substitute for type-check. Type-check is unnecessary for small Vue changes.",
+    id: "code-change-safety-canonical",
+    message: "keep the reviewed code-change safety policy byte-for-byte canonical",
+  },
+  {
+    name: "failing broad verification replaced with a narrower check",
+    file: "rules/code_change_safety.md",
+    from: "do not replace a failing broad verifier with a narrower check that cannot detect the edited risk.",
+    to: "replace a failing broad verifier with a narrower passing check.",
+    id: "code-change-verification-safety",
+    message: "forbid shrinking verification to escape a failure",
+  },
+  {
+    name: "unverified interaction change committed and pushed",
+    file: "rules/code_change_safety.md",
+    from:
+      "commit, merge, push, deploy, and release are blocked until the user explicitly accepts that exact verification gap.",
+    to: "commit, merge, push, deploy, and release may continue without runtime verification.",
+    id: "code-change-runtime-safety",
+    message: "block publishing unverified interaction changes without explicit acceptance",
+  },
+  {
+    name: "missing or failed runtime smoke still allowed to deploy",
+    file: "rules/code_change_safety.md",
+    from: "If an applicable required verifier above is missing, blocked, or fails, mark the affected change `UNVERIFIED`",
+    to: "If the smoke test is missing or fails, continue deployment.",
+    id: "code-change-runtime-safety",
+    message: "block publication when runtime smoke is missing, blocked, or failing",
+  },
+  {
+    name: "failed runtime smoke explicitly allows deploy and release",
+    file: "rules/code_change_safety.md",
+    from:
+      "commit, merge, push, deploy, and release are blocked until the user explicitly accepts that exact verification gap.",
+    to:
+      "commit, merge, push, deploy, and release are blocked until the user explicitly accepts that exact verification gap. Deploy and release may proceed when runtime smoke fails.",
+    id: "code-change-runtime-safety",
+    message: "block publishing unverified interaction changes without explicit acceptance",
+  },
+  {
+    name: "deployment permitted despite failed runtime smoke",
+    file: "rules/code_change_safety.md",
+    from:
+      "commit, merge, push, deploy, and release are blocked until the user explicitly accepts that exact verification gap.",
+    to:
+      "commit, merge, push, deploy, and release are blocked until the user explicitly accepts that exact verification gap. Deployment is permitted despite a failed runtime smoke.",
+    id: "code-change-safety-canonical",
+    message: "keep the reviewed code-change safety policy byte-for-byte canonical",
+  },
+  {
+    name: "import-only exception bypasses runtime smoke",
+    file: "rules/code_change_safety.md",
+    from: "A small or import-only change is not by itself a reason to skip the applicable type-check or runtime smoke.",
+    to:
+      "A small or import-only change is not by itself a reason to skip the applicable type-check or runtime smoke. Import-only changes may skip runtime smoke.",
+    id: "code-change-runtime-safety",
+    message: "forbid import-only exceptions that bypass runtime smoke",
+  },
+  {
+    name: "runtime smoke made optional for import-only changes",
+    file: "rules/code_change_safety.md",
+    from: "A small or import-only change is not by itself a reason to skip the applicable type-check or runtime smoke.",
+    to:
+      "A small or import-only change is not by itself a reason to skip the applicable type-check or runtime smoke. Runtime smoke is optional for import-only changes.",
+    id: "code-change-runtime-safety",
+    message: "forbid import-only exceptions that bypass runtime smoke",
+  },
+  {
+    name: "runtime smoke said not needed for import-only changes",
+    file: "rules/code_change_safety.md",
+    from: "A small or import-only change is not by itself a reason to skip the applicable type-check or runtime smoke.",
+    to:
+      "A small or import-only change is not by itself a reason to skip the applicable type-check or runtime smoke. Runtime smoke is not needed for import-only changes.",
+    id: "code-change-safety-canonical",
+    message: "keep the reviewed code-change safety policy byte-for-byte canonical",
+  },
+  {
+    name: "TYPECHECK_UNAVAILABLE accepted despite failed fallback",
+    file: "rules/code_change_safety.md",
+    from:
+      "`TYPECHECK_UNAVAILABLE` alone is not a failed verifier only when the prescribed risk-equivalent static check and every applicable runtime smoke have completed and passed.",
+    to:
+      "`TYPECHECK_UNAVAILABLE` alone is not a failed verifier only when the prescribed risk-equivalent static check and every applicable runtime smoke have completed and passed. `TYPECHECK_UNAVAILABLE` is sufficient evidence even when the fallback static check fails.",
+    id: "code-change-safety-canonical",
+    message: "keep the reviewed code-change safety policy byte-for-byte canonical",
+  },
+  {
+    name: "fallback static check made optional",
+    file: "rules/code_change_safety.md",
+    from:
+      "This fallback must not be reported as a passing type-check.",
+    to:
+      "This fallback must not be reported as a passing type-check. The fallback static check is optional after recording `TYPECHECK_UNAVAILABLE`.",
+    id: "code-change-safety-canonical",
+    message: "keep the reviewed code-change safety policy byte-for-byte canonical",
+  },
+  {
+    name: "global code-change safety omitted from locale manager",
+    file: "projects.json",
+    from:
+      '"agent_dispatch.md",\n        "code_change_safety.md"\n      ],\n      "skills": [\n        "spec-driven-workflow",\n        "locale-entry-maintenance"',
+    to:
+      '"agent_dispatch.md"\n      ],\n      "skills": [\n        "spec-driven-workflow",\n        "locale-entry-maintenance"',
+    id: "code-change-safety-project-install",
+    message: "install code_change_safety.md for whitelabel-gsi-locale-manager",
   },
   {
     name: "spec allows backend-driven pre-disable behavior",

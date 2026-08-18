@@ -15,27 +15,6 @@ Harness-agnostic delegation, context-budget and verification rules. Claude Code 
 - 獨立表示：subtask 不需要等待另一個 subtask 的產物、不共享可變狀態，且可以各自用客觀 acceptance 驗收。
 - 不為單次 deterministic check、短 read-back、同一檔案的小修或純粹「可能比較快」而開 subagent；委派與整合成本也要算進 context budget。
 - 不派多個 worker 重做同一份分析。需要第二觀點時，把它明確定義成 review，並只在下方列出的高風險條件使用。
-- The Codex quality-first serial handoff below is the only exception to the parallel-subtask requirement and to the ban on delegating small/single-file changes. Its purpose is separation of judgment from implementation, not concurrency.
-- This exception covers one bounded implementation or known-root-cause fix only. Deterministic checks, short read-backs, and unresolved judgment remain with the main agent.
-
-### Quality-first serial handoff (Codex pilot, started 2026-08-17)
-
-Keep model identifiers in this registry only. When models change, update the bindings and rerun representative tasks; do not rewrite the workflow.
-
-| Role family | Current binding | Responsibility |
-|---|---|---|
-| Judgment | `gpt-5.6-sol` | Requirements, specification, acceptance design, unknown-root-cause diagnosis, high-risk review, final release judgment |
-| Execution | `gpt-5.6-terra` | Bounded implementation and fixes whose root cause is already established |
-
-For a Codex request that changes code or behavior:
-
-1. The main Judgment agent resolves material ambiguity and freezes an acceptance packet before any implementation handoff. The packet must state the goal and source anchors, allowed and forbidden paths, locked acceptance artifacts, objective acceptance criteria and commands, and the baseline working-tree state. External acceptance tests, original fixtures or topology, snapshots, and user-provided expected values are locked unless the user explicitly changes the requirement. The packet may separately permit adding implementation-level tests.
-2. After the work is bounded, spawn or resume one native execution-focused worker with the Execution binding and `high` reasoning. This serial handoff is allowed even when there is only one coherent implementation task. Give the worker only the acceptance packet and necessary file anchors, not the full conversation.
-3. The Execution worker must not edit locked acceptance artifacts, weaken or skip existing checks, introduce test-only production paths, or change fixtures/config merely to make a check pass. If the contract and executable behavior cannot both be satisfied, stop and return `CONTRACT_CONFLICT` with the exact conflicting clauses and evidence.
-4. The main Judgment agent owns integration and final verification. Compare the resulting diff and locked artifacts with the recorded baseline, inspect every changed hunk, rerun the relevant deterministic checks in the real execution path, and judge every blocking acceptance criterion individually. Green tests or an aggregate pass percentage cannot override a failed critical criterion.
-5. Send a localized correction with a known root cause back to the same Execution worker with the failing evidence. Return to the Judgment agent for diagnosis or re-planning when the root cause is unknown, assumptions changed, `CONTRACT_CONFLICT` was returned, a locked artifact changed, or two correction rounds failed.
-6. Do not silently substitute a different model when a binding is unavailable. Preserve the task state, report the unavailable binding, and either use the Judgment agent as an explicit quality-first fallback or ask the user when the fallback would materially change cost, latency, or scope.
-7. When this pilot routes implementation, the final report must include the route used, correction-round count, acceptance evidence, and anything not verified. Never include model or tool attribution in commit or PR text.
 
 若 harness 不支援 delegation，使用 summarize-and-discard：大量讀取後只保留結論、決策與 `file:line`，不要反覆重讀 raw output。
 

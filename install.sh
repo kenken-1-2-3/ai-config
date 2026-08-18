@@ -37,6 +37,24 @@ for ((i = 0; i < project_count; i++)); do
     continue
   fi
 
+  # Establish exclusions before any generated rule or credential is written,
+  # so a later install failure cannot leave sensitive local files visible to Git.
+  exclude_file=""
+  if [[ -e "$project_path/.git" ]] &&
+    exclude_file="$(git -C "$project_path" rev-parse --path-format=absolute --git-path info/exclude 2>/dev/null)"; then
+    mkdir -p "$(dirname "$exclude_file")"
+    touch "$exclude_file"
+    if ! grep -qxF ".codex/" "$exclude_file"; then
+      printf '\n.codex/\n' >> "$exclude_file"
+    fi
+    if ! grep -qxF "CLAUDE.local.md" "$exclude_file"; then
+      printf 'CLAUDE.local.md\n' >> "$exclude_file"
+    fi
+    if ! grep -qxF "AGENTS.override.md" "$exclude_file"; then
+      printf 'AGENTS.override.md\n' >> "$exclude_file"
+    fi
+  fi
+
   mkdir -p "$project_path/.codex"
   codex_output="$project_path/.codex/personal_rules.md"
   claude_output="$project_path/CLAUDE.local.md"
@@ -85,6 +103,71 @@ for ((i = 0; i < project_count; i++)); do
     fi
     write_rules "Personal Codex Rules (from ai-config)"
   } > "$agents_output"
+
+  # Codex-only rules are appended only to Codex outputs. This keeps local
+  # testing instructions out of CLAUDE.local.md while preserving native
+  # AGENTS.override.md discovery and the personal_rules fallback.
+  codex_rule_count="$(json_has_key "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); console.log((data.projects[$i].codexRules || []).length);")"
+  if [[ "$codex_rule_count" != "0" ]]; then
+    for codex_rules_output in "$codex_output" "$agents_output"; do
+      json_value "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); console.log((data.projects[$i].codexRules || []).join('\n'));" |
+        while IFS= read -r rule; do
+          rule_path="$RULES_DIR/$rule"
+          if [[ ! -f "$rule_path" ]]; then
+            echo "missing Codex-only rule: $rule" >&2
+            exit 1
+          fi
+          {
+            echo
+            echo "<!-- BEGIN $rule -->"
+            cat "$rule_path"
+            echo
+            echo "<!-- END $rule -->"
+          } >> "$codex_rules_output"
+        done
+    done
+  fi
+
+  local_test_login_source="$ROOT_DIR/.local/test-logins/$name.json"
+  local_test_login_target="$project_path/.codex/local-test-login.json"
+  local_test_login_enabled="$(json_value "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); console.log(data.projects[$i].localTestLogin === true ? 'yes' : 'no');")"
+  has_local_test_login="no"
+  if [[ "$local_test_login_enabled" != "yes" ]]; then
+    rm -f "$local_test_login_target"
+  else
+    if [[ ! -f "$local_test_login_source" ]]; then
+      rm -f "$local_test_login_target"
+    elif ! node -e '
+        const fs = require("fs");
+        const source = process.argv[1];
+        let login;
+        try {
+          login = JSON.parse(fs.readFileSync(source, "utf8"));
+        } catch {
+          console.error("invalid local test login JSON");
+          process.exit(1);
+        }
+        const valid =
+          login.scope === "agent-side-local-test-only" &&
+          ["username", "password", "agentCode"].every(
+            (key) => typeof login[key] === "string" && login[key].length > 0,
+          );
+        if (!valid) {
+          console.error("invalid local test login fields");
+          process.exit(1);
+        }
+      ' "$local_test_login_source"; then
+      rm -f "$local_test_login_target"
+      exit 1
+    else
+      chmod 600 "$local_test_login_source"
+      local_test_login_temp="$local_test_login_target.tmp.$$"
+      cp "$local_test_login_source" "$local_test_login_temp"
+      chmod 600 "$local_test_login_temp"
+      mv -f "$local_test_login_temp" "$local_test_login_target"
+      has_local_test_login="yes"
+    fi
+  fi
 
   installed_skills=()
   skill_count="$(json_has_key "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); console.log((data.projects[$i].skills || []).length);")"
@@ -150,18 +233,8 @@ for ((i = 0; i < project_count; i++)); do
     ' "$PROJECTS_FILE" "$project_path/.claude/settings.local.json"
   fi
 
-  if [[ -d "$project_path/.git" ]]; then
-    exclude_file="$project_path/.git/info/exclude"
+  if [[ -n "$exclude_file" ]]; then
     touch "$exclude_file"
-    if ! grep -qxF ".codex/" "$exclude_file"; then
-      printf '\n.codex/\n' >> "$exclude_file"
-    fi
-    if ! grep -qxF "CLAUDE.local.md" "$exclude_file"; then
-      printf 'CLAUDE.local.md\n' >> "$exclude_file"
-    fi
-    if ! grep -qxF "AGENTS.override.md" "$exclude_file"; then
-      printf 'AGENTS.override.md\n' >> "$exclude_file"
-    fi
     if [[ "$has_claude_settings" == "yes" ]] && ! grep -qxF ".claude/settings.local.json" "$exclude_file"; then
       printf '.claude/settings.local.json\n' >> "$exclude_file"
     fi
@@ -183,5 +256,8 @@ for ((i = 0; i < project_count; i++)); do
   fi
   if [[ "$skill_count" != "0" ]]; then
     echo "  Skills: ${installed_skills[*]}"
+  fi
+  if [[ "$has_local_test_login" == "yes" ]]; then
+    echo "  Local test login: .codex/local-test-login.json"
   fi
 done
