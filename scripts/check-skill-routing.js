@@ -46,6 +46,229 @@ const CONTRACTS = [
     ],
   },
   {
+    id: "managed-workflow-precedence",
+    file: "rules/skill_trigger_guard.md",
+    patterns: [
+      {
+        regex: /only that legacy override block is inert.*per-turn routing contract, managed workflow precedence, and ticket and branch continuity always apply/is,
+        message: "keep managed routing active when Superpowers is disabled",
+      },
+      {
+        regex: /broad plugin process skill.*does not suppress an exact-match managed or project-specific workflow.*locale maintenance.*Figma implementation/is,
+        message: "do not let the direct-task fallback suppress exact managed workflows",
+      },
+      {
+        regex: /requirements-grill.*material-decision gate.*scoped source and repository discovery/is,
+        message: "gate requirements grilling on material decisions after discovery",
+      },
+      {
+        regex: /narrower project-specific workflow wins over generic `diagnosing-bugs` or `deep-module-design` only when.*preserves the user's requested authority.*mandates edits does not own a diagnosis-only or analysis-only request.*Do not stack both primary skills/is,
+        message: "preserve requested authority when preferring a narrower workflow",
+      },
+      {
+        regex: /deep-module-design.*architecture and interface judgment.*ordinary multi-file edit is not a trigger/is,
+        message: "keep deep-module design analytical and non-routine",
+      },
+      {
+        regex: /explicitly force or skip `requirements-grill`.*overrides its automatic gate/is,
+        message: "preserve explicit Requirements Grill overrides",
+      },
+      {
+        regex: /explicit `Do not use` conditions beat generic positive wording.*Only explicitly naming that skill can force it past those exclusions/is,
+        message: "make managed skill non-triggers win unless explicitly forced",
+      },
+    ],
+  },
+  {
+    id: "requirements-grill-trigger",
+    file: "skills/requirements-grill/SKILL.md",
+    expectedName: "requirements-grill",
+    patterns: [
+      {
+        target: "description",
+        regex: /^Use when\b/i,
+        message: "start the Requirements Grill description with Use when",
+      },
+      {
+        target: "description",
+        regex: /material unresolved human decisions after scoped source and repository discovery/i,
+        message: "trigger only after discovery leaves a material human decision",
+      },
+      {
+        target: "description",
+        regex: /two defensible interpretations.*observable behavior.*files.*data.*permissions.*scope.*acceptance/is,
+        message: "define what makes Requirements Grill ambiguity material",
+      },
+      {
+        target: "description",
+        regex: /Do not use when an approved, internally consistent, and sufficiently complete spec.*ambiguity is discoverable.*small mechanical edit.*known-root-cause fix.*repository or release operation.*status check.*lookup/is,
+        message: "keep explicit Requirements Grill non-triggers",
+      },
+      {
+        regex: /Do not ask the user for a fact that those sources can resolve safely/i,
+        message: "resolve discoverable facts before asking questions",
+      },
+      {
+        regex: /Automatically continue with this workflow only when all of the following are true/i,
+        message: "require every automatic Requirements Grill gate condition",
+      },
+      {
+        regex: /If any condition fails, exit immediately/i,
+        message: "exit Requirements Grill when its gate fails",
+      },
+      {
+        regex: /Approval alone does not make silence authoritative.*omitted material decision as unresolved/is,
+        message: "do not mistake approval for completeness",
+      },
+      {
+        regex: /force this workflow.*\$requirements-grill.*skip it.*proceed without a grill/is,
+        message: "support explicit force and skip overrides",
+      },
+      {
+        regex: /While a blocking decision remains, do not implement, edit a spec, create an ADR, or change product documentation during the grill/is,
+        message: "keep Requirements Grill read-only while decisions remain",
+      },
+      {
+        regex: /original build, change, or spec request remains authorization after the final blocking decision.*continue with the workflow that owns that original request without asking for redundant confirmation/is,
+        message: "continue the original request after Requirements Grill resolves",
+      },
+    ],
+  },
+  {
+    id: "requirements-grill-implicit-invocation",
+    file: "skills/requirements-grill/agents/openai.yaml",
+    patterns: [
+      {
+        regex: /allow_implicit_invocation:\s*true/i,
+        message: "allow automatic Requirements Grill selection",
+      },
+    ],
+  },
+  {
+    id: "diagnosing-bugs-trigger",
+    file: "skills/diagnosing-bugs/SKILL.md",
+    expectedName: "diagnosing-bugs",
+    patterns: [
+      {
+        target: "description",
+        regex: /^Use when\b/i,
+        message: "start the diagnosing-bugs description with Use when",
+      },
+      {
+        target: "description",
+        regex: /explicitly asks for diagnosis or root cause.*intermittent bug or performance regression.*initial scoped evidence does not localize the cause.*same symptom survived two materially different fix attempts/is,
+        message: "keep diagnosing-bugs triggers precise",
+      },
+      {
+        target: "description",
+        regex: /Do not use for a known-root-cause mechanical fix.*direct compiler or linter error.*requirements or design questions.*narrower project-specific skill/is,
+        message: "keep diagnosing-bugs non-triggers and precedence",
+      },
+      {
+        regex: /generic fallback.*narrower project-specific workflow takes precedence only when.*preserves the user's requested authority.*mandates edits does not own a diagnosis-only request.*must not be stacked as primary skills/is,
+        message: "defer diagnosis only when a narrower workflow preserves requested authority",
+      },
+      {
+        regex: /If the user asks only to diagnose, stop at supported root cause and recommended remediation\. Do not implement the fix/i,
+        message: "respect diagnosis-only requests",
+      },
+      {
+        regex: /`Do not use` conditions.*override positive trigger words.*Only the user explicitly naming `\$diagnosing-bugs` forces this workflow past those exclusions/is,
+        message: "make diagnosing-bugs non-triggers win unless explicitly forced",
+      },
+      {
+        regex: /tightest existing feedback loop that can turn red/i,
+        message: "establish a red-capable reproduction before fixing",
+      },
+      {
+        regex: /issue cannot be reproduced.*request only the exact missing artifact, access, input, or timing evidence.*Do not declare a root cause from an untested hunch/is,
+        message: "avoid unsupported root-cause claims when reproduction is blocked",
+      },
+      {
+        regex: /two to four ranked, falsifiable hypotheses/i,
+        message: "use bounded falsifiable hypotheses",
+      },
+      {
+        regex: /After two failed correction rounds, stop patching the same theory/i,
+        message: "stop repeating a failed diagnostic theory",
+      },
+      {
+        regex: /When code changes are authorized, temporary instrumentation may be added.*During diagnosis-only work, use existing telemetry or read-only observations.*request authorization before writing it/is,
+        message: "keep diagnosis-only instrumentation read-only",
+      },
+      {
+        regex: /Re-run the original reproduction.*Remove temporary instrumentation and throwaway artifacts/is,
+        message: "verify the original symptom and clean up diagnostics",
+      },
+    ],
+  },
+  {
+    id: "diagnosing-bugs-implicit-invocation",
+    file: "skills/diagnosing-bugs/agents/openai.yaml",
+    patterns: [
+      {
+        regex: /allow_implicit_invocation:\s*true/i,
+        message: "allow automatic diagnosing-bugs selection",
+      },
+    ],
+  },
+  {
+    id: "deep-module-design-trigger",
+    file: "skills/deep-module-design/SKILL.md",
+    expectedName: "deep-module-design",
+    patterns: [
+      {
+        target: "description",
+        regex: /^Use when\b/i,
+        message: "start the deep-module description with Use when",
+      },
+      {
+        target: "description",
+        regex: /design or improve a module interface.*callers must understand too many implementation details.*behavior is scattered across many files.*architecture makes testing and repeated changes difficult/is,
+        message: "tie deep-module design to demonstrated interface pressure",
+      },
+      {
+        target: "description",
+        regex: /Do not use for ordinary multi-file implementation.*local cleanup.*known small refactor.*narrower project-specific extraction or design skill/is,
+        message: "keep ordinary edits outside deep-module design",
+      },
+      {
+        regex: /Fewer files or fewer lines are not goals by themselves/i,
+        message: "avoid treating file count as module depth",
+      },
+      {
+        regex: /Analyze and propose by default\. Refactor only when the user asks/i,
+        message: "do not turn architecture analysis into an unrequested refactor",
+      },
+      {
+        regex: /narrower project-specific extraction or design workflow takes precedence only when.*preserves the user's requested authority.*mandates edits does not own an analysis-only request/is,
+        message: "preserve analysis-only authority when routing deep-module work",
+      },
+      {
+        regex: /active callers and demonstrated change pressure.*not speculative future reuse/is,
+        message: "apply YAGNI to module design",
+      },
+      {
+        regex: /If the interface is genuinely unsettled, compare at least two viable boundaries\. Otherwise recommend the direct minimal deepening without manufacturing alternatives/i,
+        message: "compare alternatives only when the boundary is unsettled",
+      },
+      {
+        regex: /Do not silently turn this analysis into a broad refactor, rename sweep, new abstraction hierarchy, or framework migration/i,
+        message: "prevent deep-module scope expansion",
+      },
+    ],
+  },
+  {
+    id: "deep-module-design-implicit-invocation",
+    file: "skills/deep-module-design/agents/openai.yaml",
+    patterns: [
+      {
+        regex: /allow_implicit_invocation:\s*true/i,
+        message: "allow automatic deep-module design selection",
+      },
+    ],
+  },
+  {
     id: "ticket-branch-continuity",
     file: "rules/skill_trigger_guard.md",
     patterns: [
@@ -453,6 +676,31 @@ const CONTRACTS = [
     forbiddenProjectSkills: [
       { project: "whitelabel-frontend-config", skill: "locale-entry-maintenance" },
       { project: "static-resources", skill: "locale-entry-maintenance" },
+    ],
+    patterns: [],
+  },
+  {
+    id: "managed-workflow-project-skill-install",
+    file: "projects.json",
+    expectedProjectSkills: [
+      { project: "Whitelabel_GSI_Platform_Multiverse", skill: "requirements-grill" },
+      { project: "Whitelabel_GSI_Platform_Multiverse", skill: "diagnosing-bugs" },
+      { project: "Whitelabel_GSI_Platform_Multiverse", skill: "deep-module-design" },
+      { project: "Whitelabel_GSI_Dashboard", skill: "requirements-grill" },
+      { project: "Whitelabel_GSI_Dashboard", skill: "diagnosing-bugs" },
+      { project: "Whitelabel_GSI_Dashboard", skill: "deep-module-design" },
+      { project: "whitelabel-frontend-config", skill: "requirements-grill" },
+      { project: "whitelabel-frontend-config", skill: "diagnosing-bugs" },
+      { project: "whitelabel-frontend-config", skill: "deep-module-design" },
+      { project: "static-resources", skill: "requirements-grill" },
+      { project: "static-resources", skill: "diagnosing-bugs" },
+      { project: "static-resources", skill: "deep-module-design" },
+      { project: "whitelabel-gsi-platform-multiverse-nx", skill: "requirements-grill" },
+      { project: "whitelabel-gsi-platform-multiverse-nx", skill: "diagnosing-bugs" },
+      { project: "whitelabel-gsi-platform-multiverse-nx", skill: "deep-module-design" },
+      { project: "whitelabel-gsi-locale-manager", skill: "requirements-grill" },
+      { project: "whitelabel-gsi-locale-manager", skill: "diagnosing-bugs" },
+      { project: "whitelabel-gsi-locale-manager", skill: "deep-module-design" },
     ],
     patterns: [],
   },

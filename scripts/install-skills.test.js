@@ -26,6 +26,11 @@ test("install exposes native skills and generated code-change safety rules", (t)
     path.join(skillDir, "SKILL.md"),
     "---\nname: figma-pixel-implementation\ndescription: Use when a Figma design is authoritative for UI work.\n---\n\n# Pixel\n",
   );
+  fs.mkdirSync(path.join(skillDir, "agents"), { recursive: true });
+  fs.writeFileSync(
+    path.join(skillDir, "agents/openai.yaml"),
+    "policy:\n  allow_implicit_invocation: true\n",
+  );
   fs.mkdirSync(path.join(fixtureRoot, "rules"), { recursive: true });
   fs.copyFileSync(
     path.join(rootDir, "rules/code_change_safety.md"),
@@ -64,6 +69,19 @@ test("install exposes native skills and generated code-change safety rules", (t)
     ".claude/skills/figma-pixel-implementation/SKILL.md",
   );
   assert.equal(fs.readFileSync(nativeSkill, "utf8"), fs.readFileSync(claudeSkill, "utf8"));
+  const nativeMetadata = path.join(
+    projectDir,
+    ".agents/skills/figma-pixel-implementation/agents/openai.yaml",
+  );
+  const claudeMetadata = path.join(
+    projectDir,
+    ".claude/skills/figma-pixel-implementation/agents/openai.yaml",
+  );
+  assert.equal(
+    fs.readFileSync(nativeMetadata, "utf8"),
+    fs.readFileSync(path.join(skillDir, "agents/openai.yaml"), "utf8"),
+  );
+  assert.equal(fs.readFileSync(claudeMetadata, "utf8"), fs.readFileSync(nativeMetadata, "utf8"));
 
   const rules = fs.readFileSync(path.join(projectDir, "AGENTS.override.md"), "utf8");
   assert.match(

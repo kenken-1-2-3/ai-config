@@ -6,8 +6,7 @@ Usage model: **pull, not push.** Read these only when the trigger fires — igno
 
 | Trigger | Read |
 |---|---|
-| Diagnosis or root-cause work matches the managed trigger | `../../skills/diagnosing-bugs/SKILL.md` |
-| Legacy fallback outside an ai-config-managed project, when `diagnosing-bugs` is unavailable | `systematic-debugging/SKILL.md` |
+| A bug survived two fix attempts (judgment-rubrics §1 escalation point) | `systematic-debugging/SKILL.md` |
 | Writing an implementation plan for multi-step work | `writing-plans/SKILL.md` |
 
 Upstream may evolve; if these feel stale, re-copy from `~/.claude/plugins/cache/claude-plugins-official/superpowers/<latest>/skills/` (that cache path is version-pinned and may change — verify it exists first).

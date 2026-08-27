@@ -8,14 +8,16 @@
     {
       "name": "Whitelabel_GSI_Platform_Multiverse",
       "path": "~/wow/Whitelabel_GSI_Platform_Multiverse",
+      "projectRules": [
+        "multiverse.md"
+      ],
       "rules": [
         "wow_gsi.md",
         "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
-        "code_change_safety.md",
-        "multiverse.md"
+        "code_change_safety.md"
       ],
       "skills": [
         "spec-driven-workflow",
@@ -23,23 +25,22 @@
         "locale-entry-maintenance",
         "multiverse-cms-navigation",
         "multiverse-cross-template-bugfix",
-        "multiverse-shared-hook-extraction",
-        "requirements-grill",
-        "diagnosing-bugs",
-        "deep-module-design"
+        "multiverse-shared-hook-extraction"
       ]
     },
     {
       "name": "Whitelabel_GSI_Dashboard",
       "path": "~/wow/Whitelabel_GSI_Dashboard",
+      "projectRules": [
+        "dashboard.md"
+      ],
       "rules": [
         "wow_gsi.md",
         "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
-        "code_change_safety.md",
-        "dashboard.md"
+        "code_change_safety.md"
       ],
       "codexRules": [
         "dashboard_local_testing.md"
@@ -48,79 +49,18 @@
       "skills": [
         "spec-driven-workflow",
         "figma-pixel-implementation",
-        "locale-entry-maintenance",
-        "requirements-grill",
-        "diagnosing-bugs",
-        "deep-module-design"
+        "locale-entry-maintenance"
       ]
     },
     {
       "name": "whitelabel-frontend-config",
       "path": "~/wow/whitelabel-frontend-config",
-      "rules": [
-        "wow_gsi.md",
-        "git_https_token_auth.md",
-        "jira_readonly.md",
-        "skill_trigger_guard.md",
-        "agent_dispatch.md",
-        "code_change_safety.md",
+      "projectRules": [
         "frontend_config.md"
       ],
-      "skills": [
-        "spec-driven-workflow",
-        "figma-pixel-implementation",
-        "requirements-grill",
-        "diagnosing-bugs",
-        "deep-module-design"
-      ]
-    },
-    {
-      "name": "static-resources",
-      "path": "~/wow/static-resources",
       "rules": [
         "wow_gsi.md",
         "git_https_token_auth.md",
-        "jira_readonly.md",
-        "skill_trigger_guard.md",
-        "agent_dispatch.md",
-        "code_change_safety.md",
-        "static_resources.md"
-      ],
-      "skills": [
-        "spec-driven-workflow",
-        "figma-pixel-implementation",
-        "requirements-grill",
-        "diagnosing-bugs",
-        "deep-module-design"
-      ]
-    },
-    {
-      "name": "whitelabel-gsi-platform-multiverse-nx",
-      "path": "~/wow/whitelabel-gsi-platform-multiverse-nx",
-      "rules": [
-        "wow_gsi.md",
-        "git_https_token_auth.md",
-        "jira_readonly.md",
-        "skill_trigger_guard.md",
-        "agent_dispatch.md",
-        "code_change_safety.md",
-        "multiverse_nx.md"
-      ],
-      "skills": [
-        "spec-driven-workflow",
-        "figma-pixel-implementation",
-        "locale-entry-maintenance",
-        "requirements-grill",
-        "diagnosing-bugs",
-        "deep-module-design"
-      ]
-    },
-    {
-      "name": "whitelabel-gsi-locale-manager",
-      "path": "~/wow/whitelabel-gsi-locale-manager",
-      "rules": [
-        "git_https_token_auth.md",
-        "locale_manager.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
@@ -128,10 +68,64 @@
       ],
       "skills": [
         "spec-driven-workflow",
-        "locale-entry-maintenance",
-        "requirements-grill",
-        "diagnosing-bugs",
-        "deep-module-design"
+        "figma-pixel-implementation"
+      ]
+    },
+    {
+      "name": "static-resources",
+      "path": "~/wow/static-resources",
+      "projectRules": [
+        "static_resources.md"
+      ],
+      "rules": [
+        "wow_gsi.md",
+        "git_https_token_auth.md",
+        "jira_readonly.md",
+        "skill_trigger_guard.md",
+        "agent_dispatch.md",
+        "code_change_safety.md"
+      ],
+      "skills": [
+        "spec-driven-workflow",
+        "figma-pixel-implementation"
+      ]
+    },
+    {
+      "name": "whitelabel-gsi-platform-multiverse-nx",
+      "path": "~/wow/whitelabel-gsi-platform-multiverse-nx",
+      "projectRules": [
+        "multiverse_nx.md"
+      ],
+      "rules": [
+        "wow_gsi.md",
+        "git_https_token_auth.md",
+        "jira_readonly.md",
+        "skill_trigger_guard.md",
+        "agent_dispatch.md",
+        "code_change_safety.md"
+      ],
+      "skills": [
+        "spec-driven-workflow",
+        "figma-pixel-implementation",
+        "locale-entry-maintenance"
+      ]
+    },
+    {
+      "name": "whitelabel-gsi-locale-manager",
+      "path": "~/wow/whitelabel-gsi-locale-manager",
+      "projectRules": [
+        "locale_manager.md"
+      ],
+      "rules": [
+        "git_https_token_auth.md",
+        "jira_readonly.md",
+        "skill_trigger_guard.md",
+        "agent_dispatch.md",
+        "code_change_safety.md"
+      ],
+      "skills": [
+        "spec-driven-workflow",
+        "locale-entry-maintenance"
       ]
     }
   ]

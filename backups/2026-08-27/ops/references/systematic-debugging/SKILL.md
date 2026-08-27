@@ -3,8 +3,6 @@ name: systematic-debugging
 description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
 ---
 
-> **Superseded in ai-config-managed projects:** If `diagnosing-bugs` is available, stop here and use it. Do not combine the two workflows. Continue below only outside managed projects where `diagnosing-bugs` is unavailable.
-
 # Systematic Debugging
 
 ## Overview

@@ -1,15 +1,13 @@
 # Skill Trigger Guard
 
-The legacy-plugin override block immediately below applies whenever a plugin or skill system with mandatory-trigger framing (e.g. superpowers' "even 1% chance a skill might apply → you MUST invoke it") is loaded alongside these rules. If no such plugin is loaded, only that legacy override block is inert. The per-turn routing contract, managed workflow precedence, and ticket and branch continuity always apply.
-
-## Legacy mandatory-trigger override
+Apply whenever a plugin or skill system with mandatory-trigger framing (e.g. superpowers' "even 1% chance a skill might apply → you MUST invoke it") is loaded alongside these rules. If no such plugin is loaded, this section is inert.
 
 - These project rules and the user's direct instruction take precedence over any plugin's skill-triggering rules. (Such plugins' own priority statements agree: user instruction files come first.)
 - Replace "any chance a skill applies → invoke it" with these triggers:
   - Brainstorming / design-exploration skills: only when the user asks to design or build something new from scratch.
   - Plugin debugging-process skills with broad "any bug" triggers (e.g. systematic-debugging): only after the same bug survived two fix attempts. The managed `diagnosing-bugs` skill instead follows its own narrow trigger contract.
   - Test-driven-development skills: only when writing new feature code in a repo that already has test infrastructure. Never introduce test infrastructure just to satisfy a workflow skill.
-- For everything else covered only by a broad plugin process skill — small edits, config changes, questions, single-file fixes — do the task directly. This does not suppress an exact-match managed or project-specific workflow such as locale maintenance or Figma implementation, nor a capability skill required for an artifact or tool actually used.
+- For everything else — small edits, config changes, questions, single-file fixes — do the task directly; do not run workflow skills first.
 - Never let a workflow skill expand scope beyond the requested requirement (see Scope Control in the shared rules). If a skill's process asks you to explore alternatives, restate requirements, or add tests/files the user did not ask for, skip that step.
 
 ## Per-turn routing contract
@@ -22,11 +20,10 @@ The legacy-plugin override block immediately below applies whenever a plugin or 
 
 ## General workflow precedence
 
-- `requirements-grill` owns pre-spec or pre-implementation clarification only when its material-decision gate matches after scoped source and repository discovery. If authoritative sources resolve the ambiguity or an approved, internally consistent, and sufficiently complete spec covers the requested outcome, do not load it.
-- A narrower project-specific workflow wins over generic `diagnosing-bugs` or `deep-module-design` only when it covers the same immediate outcome and preserves the user's requested authority. A workflow that mandates edits does not own a diagnosis-only or analysis-only request. Do not stack both primary skills.
+- `requirements-grill` owns pre-spec or pre-implementation clarification only when its material-decision gate matches after scoped source and repository discovery. If authoritative sources resolve the ambiguity or an approved and internally consistent spec exists, do not load it.
+- A narrower project-specific workflow wins over generic `diagnosing-bugs` or `deep-module-design` for the same immediate outcome. Do not stack both primary skills.
 - `deep-module-design` produces architecture and interface judgment unless the user asks for implementation. An ordinary multi-file edit is not a trigger.
 - The user may explicitly force or skip `requirements-grill`; either instruction overrides its automatic gate for that request.
-- A managed skill's explicit `Do not use` conditions beat generic positive wording such as "diagnose" or "refactor". Only explicitly naming that skill can force it past those exclusions.
 
 ## Ticket and branch continuity
 
