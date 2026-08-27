@@ -67,17 +67,17 @@ const weakeningScenarios = [
   {
     name: "member-side project opts into Dashboard local login",
     file: "projects.json",
-    from: '        "multiverse.md"\n      ],\n      "skills": [',
-    to: '        "multiverse.md"\n      ],\n      "localTestLogin": true,\n      "skills": [',
+    from: '        "multiverse.md"\n      ],\n      "rules": [',
+    to: '        "multiverse.md"\n      ],\n      "localTestLogin": true,\n      "rules": [',
     id: "dashboard-local-test-project-install",
     message: "keep localTestLogin disabled for Whitelabel_GSI_Platform_Multiverse",
   },
   {
     name: "member-side project loads the Dashboard local login rule",
     file: "projects.json",
-    from: '        "multiverse.md"\n      ],\n      "skills": [',
+    from: '        "multiverse.md"\n      ],\n      "rules": [',
     to:
-      '        "multiverse.md"\n      ],\n      "codexRules": [\n        "dashboard_local_testing.md"\n      ],\n      "skills": [',
+      '        "multiverse.md"\n      ],\n      "codexRules": [\n        "dashboard_local_testing.md"\n      ],\n      "rules": [',
     id: "dashboard-local-test-project-install",
     message: "keep dashboard_local_testing.md exclusive to Whitelabel_GSI_Dashboard",
   },
@@ -505,9 +505,9 @@ const weakeningScenarios = [
     name: "Locale skill installed in unrelated frontend config",
     file: "projects.json",
     from:
-      "\"frontend_config.md\"\n      ],\n      \"skills\": [\n        \"spec-driven-workflow\",\n        \"figma-pixel-implementation\",\n        \"requirements-grill\",\n        \"diagnosing-bugs\",\n        \"deep-module-design\"\n      ]",
+      "\"frontend_config.md\"\n      ],\n      \"rules\": [\n        \"wow_gsi.md\",\n        \"git_https_token_auth.md\",\n        \"jira_readonly.md\",\n        \"skill_trigger_guard.md\",\n        \"agent_dispatch.md\",\n        \"code_change_safety.md\"\n      ],\n      \"skills\": [\n        \"spec-driven-workflow\",\n        \"figma-pixel-implementation\",\n        \"requirements-grill\",\n        \"diagnosing-bugs\",\n        \"deep-module-design\"\n      ]",
     to:
-      "\"frontend_config.md\"\n      ],\n      \"skills\": [\n        \"spec-driven-workflow\",\n        \"figma-pixel-implementation\",\n        \"locale-entry-maintenance\",\n        \"requirements-grill\",\n        \"diagnosing-bugs\",\n        \"deep-module-design\"\n      ]",
+      "\"frontend_config.md\"\n      ],\n      \"rules\": [\n        \"wow_gsi.md\",\n        \"git_https_token_auth.md\",\n        \"jira_readonly.md\",\n        \"skill_trigger_guard.md\",\n        \"agent_dispatch.md\",\n        \"code_change_safety.md\"\n      ],\n      \"skills\": [\n        \"spec-driven-workflow\",\n        \"figma-pixel-implementation\",\n        \"locale-entry-maintenance\",\n        \"requirements-grill\",\n        \"diagnosing-bugs\",\n        \"deep-module-design\"\n      ]",
     id: "remote-i18n-project-skill-install",
     message: "do not install locale-entry-maintenance for whitelabel-frontend-config",
   },

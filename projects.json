@@ -8,14 +8,16 @@
     {
       "name": "Whitelabel_GSI_Platform_Multiverse",
       "path": "~/wow/Whitelabel_GSI_Platform_Multiverse",
+      "projectRules": [
+        "multiverse.md"
+      ],
       "rules": [
         "wow_gsi.md",
         "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
-        "code_change_safety.md",
-        "multiverse.md"
+        "code_change_safety.md"
       ],
       "skills": [
         "spec-driven-workflow",
@@ -32,14 +34,16 @@
     {
       "name": "Whitelabel_GSI_Dashboard",
       "path": "~/wow/Whitelabel_GSI_Dashboard",
+      "projectRules": [
+        "dashboard.md"
+      ],
       "rules": [
         "wow_gsi.md",
         "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
-        "code_change_safety.md",
-        "dashboard.md"
+        "code_change_safety.md"
       ],
       "codexRules": [
         "dashboard_local_testing.md"
@@ -57,14 +61,16 @@
     {
       "name": "whitelabel-frontend-config",
       "path": "~/wow/whitelabel-frontend-config",
+      "projectRules": [
+        "frontend_config.md"
+      ],
       "rules": [
         "wow_gsi.md",
         "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
-        "code_change_safety.md",
-        "frontend_config.md"
+        "code_change_safety.md"
       ],
       "skills": [
         "spec-driven-workflow",
@@ -77,14 +83,16 @@
     {
       "name": "static-resources",
       "path": "~/wow/static-resources",
+      "projectRules": [
+        "static_resources.md"
+      ],
       "rules": [
         "wow_gsi.md",
         "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
-        "code_change_safety.md",
-        "static_resources.md"
+        "code_change_safety.md"
       ],
       "skills": [
         "spec-driven-workflow",
@@ -97,14 +105,16 @@
     {
       "name": "whitelabel-gsi-platform-multiverse-nx",
       "path": "~/wow/whitelabel-gsi-platform-multiverse-nx",
+      "projectRules": [
+        "multiverse_nx.md"
+      ],
       "rules": [
         "wow_gsi.md",
         "git_https_token_auth.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
-        "code_change_safety.md",
-        "multiverse_nx.md"
+        "code_change_safety.md"
       ],
       "skills": [
         "spec-driven-workflow",
@@ -118,9 +128,11 @@
     {
       "name": "whitelabel-gsi-locale-manager",
       "path": "~/wow/whitelabel-gsi-locale-manager",
+      "projectRules": [
+        "locale_manager.md"
+      ],
       "rules": [
         "git_https_token_auth.md",
-        "locale_manager.md",
         "jira_readonly.md",
         "skill_trigger_guard.md",
         "agent_dispatch.md",
