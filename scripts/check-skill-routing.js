@@ -425,6 +425,38 @@ const CONTRACTS = [
         regex: /Permission enforcement, destructive-action confirmation, in-flight duplicate prevention, loading locks, and objectively invalid input remain valid blockers/is,
         message: "retain legitimate interaction blockers",
       },
+      {
+        regex: /Treat an API contract gap as material.*required endpoint.*request／response field.*mode discriminator.*persistence mapping.*authoritative schema.*real response/is,
+        message: "classify material API contract gaps from authoritative evidence",
+      },
+      {
+        regex: /same user-facing turn.*exact missing or unknown contract.*evidence checked.*affected requirements and screens.*safe remaining scope.*owner／next action/is,
+        message: "report material API gaps immediately with impact and next action",
+      },
+      {
+        regex: /Do not guess a production response shape.*assumed fields optional.*`0`.*empty strings.*empty lists.*API／Network／persistence verification `BLOCKED`/is,
+        message: "forbid defaults that disguise an unverified production contract",
+      },
+      {
+        regex: /do not merge or promote the affected feature to `main`, deploy it, or release it/is,
+        message: "block production promotion while a material API contract is missing",
+      },
+      {
+        regex: /feature-branch commit or push may preserve explicitly incomplete work only after the user has been told and explicitly accepts that exact API／verification gap for that operation/is,
+        message: "require operation-specific user acceptance before preserving an API gap in git",
+      },
+      {
+        regex: /fake／mock／fixture／stub data.*bounded UI-only slice.*test／dev-only.*never integration success/is,
+        message: "keep fixture authorization bounded and separate from integration evidence",
+      },
+      {
+        regex: /^(?![\s\S]*(?:API contract gaps?|material API gaps?)[^\n]{0,120}(?:only|may|can)[^\n]{0,80}(?:final handoff|later))[\s\S]*$/i,
+        message: "forbid additive exceptions that defer material API gap notification",
+      },
+      {
+        regex: /^(?![\s\S]*fixture success[^\n]{0,80}(?:may|can)[^\n]{0,40}(?:count as|be reported as) integration success)[\s\S]*$/i,
+        message: "forbid additive exceptions that promote fixture evidence",
+      },
     ],
   },
   {
@@ -580,6 +612,34 @@ const CONTRACTS = [
         message: "retain legitimate blockers in specs",
       },
       {
+        regex: /實質 API 契約缺口必須即時告知.*同一個 user-facing turn.*缺少／未知的契約.*已查證據.*受影響 `REQ-ID`／畫面.*可安全繼續範圍.*owner／next action/is,
+        message: "notify material API contract gaps during the discovery turn",
+      },
+      {
+        regex: /`API_CONTRACT_MISSING`.*已告知的技術事實.*不需要 `DEC-ID`.*不可以/is,
+        message: "keep missing API contracts distinct from product decisions and handoff-ready fallbacks",
+      },
+      {
+        regex: /\[UNRESOLVED_API\].*`API_CONTRACT_MISSING`.*不可一面寫「待 API read-back／尚未提供」一面標 `CONFIRMED`/is,
+        message: "keep requirement status consistent with unresolved API evidence",
+      },
+      {
+        regex: /包括 `UI_REQUIRED_API_BLOCKED`.*API Contract Notification Log.*同輪 user-facing notification evidence.*fixture.*API／Network／persistence VT 維持 `BLOCKED`.*不可把 UI fixture pass 說成 integration success/is,
+        message: "record notification evidence and keep fixture verification bounded",
+      },
+      {
+        regex: /通知 evidence 必須以.*Reported in current task\/turn.*已於本輪告知.*pending.*任意非空文字都不算/is,
+        message: "require positive same-turn notification evidence",
+      },
+      {
+        regex: /\[VERIFIED_ABSENCE\].*schema／response evidence.*本 REQ 不需要／不受影響.*required 欄位確定缺少仍是 `API_CONTRACT_MISSING`.*unavailable.*不得使用此標記/is,
+        message: "distinguish verified API omissions from unresolved contract gaps",
+      },
+      {
+        regex: /active row 有 `UI_REQUIRED_API_BLOCKED`.*`BOUNDED_UI_ONLY`.*正常完整契約用 `FULL_CONTRACT`/is,
+        message: "bind blocked UI handoff to a machine-readable execution boundary",
+      },
+      {
         regex: /^(?![\s\S]*保留 UI，局部 disable、阻擋儲存或明示待串接)[\s\S]*$/i,
         message: "reject the stale pre-disable fallback clause",
       },
@@ -604,6 +664,30 @@ const CONTRACTS = [
       {
         regex: /## Edge Cases(?:(?!\n## ).)*合法阻擋[^\n]*權限[^\n]*破壞性操作確認[^\n]*in-flight 防重複[^\n]*loading lock[^\n]*客觀無效輸入/is,
         message: "template must retain legitimate interaction blockers",
+      },
+      {
+        regex: /Status 只能使用.*`API_CONTRACT_MISSING`.*`UI_REQUIRED_API_BLOCKED`/is,
+        message: "template must expose the missing-contract status",
+      },
+      {
+        regex: /\[UNRESOLVED_API\].*status 填 `API_CONTRACT_MISSING`.*不可寫「待 API read-back／尚未提供」卻標 `CONFIRMED`/is,
+        message: "template must prevent false CONFIRMED API rows",
+      },
+      {
+        regex: /\[VERIFIED_ABSENCE\].*schema／response evidence.*本 REQ 不需要／不受影響.*required 欄位確定缺少仍須標 `API_CONTRACT_MISSING` 並通知.*unavailable.*不算 verified absence/is,
+        message: "template must document verified API omissions without false blockers",
+      },
+      {
+        regex: /## API Contract Notification Log.*Notification ID.*Missing API contract \/ evidence.*Safe scope \/ next action.*User-facing notification \/ evidence/is,
+        message: "template must capture API gap notification evidence",
+      },
+      {
+        regex: /User-facing notification evidence 必須是.*Reported in current task\/turn.*已於本輪告知.*pending.*任意非空文字都不算/is,
+        message: "template must require positive same-turn notification evidence",
+      },
+      {
+        regex: /Execution boundary: `FULL_CONTRACT`.*解完 active `API_CONTRACT_MISSING`／`PROVISIONAL`／`SOURCE_CONFLICT`.*bounded UI fallback.*`UI_REQUIRED_API_BLOCKED`.*`BOUNDED_UI_ONLY`.*API／Network／persistence VT.*notification.*`BLOCKED`／open/is,
+        message: "template must block broad handoff of unresolved API integration",
       },
       {
         regex: /^(?![\s\S]*error \/ API unavailable：`<保留哪些 UI、局部阻擋什麼>`)[\s\S]*$/i,
@@ -662,6 +746,18 @@ const CONTRACTS = [
       { project: "static-resources", rule: "code_change_safety.md" },
       { project: "whitelabel-gsi-platform-multiverse-nx", rule: "code_change_safety.md" },
       { project: "whitelabel-gsi-locale-manager", rule: "code_change_safety.md" },
+    ],
+    patterns: [],
+  },
+  {
+    id: "wow-gsi-api-gate-project-install",
+    file: "projects.json",
+    expectedProjectRules: [
+      { project: "Whitelabel_GSI_Platform_Multiverse", rule: "wow_gsi.md" },
+      { project: "Whitelabel_GSI_Dashboard", rule: "wow_gsi.md" },
+      { project: "whitelabel-frontend-config", rule: "wow_gsi.md" },
+      { project: "static-resources", rule: "wow_gsi.md" },
+      { project: "whitelabel-gsi-platform-multiverse-nx", rule: "wow_gsi.md" },
     ],
     patterns: [],
   },

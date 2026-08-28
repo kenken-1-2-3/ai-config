@@ -20,7 +20,6 @@ description: Use when the user explicitly asks to author, update, hand off, or a
 - **UI ↔ persistence 分開判斷**：需求要求的控制項必須保持 enabled、selectable、editable；API、schema、endpoint 或 persistence 缺口不得作為 hide、pre-disable 或 lock 的理由。使用者完成輸入並嘗試動作後，若後端拒絕或無法持久化，保留表單狀態並明確提醒哪些值未儲存及原因；不得顯示假成功或靜默丟值。權限、破壞性操作確認、in-flight 防重複、loading lock 與客觀無效輸入仍可阻擋互動或送出。
 - **後端限制不自動授權前端 UX**：後端可以執行既有 constraint；新增前端 validation、copy、hide／disable state 或其他使用者可感知呈現，仍須通過產品權威來源 gate。
 - **明確決策才可縮 scope**：只有使用者核准的排除項能標成 `OUT_OF_SCOPE_APPROVED`；「repo 現在沒有」「API 還沒提供」都不是刪需求的理由。API-blocked fallback 與核准排除都必須連到 `DEC-ID`。
-- **實質 API 契約缺口必須即時告知**：需求所需的 endpoint、request／response 欄位、enum／mode discriminator、persistence mapping 或 live response 缺少或未經權威 schema／真實 response 驗證，且猜測會改變顯示、模式選擇、儲存、資料完整性或驗收時，先暫停 affected integration path，並在發現的同一個 user-facing turn 告知使用者。至少列出缺少／未知的契約、已查證據、受影響 `REQ-ID`／畫面、影響、可安全繼續範圍與 owner／next action；不可只埋在 spec、code comment 或最後交接。
 
 ## 來源各管什麼
 
@@ -39,8 +38,7 @@ description: Use when the user explicitly asks to author, update, hand off, or a
 | Status | 用途 | 可否 handoff |
 | --- | --- | --- |
 | `CONFIRMED` | 來源一致或使用者已確認 | 可以 |
-| `API_CONTRACT_MISSING` | 必要 API 契約或 live read-back 尚缺；這是已告知的技術事實，不需要 `DEC-ID` | 不可以；先取得並驗證契約 |
-| `UI_REQUIRED_API_BLOCKED` | UI／流程與需求控制項保持可操作；使用者嘗試動作後，只有對應 persistence 可回報失敗並保留輸入 | 只可 handoff `DEC-ID` 明定的 bounded fallback／UI fixture scope，且 Handoff Readiness 必須是 `Execution boundary: BOUNDED_UI_ONLY`；API integration 不在 handoff scope |
+| `UI_REQUIRED_API_BLOCKED` | UI／流程與需求控制項保持可操作；使用者嘗試動作後，只有對應 persistence 可回報失敗並保留輸入 | 可以，需用 `DEC-ID` 寫清楚 post-action reminder、未儲存範圍與 blocker |
 | `PROVISIONAL` | 暫定推論，仍待確認 | 不可以 |
 | `SOURCE_CONFLICT` | 同一責任的來源互斥 | 不可以 |
 | `OUT_OF_SCOPE_APPROVED` | 使用者已明確核准排除 | 可以，矩陣與 Decision Log 必須以 `DEC-ID` 雙向對映 |
@@ -49,15 +47,14 @@ description: Use when the user explicitly asks to author, update, hand off, or a
 
 1. **固定來源版本**：建立 Source Responsibilities 表；每個可獨立遺漏的需求 section、畫面、frame、asset、state 或 API snapshot 各有 Source ID。本地圖片／PDF 放到可交接的位置並使用相對連結。
 2. **先抽需求、後看技術名詞**：從需求與畫面逐項抽成原子 `REQ-ID`，保留使用者用語。API 的 `group`、`entity`、`format_example` 等名稱只能先放在 API / persistence 欄；若產品來源未要求呈現，UI surface 寫 `N/A — 產品來源未要求呈現`，不建立對應 UI AC。
-3. **建立追蹤矩陣**：每列都填來源 anchor／asset、UI surface、API / persistence、status、Decision ID、Acceptance ID、Verification ID。UI surface 不是 `N/A + 理由` 時，該列至少引用一個 Responsibility = `Scope / behavior`、`UI / visual` 或 `User decision` 的來源；API／CODE source 可補充但不能單獨授權 UI。非 UI、非持久化或不需決策時也要明寫 `N/A + 理由`，不可只寫 `N/A`。任何非 `N/A + 理由` 的 `CONFIRMED` API／persistence contract 都必須直接引用 Responsibility = `API / persistence` 的來源，或以 checker 支援的明確 `Same as REQ-*`／`Inherits from REQ-*` chain 繼承該來源；不可用產品需求或 repo 猜 response shape。必要契約未驗證時，API / persistence 以 `[UNRESOLVED_API]` 開頭並標 `API_CONTRACT_MISSING`；不可一面寫「待 API read-back／尚未提供」一面標 `CONFIRMED`。只有權威契約已驗證某欄位刻意不存在，且該欄位不被本列 `REQ-ID` 需要、完全不影響其行為時，才能以 `[VERIFIED_ABSENCE]` 開頭、引用 Responsibility = `API / persistence` 的 Source ID，並在 cell 寫出具名欄位／endpoint 與具體 schema／response evidence、by design／已確認不存在的結論，以及「本 REQ 不需要／不受影響」。required 欄位確定缺少仍是 `API_CONTRACT_MISSING`；unavailable、unverified、pending 或待 read-back 的描述也不得使用此標記。
-4. **登記並告知 API 契約缺口**：每個 API / persistence 仍含 `[UNRESOLVED_API]` 或等價未解契約敘述的 row（包括 `UI_REQUIRED_API_BLOCKED`）都在 API Contract Notification Log 以唯一 `NTF-ID` 記錄日期、受影響 `REQ-ID`、缺少契約與已查證據、受影響行為、安全範圍／next action，以及同輪 user-facing notification evidence。通知 evidence 必須以 `Reported in current task/turn: ...` 或 `已於本輪告知：...` 這類正向、可定位的紀錄表達；`pending`、未通知、稍後通知或任意非空文字都不算。fake data 只允許使用者明確限定的 UI-only slice；fixture 必須留在 test／dev，API／Network／persistence VT 維持 `BLOCKED`，且不可把 UI fixture pass 說成 integration success。若使用者明確核准 bounded fallback，可用 `DEC-ID` 將 affected row 改成 `UI_REQUIRED_API_BLOCKED`，但 blocker 仍未解、`Execution boundary` 必須是 `BOUNDED_UI_ONLY`，不得直接改成 `CONFIRMED`。
-5. **做雙向 read-back**：
+3. **建立追蹤矩陣**：每列都填來源 anchor／asset、UI surface、API / persistence、status、Decision ID、Acceptance ID、Verification ID。UI surface 不是 `N/A + 理由` 時，該列至少引用一個 Responsibility = `Scope / behavior`、`UI / visual` 或 `User decision` 的來源；API／CODE source 可補充但不能單獨授權 UI。非 UI、非持久化或不需決策時也要明寫 `N/A + 理由`，不可只寫 `N/A`。
+4. **做雙向 read-back**：
    - 逐段讀原需求／每張圖，確認都有 `REQ-ID`。
    - 逐列讀矩陣，確認 spec 的每個功能都有來源。
    - 特別檢查入口、list/create/edit/detail、主要區塊、空／錯誤／loading／permission 狀態，避免因 API 缺口整段消失或把需求控制項預先停用。
-6. **一個 feature 只留一份 canonical spec**：canonical spec 持有完整 source inventory 與所有 `REQ-ID`；大型需求只用 Active REQ IDs 拆 execution slices／新 tasks，不另建會分散真相的 child specs。既有或外部限制下的 slice spec 要標 `SLICE` 並連回 canonical，且永遠不可宣稱 feature complete。
-7. **定義客觀驗收與驗證**：每個 `REQ-ID` 至少連到一個 `AC-ID` 與 `VT-ID`。驗收寫可觀察結果；驗證寫指令、操作、截圖或 Network evidence 的取得方式。AC／VT 不得增加來源沒有授權的可觀察行為；新增行為必須拆成有產品權威來源的原子需求。
-8. **記錄決策並請使用者確認**：所有縮 scope、命名、fallback 與來源衝突決策都寫入 Decision Log，並以 `DEC-ID` 對映回受影響的 `REQ-ID`。API-blocked fallback 與 `OUT_OF_SCOPE_APPROVED` 的 Approval / source 必須引用 Responsibility = `User decision` 的 Source ID，API／repo source 不能充當核准。使用者確認後立即更新矩陣，不讓決策只留在對話。
+5. **一個 feature 只留一份 canonical spec**：canonical spec 持有完整 source inventory 與所有 `REQ-ID`；大型需求只用 Active REQ IDs 拆 execution slices／新 tasks，不另建會分散真相的 child specs。既有或外部限制下的 slice spec 要標 `SLICE` 並連回 canonical，且永遠不可宣稱 feature complete。
+6. **定義客觀驗收與驗證**：每個 `REQ-ID` 至少連到一個 `AC-ID` 與 `VT-ID`。驗收寫可觀察結果；驗證寫指令、操作、截圖或 Network evidence 的取得方式。AC／VT 不得增加來源沒有授權的可觀察行為；新增行為必須拆成有產品權威來源的原子需求。
+7. **記錄決策並請使用者確認**：所有縮 scope、命名、fallback 與來源衝突決策都寫入 Decision Log，並以 `DEC-ID` 對映回受影響的 `REQ-ID`。API-blocked fallback 與 `OUT_OF_SCOPE_APPROVED` 的 Approval / source 必須引用 Responsibility = `User decision` 的 Source ID，API／repo source 不能充當核准。使用者確認後立即更新矩陣，不讓決策只留在對話。
 
 依 [`spec-template.md`](./spec-template.md) 建立 `~/wow/ai-config/specs/<project>/<feature>.md`。spec 或實作完成後不得自行 commit；每次 commit／merge 都要取得使用者針對該次操作的明確確認。
 
@@ -75,7 +72,7 @@ node ~/wow/ai-config/scripts/check-spec.js ~/wow/ai-config/specs/<project>/<feat
 node ~/wow/ai-config/scripts/check-spec.js --ready ~/wow/ai-config/specs/<project>/<feature>.md
 ```
 
-`--ready` 必須通過才可交給實作者。只有目前 slice 的 `REQ-ID` 放進 Active REQ IDs；checker 只用 active IDs 判斷 handoff blocker，讓已明確記錄的非 active API gap 不妨礙獨立工作。它會拒絕不存在、已核准排除或仍是 `API_CONTRACT_MISSING` 的 active ID，也會拒絕任何把未解 API 契約標成 `CONFIRMED`／`PROVISIONAL` 的 row。active row 有 `UI_REQUIRED_API_BLOCKED` 時，必須用 `BOUNDED_UI_ONLY` 限定交接；正常完整契約用 `FULL_CONTRACT`。
+`--ready` 必須通過才可交給實作者。只有目前 slice 的 `REQ-ID` 放進 Active REQ IDs；checker 會拒絕不存在或已核准排除的 active ID。
 
 要宣稱整個 feature 完成前，必須在 `CANONICAL` spec 上確認所有非排除需求都已驗收，且不能仍有 API-blocked／未決狀態，再跑：
 
@@ -83,7 +80,7 @@ node ~/wow/ai-config/scripts/check-spec.js --ready ~/wow/ai-config/specs/<projec
 node ~/wow/ai-config/scripts/check-spec.js --complete ~/wow/ai-config/specs/<project>/<feature>.md
 ```
 
-checker 負責 spec role、ID、必要章節、source coverage、User decision authority、決策雙向對映、API Contract Notification Log、active IDs、execution boundary、狀態、驗收／驗證引用、本地素材與 completion evidence；`SLICE` spec 不能通過 `--complete`。語意是否忠於來源仍由雙向 read-back 與使用者確認負責。
+checker 負責 spec role、ID、必要章節、source coverage、User decision authority、決策雙向對映、active IDs、狀態、驗收／驗證引用、本地素材與 completion evidence；`SLICE` spec 不能通過 `--complete`。語意是否忠於來源仍由雙向 read-back 與使用者確認負責。
 
 ## 交接與 task 切分
 
@@ -100,7 +97,7 @@ checker 負責 spec role、ID、必要章節、source coverage、User decision a
 
 - 先核對 active `REQ-ID`，再逐條核對其 `AC-ID` 與 `VT-ID`；不得用「大致完成」取代逐條結果。
 - 逐條反問「刪掉此 user-visible 行為後是否仍完全符合產品來源」；若是，且沒有 `User decision` 補充授權，就把它視為 scope creep 並移除。
-- 檢查是否遺漏來源要求、是否出現無來源的新功能、是否把局部 API blocker 擴大成 UI 刪除／預先停用，或在失敗時清掉輸入、顯示假成功。若 API contract／read-back 未驗證，確認已同輪告知、標 `API_CONTRACT_MISSING` 並留下 `NTF-ID`；fixture pass 不得算 integration evidence。
+- 檢查是否遺漏來源要求、是否出現無來源的新功能、是否把局部 API blocker 擴大成 UI 刪除／預先停用，或在失敗時清掉輸入、顯示假成功。
 - 檢查 Out of scope 與 Decision Log，避免實作者重新決定已凍結事項。
 - 每個通過項要附實際 command、截圖、Network 或 read-back evidence；未驗證就明寫未驗證，不得宣稱完成。
 - Slice 完成只能宣稱 active `REQ-ID` 完成。整個 feature 只有在 `CANONICAL` spec 中每個非 `OUT_OF_SCOPE_APPROVED` 的需求都有已勾選 AC／VT evidence、Remaining / blocked REQ IDs 精確等於 `NONE`，且 `--complete` 通過時才能宣稱完成。
