@@ -22,20 +22,52 @@ Harness-agnostic delegation, context-budget and verification rules. Claude Code 
 
 Keep model identifiers in this registry only. When models change, update the bindings and rerun representative tasks; do not rewrite the workflow.
 
-| Role family | Current binding | Responsibility |
+| Role family | Current binding | Reasoning effort | Responsibility |
+|---|---|---|---|
+| Judgment | `gpt-6-astra` | `medium` | Requirements, specification, acceptance design, unknown-root-cause diagnosis, high-risk review, final release judgment |
+| Execution | `gpt-6-sol` | `medium` | Bounded lookup, implementation, test authoring, browser work, and known-root-cause fixes |
+| Testing | `gpt-6-luna` | `low` | Read-only execution of already specified verification commands or cases and exact output reporting |
+
+The table below governs model and effort for eligible workloads; it does not require delegation for short checks or change the active session's model. The main Judgment agent may run a routine single short lookup or check directly. Apply any model or effort change through an exposed, supported runtime control; writing this rule does not switch a running worker.
+
+| Workload | Role | Effort |
 |---|---|---|
-| Judgment | `gpt-5.6-sol` | Requirements, specification, acceptance design, unknown-root-cause diagnosis, high-risk review, final release judgment |
-| Execution | `gpt-5.6-terra` | Bounded implementation and fixes whose root cause is already established |
+| End-to-end coordination; routine requirements, specification, or existing-architecture analysis | Judgment | `medium` |
+| Scoped, known-source file, flow, or configuration lookup | Execution | `medium` |
+| Clear routine implementation; known-root-cause fix | Execution | `medium` |
+| Figma PC/H5 multi-state implementation; multi-module or complex-state known-root-cause fix | Execution | `high` |
+| Unknown-root-cause, cross-system, or intermittent bug diagnosis | Judgment | `high` |
+| Ordinary test-code authoring against frozen approved behavior | Execution | `medium` |
+| Complex-state or edge-case test-code authoring against frozen approved behavior | Execution | `high` |
+| High-risk acceptance design or review | Judgment | `high` |
+| Already specified test, build, or log execution | Testing | `low` |
+| Browser operation or visual verification | Execution | `medium`; `high` for complex states or visual comparisons |
+| Explicitly requested ordinary review | Execution | `high` |
+
+#### Codex Judgment effort
+
+- Use `medium` by default for ordinary task coordination, requirements/specification and existing-architecture analysis, integrating scoped lookup results, and routine acceptance against defined criteria. Bounded known-source tracing may go to Execution as shown above; Judgment retains requirements and acceptance ownership.
+- Use `high` for conflicting authoritative sources, unclear cross-site impact, new architecture or consequential cross-system tradeoffs, unknown-root-cause diagnosis, and consequential payment, permission, security, or release-readiness judgment. Escalate only the affected phase, then return to `medium` for routine follow-ups; do not redo all medium work at high.
+- If a required model or effort control is unavailable, disclose the missing binding and follow the fallback policy below; never claim that a written rule changed a running worker.
+- Missing requirements or API facts still require authoritative evidence or user decisions; effort does not authorize guessing or bypassing blockers. Existing approval, scope, test, and release safeguards remain unchanged.
 
 For a Codex request that changes code or behavior:
 
 1. The main Judgment agent resolves material ambiguity and freezes an acceptance packet before any implementation handoff. The packet must state the goal and source anchors, allowed and forbidden paths, locked acceptance artifacts, objective acceptance criteria and commands, and the baseline working-tree state. External acceptance tests, original fixtures or topology, snapshots, and user-provided expected values are locked unless the user explicitly changes the requirement. The packet may separately permit adding implementation-level tests.
-2. After the work is bounded, spawn or resume one native execution-focused worker with the Execution binding and `high` reasoning. This serial handoff is allowed even when there is only one coherent implementation task. Give the worker only the acceptance packet and necessary file anchors, not the full conversation.
+2. After the work is bounded, spawn one native execution-focused worker with the Execution registry model and workload-table effort, or resume one only when its known model and effort match. Otherwise start a fresh bounded worker with minimal context. This serial handoff is allowed even when there is only one coherent implementation task. Give the worker only the acceptance packet and necessary file anchors, not the full conversation.
 3. The Execution worker must not edit locked acceptance artifacts, weaken or skip existing checks, introduce test-only production paths, or change fixtures/config merely to make a check pass. If the contract and executable behavior cannot both be satisfied, stop and return `CONTRACT_CONFLICT` with the exact conflicting clauses and evidence.
 4. The main Judgment agent owns integration and final verification. Compare the resulting diff and locked artifacts with the recorded baseline, inspect every changed hunk, rerun the relevant deterministic checks in the real execution path, and judge every blocking acceptance criterion individually. Green tests or an aggregate pass percentage cannot override a failed critical criterion.
 5. Send a localized correction with a known root cause back to the same Execution worker with the failing evidence. Return to the Judgment agent for diagnosis or re-planning when the root cause is unknown, assumptions changed, `CONTRACT_CONFLICT` was returned, a locked artifact changed, or two correction rounds failed.
 6. Do not silently substitute a different model when a binding is unavailable. Preserve the task state, report the unavailable binding, and either use the Judgment agent as an explicit quality-first fallback or ask the user when the fallback would materially change cost, latency, or scope.
 7. When this pilot routes implementation, the final report must include the route used, correction-round count, acceptance evidence, and anything not verified. Never include model or tool attribution in commit or PR text.
+
+### Testing dispatch
+
+- Delegating test execution is optional; all verification required by the acceptance packet and project rules remains mandatory. Use one native Testing worker with the Testing registry model and workload-table effort only for an eligible delegated subtask that runs already specified verification commands or cases. Resume only when its known model and effort match; otherwise start a fresh bounded worker. The delegation gate remains in force; a single short deterministic check stays with the main agent.
+- Test writing is separate from test execution. Execution may add implementation-level tests only against frozen approved expected behavior. Judgment owns acceptance criteria, novel expectations, and ambiguous failures. Testing is read-only and may not change code, tests, fixtures, configuration, scope, or expected results.
+- Give the Testing worker the frozen acceptance packet, exact commands or cases, required environment, and log location. It must not edit code, locked tests, fixtures, snapshots, or configuration; it must not reduce required test scope or create new test expectations.
+- The Testing worker reports the actual command and environment, exit status, evidence or log path, and `PASS`, `FAIL`, `BLOCKED`, or `UNVERIFIED` for each checked criterion. A skipped, blocked, or failing check never becomes success, and partial evidence never establishes root cause.
+- Route planning of new test expectations and ambiguous failures to Judgment. Route fixes only after the root cause is established, and then to Execution. Main Judgment retains final verification and acceptance responsibilities.
 
 若 harness 不支援 delegation，使用 summarize-and-discard：大量讀取後只保留結論、決策與 `file:line`，不要反覆重讀 raw output。
 
