@@ -24,7 +24,8 @@ Keep model identifiers in this registry only. When models change, update the bin
 
 | Role family | Current binding | Reasoning effort | Responsibility |
 |---|---|---|---|
-| Judgment | `gpt-6-astra` | `medium` | Requirements, specification, acceptance design, unknown-root-cause diagnosis, high-risk review, final release judgment |
+| Judgment | `gpt-6-sol` | `high` | Coordination, routine requirements and specification, existing-architecture analysis, and routine acceptance |
+| Specialist Judgment | `gpt-6-astra` | `high` | Complex or high-risk judgment, unknown-root-cause diagnosis, high-risk acceptance and review, final release judgment |
 | Execution | `gpt-6-sol` | `medium` | Bounded lookup, implementation, test authoring, browser work, and known-root-cause fixes |
 | Testing | `gpt-6-luna` | `low` | Read-only execution of already specified verification commands or cases and exact output reporting |
 
@@ -32,22 +33,22 @@ The table below governs model and effort for eligible workloads; it does not req
 
 | Workload | Role | Effort |
 |---|---|---|
-| End-to-end coordination; routine requirements, specification, or existing-architecture analysis | Judgment | `medium` |
+| End-to-end coordination; routine requirements, specification, or existing-architecture analysis | Judgment | `high` |
 | Scoped, known-source file, flow, or configuration lookup | Execution | `medium` |
 | Clear routine implementation; known-root-cause fix | Execution | `medium` |
 | Figma PC/H5 multi-state implementation; multi-module or complex-state known-root-cause fix | Execution | `high` |
-| Unknown-root-cause, cross-system, or intermittent bug diagnosis | Judgment | `high` |
+| Unknown-root-cause, cross-system, or intermittent bug diagnosis | Specialist Judgment | `high` |
 | Ordinary test-code authoring against frozen approved behavior | Execution | `medium` |
 | Complex-state or edge-case test-code authoring against frozen approved behavior | Execution | `high` |
-| High-risk acceptance design or review | Judgment | `high` |
+| High-risk acceptance design or review | Specialist Judgment | `high` |
 | Already specified test, build, or log execution | Testing | `low` |
 | Browser operation or visual verification | Execution | `medium`; `high` for complex states or visual comparisons |
 | Explicitly requested ordinary review | Execution | `high` |
 
 #### Codex Judgment effort
 
-- Use `medium` by default for ordinary task coordination, requirements/specification and existing-architecture analysis, integrating scoped lookup results, and routine acceptance against defined criteria. Bounded known-source tracing may go to Execution as shown above; Judgment retains requirements and acceptance ownership.
-- Use `high` for conflicting authoritative sources, unclear cross-site impact, new architecture or consequential cross-system tradeoffs, unknown-root-cause diagnosis, and consequential payment, permission, security, or release-readiness judgment. Escalate only the affected phase, then return to `medium` for routine follow-ups; do not redo all medium work at high.
+- Use the default Judgment binding at `high` for ordinary task coordination, requirements/specification and existing-architecture analysis, integrating scoped lookup results, and routine acceptance against defined criteria. Bounded known-source tracing may go to Execution as shown above; Judgment retains requirements and acceptance ownership.
+- Route conflicting authoritative sources, unclear cross-site impact, new architecture or consequential cross-system tradeoffs, unknown-root-cause diagnosis, and consequential payment, permission, security, or release-readiness judgment to Specialist Judgment at `high`. Route only the affected phase, then return to the default Judgment binding for routine follow-ups; the main Judgment agent retains ownership and does not redo routine work in the specialist phase.
 - If a required model or effort control is unavailable, disclose the missing binding and follow the fallback policy below; never claim that a written rule changed a running worker.
 - Missing requirements or API facts still require authoritative evidence or user decisions; effort does not authorize guessing or bypassing blockers. Existing approval, scope, test, and release safeguards remain unchanged.
 
