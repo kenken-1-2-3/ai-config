@@ -16,7 +16,7 @@ Harness-agnostic delegation, context-budget and verification rules. Claude Code 
 - 不為單次 deterministic check、短 read-back、同一檔案的小修或純粹「可能比較快」而開 subagent；委派與整合成本也要算進 context budget。
 - 不派多個 worker 重做同一份分析。需要第二觀點時，把它明確定義成 review，並只在下方列出的高風險條件使用。
 - The Codex quality-first serial handoff below is the only exception to the parallel-subtask requirement and to the ban on delegating small/single-file changes. Its purpose is separation of judgment from implementation, not concurrency.
-- This exception covers one bounded implementation or known-root-cause fix only. Deterministic checks, short read-backs, and unresolved judgment remain with the main agent.
+- This exception covers one bounded implementation or known-root-cause fix, or a required Specialist Judgment diagnosis phase when the main agent cannot switch to its binding. Deterministic checks, short read-backs, and other unresolved judgment remain with the main agent.
 
 ### Quality-first serial handoff (Codex pilot, started 2026-08-17)
 
@@ -24,10 +24,10 @@ Keep model identifiers in this registry only. When models change, update the bin
 
 | Role family | Current binding | Reasoning effort | Responsibility |
 |---|---|---|---|
-| Judgment | `gpt-6-sol` | `high` | Coordination, routine requirements and specification, existing-architecture analysis, and routine acceptance |
+| Judgment | `gpt-6.1-sol` | `high` | Coordination, routine requirements and specification, existing-architecture analysis, and routine acceptance |
 | Specialist Judgment | `gpt-6-astra` | `high` | Complex or high-risk judgment, unknown-root-cause diagnosis, high-risk acceptance and review, final release judgment |
-| Execution | `gpt-6-sol` | `medium` | Bounded lookup, implementation, test authoring, browser work, and known-root-cause fixes |
-| Testing | `gpt-6-luna` | `low` | Read-only execution of already specified verification commands or cases and exact output reporting |
+| Execution | `gpt-6.1-sol` | `medium` | Bounded lookup, implementation, test authoring, browser work, and known-root-cause fixes |
+| Testing | `gpt-5.6-luna` | `low` | Read-only execution of already specified verification commands or cases and exact output reporting |
 
 The table below governs model and effort for eligible workloads; it does not require delegation for short checks or change the active session's model. The main Judgment agent may run a routine single short lookup or check directly. Apply any model or effort change through an exposed, supported runtime control; writing this rule does not switch a running worker.
 
@@ -47,6 +47,8 @@ The table below governs model and effort for eligible workloads; it does not req
 
 #### Codex Judgment effort
 
+- Before each phase, compare its role-required model and effort with exposed actual runtime settings when available; configured defaults are not proof of the active binding. Use supported runtime controls to resolve a mismatch, and disclose unavailable or unverified bindings through the fallback policy below.
+- Route unknown-root-cause diagnosis to Specialist Judgment before bounded Execution fixes. If the main agent cannot switch to that binding, a bounded native Specialist Judgment diagnosis handoff is allowed even when serial; provide a source packet with the symptom, evidence and source anchors, allowed and forbidden paths, objective diagnosis acceptance criteria, and baseline state. This exception does not authorize short lookups or read-backs.
 - Use the default Judgment binding at `high` for ordinary task coordination, requirements/specification and existing-architecture analysis, integrating scoped lookup results, and routine acceptance against defined criteria. Bounded known-source tracing may go to Execution as shown above; Judgment retains requirements and acceptance ownership.
 - Route conflicting authoritative sources, unclear cross-site impact, new architecture or consequential cross-system tradeoffs, unknown-root-cause diagnosis, and consequential payment, permission, security, or release-readiness judgment to Specialist Judgment at `high`. Route only the affected phase, then return to the default Judgment binding for routine follow-ups; the main Judgment agent retains ownership and does not redo routine work in the specialist phase.
 - If a required model or effort control is unavailable, disclose the missing binding and follow the fallback policy below; never claim that a written rule changed a running worker.

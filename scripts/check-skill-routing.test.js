@@ -37,7 +37,122 @@ function createFixture(t) {
   return fixtureRoot;
 }
 
+// Semantic fixture mutation is independent of skill ordering and manifest formatting.
+const scenarioMutators = {
+  "managed workflow is duplicated in a project after global promotion": (manifest) => {
+    const project = manifest.projects.find(
+      (candidate) => candidate.name === "Whitelabel_GSI_Platform_Multiverse",
+    );
+    assert.ok(project, "named project missing from fixture");
+    project.skills = [...project.skills, "requirements-grill"];
+  },
+};
+
 const weakeningScenarios = [
+  {
+    name: "API fields alone trigger a human decision workflow",
+    file: "rules/skill_trigger_guard.md",
+    from: "Missing or unverified API fields alone are technical contract gaps, not unresolved human decisions that trigger `requirements-grill`;",
+    to: "Missing or unverified API fields alone trigger `requirements-grill`;",
+    id: "routing-operation-contract-gap",
+    message: "keep API contract gaps distinct from Requirements Grill human decisions",
+  },
+  {
+    name: "contract gap drops integration verification blocker",
+    file: "rules/skill_trigger_guard.md",
+    from: "keep the affected integration and API／Network／persistence verification `BLOCKED` until authoritative evidence resolves the gap.",
+    to: "allow affected integration verification to pass before authoritative evidence resolves the gap.",
+    id: "routing-operation-contract-gap",
+    message: "retain the integration blocker for unverified API contracts",
+  },
+  {
+    name: "shared parity vocabulary overrides the actual deliverable",
+    file: "rules/skill_trigger_guard.md",
+    from: "Match a skill's actual deliverable and operation, not shared vocabulary: existing-template UI parity does not automatically cover native APK, plugin, or startup parity.",
+    to: "Existing-template UI parity automatically covers every native APK, plugin, or startup parity request.",
+    id: "routing-operation-contract-gap",
+    message: "match workflow deliverables and operations before selecting parity skills",
+  },
+  {
+    name: "phase binding compares defaults instead of actual runtime",
+    file: "rules/agent_dispatch.md",
+    from: "compare its role-required model and effort with exposed actual runtime settings when available;",
+    to: "compare its role-required model and effort only with configured defaults;",
+    id: "dispatch-runtime-phase-contract",
+    message: "compare phase-required model and effort with actual exposed runtime settings",
+  },
+  {
+    name: "configured defaults treated as active runtime proof",
+    file: "rules/agent_dispatch.md",
+    from: "configured defaults are not proof of the active binding.",
+    to: "configured defaults prove the active binding.",
+    id: "dispatch-runtime-phase-contract",
+    message: "do not treat configured defaults as active runtime evidence",
+  },
+  {
+    name: "runtime mismatches silently ignored",
+    file: "rules/agent_dispatch.md",
+    from: "Use supported runtime controls to resolve a mismatch, and disclose unavailable or unverified bindings through the fallback policy below.",
+    to: "Ignore mismatches and treat unavailable or unverified bindings as satisfied.",
+    id: "dispatch-runtime-phase-contract",
+    message: "resolve runtime mismatches or explicitly disclose missing binding evidence",
+  },
+  {
+    name: "unknown diagnosis routed directly to execution fixes",
+    file: "rules/agent_dispatch.md",
+    from: "Route unknown-root-cause diagnosis to Specialist Judgment before bounded Execution fixes.",
+    to: "Route unknown-root-cause diagnosis directly to Execution fixes.",
+    id: "dispatch-runtime-phase-contract",
+    message: "route unknown diagnosis through Specialist Judgment before Execution fixes",
+  },
+  {
+    name: "serial gate excludes the required specialist diagnosis phase",
+    file: "rules/agent_dispatch.md",
+    from: "This exception covers one bounded implementation or known-root-cause fix, or a required Specialist Judgment diagnosis phase when the main agent cannot switch to its binding.",
+    to: "This exception covers one bounded implementation or known-root-cause fix only.",
+    id: "dispatch-runtime-phase-contract",
+    message: "permit the required specialist diagnosis phase through the serial gate",
+  },
+  {
+    name: "serial specialist diagnosis forbidden without a main model switch",
+    file: "rules/agent_dispatch.md",
+    from: "If the main agent cannot switch to that binding, a bounded native Specialist Judgment diagnosis handoff is allowed even when serial;",
+    to: "If the main agent cannot switch to that binding, specialist diagnosis delegation is forbidden;",
+    id: "dispatch-runtime-phase-contract",
+    message: "allow bounded native specialist diagnosis when the main binding cannot switch",
+  },
+  {
+    name: "specialist diagnosis receives unbounded history instead of a source packet",
+    file: "rules/agent_dispatch.md",
+    from: "provide a source packet with the symptom, evidence and source anchors, allowed and forbidden paths, objective diagnosis acceptance criteria, and baseline state.",
+    to: "provide the entire conversation without scope or acceptance criteria.",
+    id: "dispatch-runtime-phase-contract",
+    message: "require a bounded source packet for specialist diagnosis",
+  },
+  {
+    name: "serial exception broadened to short lookups",
+    file: "rules/agent_dispatch.md",
+    from: "This exception does not authorize short lookups or read-backs.",
+    to: "This exception authorizes short lookups and read-backs.",
+    id: "dispatch-runtime-phase-contract",
+    message: "keep short lookups and read-backs outside the specialist serial exception",
+  },
+  {
+    name: "missing binding silently substituted",
+    file: "rules/agent_dispatch.md",
+    from: "Do not silently substitute a different model when a binding is unavailable.",
+    to: "Silently substitute any available model when a binding is unavailable.",
+    id: "dispatch-runtime-phase-contract",
+    message: "retain explicit missing-binding fallback",
+  },
+  {
+    name: "Testing delegation becomes mandatory",
+    file: "rules/agent_dispatch.md",
+    from: "Delegating test execution is optional;",
+    to: "Delegating test execution is mandatory;",
+    id: "dispatch-runtime-phase-contract",
+    message: "keep Testing delegation optional",
+  },
   {
     name: "Dashboard local login scope expanded beyond local agent-side testing",
     file: "rules/dashboard_local_testing.md",
@@ -722,13 +837,40 @@ const weakeningScenarios = [
   },
 ];
 
+for (const layout of ["reordered skills", "additional trailing skill"]) {
+  test(`duplicate managed workflow fixture handles ${layout}`, () => {
+    const target = {
+      name: "Whitelabel_GSI_Platform_Multiverse",
+      skills: ["multiverse-shared-hook-extraction", "existing-project-skill"],
+    };
+    const other = { name: "Other_Project", skills: ["other-skill"] };
+    if (layout === "reordered skills") target.skills.reverse();
+    else target.skills.push("additional-project-skill");
+    const originalSkills = [...target.skills];
+    const manifest = JSON.parse(JSON.stringify({ projects: [other, target] }));
+    scenarioMutators["managed workflow is duplicated in a project after global promotion"](manifest);
+
+    assert.deepEqual(manifest.projects[0], other, "unrelated project changed");
+    assert.deepEqual(manifest.projects[1].skills, [...originalSkills, "requirements-grill"]);
+    assert.equal(manifest.projects[1].name, target.name);
+  });
+}
+
 for (const scenario of weakeningScenarios) {
   test(`checker rejects ${scenario.name}`, (t) => {
     const fixtureRoot = createFixture(t);
     const file = path.join(fixtureRoot, scenario.file);
     const original = fs.readFileSync(file, "utf8");
-    assert.ok(original.includes(scenario.from), `fixture text missing: ${scenario.from}`);
-    const weakened = original.replace(scenario.from, scenario.to);
+    let weakened;
+    const mutate = scenarioMutators[scenario.name];
+    if (mutate) {
+      const manifest = JSON.parse(original);
+      mutate(manifest);
+      weakened = JSON.stringify(manifest, null, 2);
+    } else {
+      assert.ok(original.includes(scenario.from), `fixture text missing: ${scenario.from}`);
+      weakened = original.replace(scenario.from, scenario.to);
+    }
     fs.writeFileSync(file, weakened + (scenario.append || ""));
 
     const issue = runChecks(fixtureRoot).find(

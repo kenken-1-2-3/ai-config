@@ -5,6 +5,71 @@ const crypto = require("node:crypto");
 const path = require("node:path");
 
 const CONTRACTS = [
+  // Source structure only: these checks cannot verify a running agent's binding or routing.
+  {
+    id: "routing-operation-contract-gap",
+    file: "rules/skill_trigger_guard.md",
+    patterns: [
+      {
+        regex: /^- Missing or unverified API fields alone are technical contract gaps, not unresolved human decisions that trigger `requirements-grill`;/m,
+        message: "keep API contract gaps distinct from Requirements Grill human decisions",
+      },
+      {
+        regex: /^- Missing or unverified API fields[^\n]*keep the affected integration and API／Network／persistence verification `BLOCKED` until authoritative evidence resolves the gap\./m,
+        message: "retain the integration blocker for unverified API contracts",
+      },
+      {
+        regex: /^- Match a skill's actual deliverable and operation, not shared vocabulary: existing-template UI parity does not automatically cover native APK, plugin, or startup parity\./m,
+        message: "match workflow deliverables and operations before selecting parity skills",
+      },
+    ],
+  },
+  {
+    id: "dispatch-runtime-phase-contract",
+    file: "rules/agent_dispatch.md",
+    patterns: [
+      {
+        regex: /^- Before each phase, compare its role-required model and effort with exposed actual runtime settings when available;/m,
+        message: "compare phase-required model and effort with actual exposed runtime settings",
+      },
+      {
+        regex: /^- Before each phase[^\n]*configured defaults are not proof of the active binding\./m,
+        message: "do not treat configured defaults as active runtime evidence",
+      },
+      {
+        regex: /^- Before each phase[^\n]*Use supported runtime controls to resolve a mismatch, and disclose unavailable or unverified bindings through the fallback policy below\./m,
+        message: "resolve runtime mismatches or explicitly disclose missing binding evidence",
+      },
+      {
+        regex: /^- Route unknown-root-cause diagnosis to Specialist Judgment before bounded Execution fixes\./m,
+        message: "route unknown diagnosis through Specialist Judgment before Execution fixes",
+      },
+      {
+        regex: /^- This exception covers one bounded implementation or known-root-cause fix, or a required Specialist Judgment diagnosis phase when the main agent cannot switch to its binding\./m,
+        message: "permit the required specialist diagnosis phase through the serial gate",
+      },
+      {
+        regex: /^- Route unknown-root-cause[^\n]*If the main agent cannot switch to that binding, a bounded native Specialist Judgment diagnosis handoff is allowed even when serial;/m,
+        message: "allow bounded native specialist diagnosis when the main binding cannot switch",
+      },
+      {
+        regex: /^- Route unknown-root-cause[^\n]*provide a source packet with the symptom, evidence and source anchors, allowed and forbidden paths, objective diagnosis acceptance criteria, and baseline state\./m,
+        message: "require a bounded source packet for specialist diagnosis",
+      },
+      {
+        regex: /^- Route unknown-root-cause[^\n]*This exception does not authorize short lookups or read-backs\./m,
+        message: "keep short lookups and read-backs outside the specialist serial exception",
+      },
+      {
+        regex: /^6\. Do not silently substitute a different model when a binding is unavailable\. Preserve the task state, report the unavailable binding, and either use the Judgment agent as an explicit quality-first fallback or ask the user when the fallback would materially change cost, latency, or scope\./m,
+        message: "retain explicit missing-binding fallback",
+      },
+      {
+        regex: /^- Delegating test execution is optional;/m,
+        message: "keep Testing delegation optional",
+      },
+    ],
+  },
   {
     id: "routing-primary-limit",
     file: "rules/skill_trigger_guard.md",

@@ -133,3 +133,5 @@ A 專案存的記憶在 B 專案的 session 完全讀不到。弱模型最容易
   一次 select 多個（逗號分隔），不要一個一個載。
 - 背景 agent（`run_in_background: true`）完成時 harness 會自動通知主對話，
   不要去讀它的 output 檔輪詢（那是完整 JSONL transcript，會塞爆 context）。
+
+- (2026-10-07) Auditing past skill/model routing → compare scoped session skill reads, spawn arguments and worker turn contexts with the dispatch registry; distinguish configured defaults from observed execution. Why: static contract validation does not verify runtime routing. Evidence: `scripts/check-skill-routing.js` validates source contracts; GSI-506 workers recorded Sol/medium, while `~/.codex/config.toml` recorded Astra/high. The audit-time checker suite separately failed 1/85 because its project-skill duplication fixture assumed a skill was last in `projects.json`, before APK registration changed that list.

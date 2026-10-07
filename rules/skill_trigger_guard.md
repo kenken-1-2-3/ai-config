@@ -23,6 +23,8 @@ The legacy-plugin override block immediately below applies whenever a plugin or 
 ## General workflow precedence
 
 - `requirements-grill` owns pre-spec or pre-implementation clarification only when its material-decision gate matches after scoped source and repository discovery. If authoritative sources resolve the ambiguity or an approved, internally consistent, and sufficiently complete spec covers the requested outcome, do not load it.
+- Missing or unverified API fields alone are technical contract gaps, not unresolved human decisions that trigger `requirements-grill`; keep the affected integration and API／Network／persistence verification `BLOCKED` until authoritative evidence resolves the gap.
+- Match a skill's actual deliverable and operation, not shared vocabulary: existing-template UI parity does not automatically cover native APK, plugin, or startup parity.
 - A narrower project-specific workflow wins over generic `diagnosing-bugs` or `deep-module-design` only when it covers the same immediate outcome and preserves the user's requested authority. A workflow that mandates edits does not own a diagnosis-only or analysis-only request. Do not stack both primary skills.
 - `deep-module-design` produces architecture and interface judgment unless the user asks for implementation. An ordinary multi-file edit is not a trigger.
 - The user may explicitly force or skip `requirements-grill`; either instruction overrides its automatic gate for that request.
