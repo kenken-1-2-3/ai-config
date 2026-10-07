@@ -37,6 +37,11 @@ Decision rules for calls that are easy to get wrong. Each has a trigger, a test,
 - ✅ Ask: request says "fix the login button for R017" but the button component lives in `libs/shared/ui-layer/` used by r001 too. Cross-site impact → stop, present the two isolation options, ask.
 - ❌ Don't ask: "should I use a `for` loop or `.map()` here?" or "may I read the router file?" — reversible, in scope, no user information needed. Just decide.
 
+### Test-login confirmation
+
+- Before asking for login confirmation, check existing user authorization and reuse it for ordinary authorized test-login steps. Inspect the displayed action and text; a checkbox or notice alone does not establish a legally binding agreement.
+- When an applicable browser or computer-use policy explicitly requires action-time confirmation, ask only for that covered action and explain the actual policy source. Claim automatic approval review rejected an action only when an actual rejection exists. Repository rules do not override runtime safeguards; never switch tools to evade them.
+
 ## 4. Signals the direction is wrong (change path, don't retry)
 
 **Test** — any TWO of these together mean stop digging:
