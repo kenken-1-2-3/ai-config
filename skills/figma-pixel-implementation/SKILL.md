@@ -16,14 +16,17 @@ description: Use when a Figma node or image is the authoritative source for a us
 
 任何視覺修改前，先建立並凍結 manifest：
 
-| State ID | Route | Exact viewport | Data / auth / permission | Global shell state | Authoritative source | Local asset | Output screenshot |
-| --- | --- | --- | --- | --- |
-| `<STATE-ID>` | `<route>` | `<width × height>` | `<可重現條件>` | `<header／global sidebar／local aside 狀態>` | `<Figma node / image>` | `<已下載檔案>` | `<完成後填>` |
+| State ID | Ticket / component / interaction target | Site / template | Route | Observed verification-run identities | Exact viewport | Data / auth / permission | Global shell state | Authoritative source | Local asset | Output screenshot |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `<STATE-ID>` | `<ticket／元件／dropdown 等實際操作目標>` | `<site／template>` | `<route>` | `<各 baseline／final run 的 source／build／bundle／server 記錄>` | `<width × height>` | `<可重現條件>` | `<header／global sidebar／local aside 狀態>` | `<Figma node / image>` | `<已下載檔案>` | `<完成後填>` |
 
 - 實作前凍結 manifest。只有來源或使用者需求真的變更才可新增版本；重新命名、拆分 state 或改 viewport 不會重設後述輪次計數。
-- 同一張圖只下載一次，首次盤點時記錄 local path、尺寸與必要量測。只在允許的視覺比對輪次載入該 local asset，每輪最多一次並盡量批次帶入；不可重新搜尋、抓取或在 microfix 後重複附圖。
+- 凍結的是 `State ID`、expected UI／criteria、exact viewport 與指定狀態；observed evidence 另按每次 baseline／final verification run 記錄 source revision、deployed build／bundle、local checkout／server cwd／port 與 screenshot／read-back。授權 rebuild 後更新當次 observed identities 並保留先前紀錄；更新 evidence 不可重設 failed-method history 或暗改 expected states。
+- 同一張未變更的圖只下載一次，首次盤點時記錄 local path、尺寸與必要量測。只在允許的視覺比對輪次載入該 local asset，每輪最多一次並盡量批次帶入；只有相關來源／素材已變更或 freshness 不明時，選擇性更新受影響部分；不可在 microfix 後重複附圖，也不可省略必要的視覺 evidence。
 - Figma node、mock 與截圖若代表不同狀態，拆成不同 `State ID`，不要混成一個「大致相似」的畫面。
 - 來源互斥或缺少關鍵 state 時先列出具體缺口；不可從 API、repo 現況或相鄰畫面自行推翻已指定的 UI。
+- 驗證 manifest 指定的實際元件與 interaction target；例如姓名 dropdown 不可用會員 sidebar 或相鄰畫面代替。只建立已授權需求及受影響行為必要的 states，不新增通用全狀態矩陣。
+- 需要 native foreground input 時由單一操作者依序控制焦點、輸入與 read-back；不要讓多個 worker 同時操作同一前景視窗。
 
 ## 完整量測範圍
 
@@ -45,6 +48,8 @@ description: Use when a Figma node or image is the authoritative source for a us
 6. 第二輪批次修正後，只能再產一次 final evidence screenshot／deterministic read-back，且不得據此開第三輪修正。仍有差異就保留 evidence，回報具體 delta、原因及需要的來源／決策；不得宣稱 pixel-perfect。
 
 Deterministic 的 viewport、`getBoundingClientRect()`、computed style、overflow 與 breakpoint 優先直接檢查。只有整體構圖、裁切、字形或視覺層級等無法由 deterministic check 判斷時，才需要模型視覺比較；模型比對也包含在上述兩輪總上限內。
+
+Overflow 必須在 transition／ripple 結束、render 穩定後量測；需要 populated state 時使用可取得的真實長資料（例如 localized date）重現受影響內容。缺少資料或未知的設計反應要記錄缺口／`UNVERIFIED`，不可因此自創換行、截斷或其他 layout。
 
 build、lint、unit test、class/source 字串斷言都不是視覺完成證據。它們只能證明編譯或實作護欄，不能取代 rendered-page screenshot、DOM 尺寸或 computed style。
 

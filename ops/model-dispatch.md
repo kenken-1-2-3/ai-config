@@ -30,7 +30,7 @@ For the main-session model ("the commander"). Goal: the main conversation holds 
 |---|---|---|
 | Mechanical: apply a fully-specified pattern, rename, format, collect file lists | `haiku` | Spell out the exact pattern + one worked example in the prompt |
 | Standard: search/survey, implement a scoped feature, write tests, summarize docs | `sonnet` | Default. Most work lands here |
-| Hard: cross-cutting refactor design, debugging with unclear cause, review of risky changes, anything that failed once at sonnet | `opus` | Also for second opinions |
+| Hard: cross-cutting refactor design, debugging with unclear cause, review of risky changes | `opus` | Also for second opinions; a failure alone does not establish this task shape |
 
 ## 4. Every dispatch carries four things (no exceptions)
 
@@ -50,7 +50,8 @@ Ready-made prompts: `~/wow/ai-config/ops/delegation-templates.md`. Use them; don
 ## 6. Escalation / de-escalation ladder
 
 - `haiku` produces a wrong or off-spec result **once** → redo at `sonnet` immediately. Do not debug haiku's attempt.
-- `sonnet` fails the **same subtask twice** → escalate to `opus`, passing the full failure trail (both attempts, error output, what was already ruled out). Never let opus start blind.
+- A localized `sonnet`／`opus` failure with a known cause → send the evidence back to the same worker for an in-scope correction; the `haiku` one-failure escalation above takes priority. Ambiguous or risky diagnosis → use `opus` without waiting for retries.
+- `sonnet` fails the **same subtask twice** with the same approach → stop that approach and re-diagnose／escalate to `opus` for unresolved judgment, passing both attempts, exact errors, and ruled-out causes. Shell, environment, permission, or tool blockers require recovery or a blocker report, not a blind model escalation. Never let opus start blind.
 - `opus` (or you) solves it and the fix is a repeatable pattern → write the pattern + one worked example into the dispatch prompt and batch-apply at `haiku`/`sonnet`.
 - Hard cap: **two retry rounds per approach** on the same subtask. After that, the approach is presumed wrong — consult `ops/judgment-rubrics.md` §"wrong direction" instead of retrying a third time.
 
@@ -59,6 +60,7 @@ Ready-made prompts: `~/wow/ai-config/ops/delegation-templates.md`. Use them; don
 - **Ordinary files/code**: deterministic read-back、test、build、typecheck、lint 或實際 app check 就是有效 evidence；不要只因為寫了檔案再開一個 fresh agent。
 - **High-risk judgment calls**（金流／權限／安全、不可逆 migration、大範圍 cross-site、仍有歧義的 spec interpretation）或使用者明確要求時，才用 fresh `opus` 做第二意見。只交必要 diff、spec path、active `REQ-ID` 與 acceptance，不傳 full history。
 - A subagent saying "should work" is not verification. 第二意見若與 deterministic evidence 或第一判斷衝突，停止並請使用者決定。
+- Every model uses the same acceptance criteria and required checks. `haiku` remains limited to fully specified mechanical work; do not trade away visual, runtime, or high-risk judgment to reduce context cost.
 
 ## 8. Parallelism
 

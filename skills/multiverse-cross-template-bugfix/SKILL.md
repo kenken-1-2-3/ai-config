@@ -36,12 +36,12 @@ rg "具體的 hook|adapter|renderer map|config key" src/common/ template/ --incl
 
 1. **確認 root cause**：先讀 shared source（`src/common/composables/`、`src/common/hooks/`、provider adapters／mappings）以及已知受影響的 template 檔案。
 2. **全局搜尋影響範圍**：用 `rg` 搜尋 `src/common/` 與 `template/` 的相同錯誤 pattern、shared symbol 與 all callers，列出所有受影響的 templates／call sites。
-3. **排除已正確的 templates**：對照搜尋結果，確認哪些 templates 已使用正確 code path，不要 patch 它們。
+3. **排除已正確的 templates**：對照搜尋結果與已接受的 fix baseline，先確認之前修好的 code 確實存在於目前 branch／checkout，再決定是否需要修改；不要重寫已正確的 code，也不因缺少 baseline 自動 merge／cherry-pick。
 4. **決定 fix 位置**：
    - Root cause 在 shared code → 修 `src/common`，確認不破壞已正確的 templates。
    - Root cause 是 template-local 的錯誤實作 → 逐一修每個受影響的 template。
-5. **逐一修復**，完成後用同一個 `rg` 指令確認錯誤 pattern 已消失。
-6. **回報**：受影響 templates 清單、fix 位置（shared vs template-local）、哪些 templates 已正確不需修改。
+5. **逐一修復**，完成後用同一個 `rg` 指令確認錯誤 pattern 已消失。每個已授權 template 記錄受影響 implementation family、route／component、runtime revision 與相關真實 data／auth cases，驗證修正及已接受 baseline 未回歸；搜尋結果不能代替 runtime acceptance。
+6. **回報**：受影響 templates 清單、fix 位置（shared vs template-local）、哪些 templates 已正確不需修改。攜帶已接受 fix baseline 與各 template 的 runtime evidence；無法重現的 cases 標記 `UNVERIFIED`，不可外推為跨版型完成。
 
 ## Provider language implementation family
 

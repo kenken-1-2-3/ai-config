@@ -51,5 +51,5 @@ No entry without the trigger and the evidence — "be more careful about X" is b
 
 ## 5. Sanity checks after any edit here
 
-- Fresh-context agent read-back for the edited file: does it still say what you intended, and is nothing else broken (references to files/sections still valid)?
+- Validate every changed hunk against its source, links, and acceptance criteria. Main-agent deterministic read-back may verify ordinary bounded factual or docs edits; fresh independent review remains mandatory when authorization, scope, acceptance, or dispatch gates change, semantics are consequential and ambiguous, or the user requests review. Preserve all required checks; this is not a self-waiver for gate changes.
 - `bash -n install.sh` if you touched install.sh; `node -e 'JSON.parse(require("fs").readFileSync("projects.json","utf8"))'` if you touched projects.json.

@@ -24,6 +24,9 @@ Build evidence that can disprove a cause before changing production code. This i
 6. Use the smallest one-variable observation needed to distinguish the leading hypotheses. When code changes are authorized, temporary instrumentation may be added and must carry a searchable tag such as `[DEBUG-7F3A]`. During diagnosis-only work, use existing telemetry or read-only observations; if new instrumentation is necessary, request authorization before writing it.
 7. Change the hypothesis when evidence refutes it. After two failed correction rounds, stop patching the same theory and report the evidence gap or a genuinely different hypothesis.
 
+- Before changing code for a report that it is "still broken", verify the active checkout, server process cwd and port, deployed revision/bundle version, target route/component, and relevant auth/data state against the accepted fix baseline. A stale bundle or wrong server is evidence to correct the reproduction before rewriting the fix.
+- Separate an application failure from a browser, permission, or tool-runtime blocker. After two identical tool failures without changed conditions, stop that method, preserve minimal errors and affected cases, and report the specific blocker; continue independent in-scope diagnosis or repair. Resume only after meaningful new evidence or recovery, and never use another tool to bypass a rejection.
+
 ## Fix and regression
 
 When implementation is authorized:

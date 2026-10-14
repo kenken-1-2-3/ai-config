@@ -5,13 +5,14 @@ Decision rules for calls that are easy to get wrong. Each has a trigger, a test,
 ## 1. When to escalate the model (or yourself → ask for a stronger session)
 
 **Test** — escalate when ANY of:
-- Same subtask failed twice with different-looking errors (see dispatch ladder in ops/model-dispatch.md §6).
+- Failed corrections leave the cause unresolved or reveal consequential judgment; use the active harness binding in rules/agent_dispatch.md (ops/model-dispatch.md §6 applies only to Claude Code). Environment, permission, or tool blockers require recovery or a blocker report, not a blind stronger-model retry.
+- High-risk or consequential ambiguous judgment requires the active harness's specialist immediately; do not wait for failed retries.
 - You cannot state, in one sentence each, (a) what the code currently does and (b) what it should do. If you can't, the problem is understanding, not effort.
 - The fix you're considering touches code whose purpose you can't explain.
 
-**Do**: escalate WITH the failure trail (attempts, errors, ruled-out causes). **Not**: retry the same approach with small variations a third time.
+**Do**: stop the same method after two failures and re-diagnose; escalate unresolved judgment WITH the failure trail (attempts, errors, ruled-out causes). **Not**: retry the same approach with small variations a third time.
 
-- ✅ Escalate: a Multiverse bug reproduces in template `set_r022` but the suspect code is in `src/common/`, and two targeted fixes broke a different template. This is cross-tenant coupling — hand to `opus` with both diffs and which templates broke.
+- ✅ Escalate: a Multiverse bug reproduces in template `set_r022` but the suspect code is in `src/common/`, and two targeted fixes broke a different template. This is cross-tenant coupling — route to the active harness's specialist with both diffs and which templates broke (Claude Code: `opus`; Codex: the native Specialist Judgment binding).
 - ❌ Don't escalate: `pnpm build` fails with a clear "module not found" pointing at a typo'd import you just wrote. That's a mechanical fix; escalating wastes a round trip.
 
 ## 2. When it is actually done
@@ -64,7 +65,7 @@ Checklist (all repos; project rules may add more, never less):
 - [ ] No edits outside the agreed scope dirs (for Multiverse: no `src/common/` unless explicitly approved).
 - [ ] Smallest relevant validation ran and passed; command + result quoted in the report. (Respect per-repo bans: no `tsc --noEmit` in Multiverse/nx/Dashboard — in Dashboard use its `ts-check` script instead; see each repo's rules for the approved commands.)
 - [ ] New user-facing strings went through the i18n rules (remote keys; never invented translations — rubric §3 applies).
-- [ ] Fresh-context read-back done for any file whose content IS the deliverable (specs, rules, docs).
+- [ ] Every changed hunk in a content deliverable (specs, rules, docs) checked against its source, links, and acceptance criteria. Main-agent deterministic read-back suffices for ordinary bounded factual or docs edits; fresh independent review is required for changed authorization, scope, acceptance, or dispatch gates, consequential ambiguous semantics, or user-requested review. Do not waive required checks or independently review your own gate changes.
 - [ ] Report states what was NOT verified.
 
 Lessons:

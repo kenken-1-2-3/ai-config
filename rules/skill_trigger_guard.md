@@ -30,6 +30,12 @@ The legacy-plugin override block immediately below applies whenever a plugin or 
 - The user may explicitly force or skip `requirements-grill`; either instruction overrides its automatic gate for that request.
 - A managed skill's explicit `Do not use` conditions beat generic positive wording such as "diagnose" or "refactor". Only explicitly naming that skill can force it past those exclusions.
 
+## Freshness-aware source reuse
+
+- Keep mandatory initial rule and triggered-skill reads. Within the same task and retained context, reuse already-read operative clauses and source anchors only while the relevant source is unchanged; do not reread solely because the task enters another phase.
+- After compaction or a worker handoff, reload the necessary source when operative clauses are missing or uncertain. A prior summary alone is not proof of current instructions; reuse does not waive routing, branch, authorization, or verification gates.
+- When relevant source changes or freshness is uncertain, read the changed or necessary sections. Batch independent scoped queries; narrow truncated results by path, section, or binding instead of repeating a full read. Do not impose a time-based expiry or automatically start a new chat.
+
 ## Ticket and branch continuity
 
 - The default assumption is that work in the same project/repository during one session belongs to one ticket. Treat follow-up edits as part of that ticket unless the user explicitly identifies a new ticket or unrelated requirement.
