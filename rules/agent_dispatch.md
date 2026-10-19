@@ -12,7 +12,7 @@ Harness-agnostic delegation, context-budget and verification rules. Claude Code 
 ## Delegation gate
 
 - 只有在能列出 **至少兩個彼此獨立、可平行推進** 的 subtask 時才委派。只有一個 coherent task、步驟有先後依賴、會寫同一批檔案，或 worker 需要同一份完整 history 時，留在 main agent 處理。
-- 獨立表示：subtask 不需要等待另一個 subtask 的產物、不共享可變狀態，且可以各自用客觀 acceptance 驗收。
+- 獨立表示：subtask 不需要等待另一個 subtask 的產物、不共享可變狀態，且可以各自用客觀 acceptance 驗收。排程前同時檢查 shared files／interfaces、測試資料、server／port 與 browser foreground ownership；需求沒有相依不代表資源沒有衝突，衝突工作須依序執行。
 - 不為單次 deterministic check、短 read-back、同一檔案的小修或純粹「可能比較快」而開 subagent；委派與整合成本也要算進 context budget。
 - 不派多個 worker 重做同一份分析。需要第二觀點時，把它明確定義成 review，並只在下方列出的高風險條件使用。
 - The Codex quality-first serial handoff below is the only exception to the parallel-subtask requirement and to the ban on delegating small/single-file changes. Its purpose is separation of judgment from implementation, not concurrency.

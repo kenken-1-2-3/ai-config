@@ -55,7 +55,7 @@ description: Use when the user explicitly asks to author, update, hand off, or a
    - 逐段讀原需求／每張圖，確認都有 `REQ-ID`。
    - 逐列讀矩陣，確認 spec 的每個功能都有來源。
    - 特別檢查入口、list/create/edit/detail、主要區塊、空／錯誤／loading／permission 狀態，避免因 API 缺口整段消失或把需求控制項預先停用。
-6. **一個 feature 只留一份 canonical spec**：canonical spec 持有完整 source inventory 與所有 `REQ-ID`；大型需求只用 Active REQ IDs 拆 execution slices／新 tasks，不另建會分散真相的 child specs。既有或外部限制下的 slice spec 要標 `SLICE` 並連回 canonical，且永遠不可宣稱 feature complete。
+6. **一個 feature 只留一份 canonical spec**：canonical spec 持有完整 source inventory 與所有 `REQ-ID`；大型需求只用 Active REQ IDs 拆 execution slices／新 tasks，不另建會分散真相的 child specs。準備多批交接時，依 [execution reference](references/execution.md) 在 canonical spec 內記錄依賴與進度，引用既有 REQ／AC／VT，不複製需求。既有或外部限制下的 slice spec 要標 `SLICE` 並連回 canonical，且永遠不可宣稱 feature complete。
 7. **定義客觀驗收與驗證**：每個 `REQ-ID` 至少連到一個 `AC-ID` 與 `VT-ID`。驗收寫可觀察結果；驗證寫指令、操作、截圖或 Network evidence 的取得方式。AC／VT 不得增加來源沒有授權的可觀察行為；新增行為必須拆成有產品權威來源的原子需求。
 8. **記錄決策並請使用者確認**：所有縮 scope、命名、fallback 與來源衝突決策都寫入 Decision Log，並以 `DEC-ID` 對映回受影響的 `REQ-ID`。API-blocked fallback 與 `OUT_OF_SCOPE_APPROVED` 的 Approval / source 必須引用 Responsibility = `User decision` 的 Source ID，API／repo source 不能充當核准。使用者確認後立即更新矩陣，不讓決策只留在對話。
 

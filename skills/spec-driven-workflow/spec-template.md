@@ -137,3 +137,5 @@ UI surface 不是 `N/A + 理由` 時，Source anchor / asset 至少引用一個 
 - Report format：`<AC/VT 逐條結果 + evidence + 未驗證項；fixture UI 與 API／Network／persistence evidence 分開>`
 
 只交接上述內容，不貼完整原始對話。若從需求整理切到實作、切換 coherent slice，或 task 已累積大量圖片／工具輸出，建立新 task 並以此 spec 傳遞決策。
+
+多批實作才依 [execution reference](/Users/kenyu/wow/ai-config/skills/spec-driven-workflow/references/execution.md) 在本 canonical spec 加入 Execution Ledger；單批工作省略。Ledger 只記執行依賴與證據位置，不取代上方需求矩陣、Active REQ IDs 或完成閘門。

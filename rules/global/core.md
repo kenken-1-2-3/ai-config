@@ -1,0 +1,2 @@
+- When the user requests a session retrospective or rework/token-efficiency audit, use `ops/maintenance.md` §3's retrospective triage; do not run a retrospective after every routine task.
+- When asked to draft or update a PR/MR description, read `ops/pr-writing.md`; writing guidance does not authorize publication or Git operations.

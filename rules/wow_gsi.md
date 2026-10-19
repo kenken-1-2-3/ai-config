@@ -115,3 +115,4 @@ Apply these rules to WOW/GSI projects unless the user explicitly says otherwise.
 - A spec must include acceptance criteria as a checklist; review checks the diff against those criteria, item by item.
 - A spec must include the required Git Flow setup: base branch, work branch name, and a note that implementation starts only after creating/switching to that work branch.
 - When implementing from a spec (Codex) or reviewing against one (Claude), treat the spec as the contract: if the requirement needs to change mid-way, update the spec first, then continue.
+- For authorized implementation of an approved spec that needs multiple coherent execution slices, read `~/wow/ai-config/skills/spec-driven-workflow/references/execution.md`. This is an execution reference, not a trigger to reload the spec-authoring skill; a small single-slice task does not need a task graph.

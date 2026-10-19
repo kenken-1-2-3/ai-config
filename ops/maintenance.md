@@ -43,6 +43,22 @@ Format for appended lessons (one entry, ≤4 lines):
 
 No entry without the trigger and the evidence — "be more careful about X" is banned.
 
+### Retrospective triage
+
+- For a requested retrospective, inspect the specified session's primary evidence; default to the current session. Start with relevant failures, corrections and tool-output summaries, expanding raw logs only to resolve a concrete uncertainty. Separate observed causes from hypotheses; token volume alone does not prove wasted work or monetary cost.
+- Before adding a lesson, check the relevant existing rule/check. Amend the owning instruction or link its source instead of duplicating it. Route each evidenced problem to the cheapest effective prevention below; a retrospective-only request produces recommendations, not implementation authority beyond §1.
+
+| Observed problem | Preferred improvement |
+| --- | --- |
+| Repeated search or missing information | Add a precise source/navigation pointer; identify missing logs or access without granting permissions. |
+| Mechanically detectable mistake | Inspect existing project check commands and CI wiring first; recommend repairing or extending the existing deterministic check before adding prose. Do not silently add infrastructure or unrelated lint cleanup. |
+| Judgment or scope mistake | Clarify the relevant trigger, authority, counterexample or acceptance rule. Implementation-critical constraints stay available before coding, not only during review. |
+| Repeated reads or oversized tool output | Scope queries and return evidence pointers; follow `rules/skill_trigger_guard.md` freshness and `rules/agent_dispatch.md` evidence-reuse rules. |
+| Duplicate, ineffective or obsolete instructions | Identify the exact overlap or absent behavioral effect; use §4 for consolidation without weakening safeguards. |
+
+- Rank recommendations by demonstrated impact and recurrence, then implementation cost. Each needs a failure/evidence anchor, existing protection and why it missed, one proposed owner/location, and a concrete way to verify prevention. No fixed quota of findings or generic "be more careful" rules.
+- When an improvement is implemented, append its check result and later recurrence observations to the same lesson or existing audit record. Mark effectiveness `PENDING_OBSERVATION` until comparable subsequent evidence exists; record sample/window and rework/read metrics when available, without inventing savings or adding automatic monitoring.
+
 ## 4. Compaction (prevent rule bloat)
 
 - Trigger: any single rules/ops file exceeds **~150 lines**, or a section accumulates **>10 lesson entries**, or two entries contradict.
