@@ -31,11 +31,13 @@ Multiple files alone are not evidence. A cohesive pipeline may legitimately span
 ## Design pass
 
 1. Name the complexity that should move behind the boundary and the callers that should stop knowing it.
-2. Define the smallest useful contract: inputs, outputs, errors, lifecycle, and invariants.
+2. Write a representative caller usage example first, then derive the smallest useful contract: inputs, outputs, errors, lifecycle, and invariants. Keep sketches in the design artifact until implementation is authorized; do not add throwing stubs to working production paths.
 3. Identify what remains intentionally outside the module.
 4. If the interface is genuinely unsettled, compare at least two viable boundaries. Otherwise recommend the direct minimal deepening without manufacturing alternatives.
 5. Evaluate each viable option against caller burden, implementation locality, test seam, compatibility, migration cost, and likely repeated changes.
 6. Prefer a staged migration when changing the contract atomically would create unnecessary risk.
+
+Before selecting a boundary, check whether a future contributor following the nearest example can preserve the invariants without knowing distant internals. Repeated caller workarounds or type escapes are evidence to revisit the boundary, not permission for a broader rewrite. For consequential unresolved alternatives, use the bounded comparison in `ops/change-workflow.md` (relative to the ai-config source of truth); model staffing remains governed by `rules/agent_dispatch.md`.
 
 ## Handoff
 

@@ -51,7 +51,7 @@ No entry without the trigger and the evidence — "be more careful about X" is b
 | Observed problem | Preferred improvement |
 | --- | --- |
 | Repeated search or missing information | Add a precise source/navigation pointer; identify missing logs or access without granting permissions. |
-| Mechanically detectable mistake | Inspect existing project check commands and CI wiring first; recommend repairing or extending the existing deterministic check before adding prose. Do not silently add infrastructure or unrelated lint cleanup. |
+| Mechanically detectable mistake | Inspect existing project check commands and CI wiring first; recommend repairing or extending the existing deterministic check before adding prose. Prove the check rejects a representative evidenced mistake and accepts the correct behavior; use a controlled fixture, never damage the live working tree. A test that cannot detect the fault is not enforcement. Do not silently add infrastructure or unrelated lint cleanup. |
 | Judgment or scope mistake | Clarify the relevant trigger, authority, counterexample or acceptance rule. Implementation-critical constraints stay available before coding, not only during review. |
 | Repeated reads or oversized tool output | Scope queries and return evidence pointers; follow `rules/skill_trigger_guard.md` freshness and `rules/agent_dispatch.md` evidence-reuse rules. |
 | Duplicate, ineffective or obsolete instructions | Identify the exact overlap or absent behavioral effect; use §4 for consolidation without weakening safeguards. |
@@ -68,4 +68,5 @@ No entry without the trigger and the evidence — "be more careful about X" is b
 ## 5. Sanity checks after any edit here
 
 - Validate every changed hunk against its source, links, and acceptance criteria. Main-agent deterministic read-back may verify ordinary bounded factual or docs edits; fresh independent review remains mandatory when authorization, scope, acceptance, or dispatch gates change, semantics are consequential and ambiguous, or the user requests review. Preserve all required checks; this is not a self-waiver for gate changes.
+- For changes to workflow behavior, skill selection or acceptance gates, follow [the skill validation recipe](skill-validation.md): retain structural checks, then exercise relevant natural-task cases and inspect actual artifacts/actions. A wording-only edit does not require a model evaluation; a machine pass does not replace semantic review.
 - `bash -n install.sh` if you touched install.sh; `node -e 'JSON.parse(require("fs").readFileSync("projects.json","utf8"))'` if you touched projects.json.

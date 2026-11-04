@@ -7,6 +7,17 @@ const path = require("node:path");
 const CONTRACTS = [
   // Source structure only: these checks cannot verify a running agent's binding or routing.
   {
+    id: "skill-validation-entry",
+    file: "ops/maintenance.md",
+    requiredFiles: ["ops/skill-validation.md", "scripts/skill-behavior.js"],
+    patterns: [
+      {
+        regex: /\[[^\]]+\]\(skill-validation\.md\)/,
+        message: "keep the executable skill validation recipe reachable from maintenance",
+      },
+    ],
+  },
+  {
     id: "routing-operation-contract-gap",
     file: "rules/skill_trigger_guard.md",
     patterns: [
@@ -1121,6 +1132,16 @@ function runChecks(rootDir) {
     const frontmatter = parseFrontmatter(text);
 
     const issues = [];
+    for (const requiredFile of contract.requiredFiles || []) {
+      const requiredPath = path.join(rootDir, requiredFile);
+      if (!fs.existsSync(requiredPath) || !fs.statSync(requiredPath).isFile()) {
+        issues.push({
+          id: contract.id,
+          file: contract.file,
+          message: `restore required workflow file: ${requiredFile}`,
+        });
+      }
+    }
     if (contract.expectedSha256) {
       const actualSha256 = crypto.createHash("sha256").update(text, "utf8").digest("hex");
       if (actualSha256 !== contract.expectedSha256) {

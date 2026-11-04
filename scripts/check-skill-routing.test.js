@@ -25,6 +25,7 @@ function createFixture(t) {
 
   const fixtureFiles = new Set([
     ...CONTRACTS.map((contract) => contract.file),
+    ...CONTRACTS.flatMap((contract) => contract.requiredFiles || []),
     ...weakeningScenarios.map((scenario) => scenario.file),
   ]);
   for (const file of fixtureFiles) {
@@ -853,6 +854,17 @@ for (const layout of ["reordered skills", "additional trailing skill"]) {
     assert.deepEqual(manifest.projects[0], other, "unrelated project changed");
     assert.deepEqual(manifest.projects[1].skills, [...originalSkills, "requirements-grill"]);
     assert.equal(manifest.projects[1].name, target.name);
+  });
+}
+
+for (const missing of ["ops/skill-validation.md", "scripts/skill-behavior.js"]) {
+  test(`checker rejects an unreachable validation dependency: ${missing}`, (t) => {
+    const fixtureRoot = createFixture(t);
+    assert.deepEqual(runChecks(fixtureRoot), []);
+    fs.unlinkSync(path.join(fixtureRoot, missing));
+    const issues = runChecks(fixtureRoot);
+    assert.ok(issues.some((issue) => issue.id === "skill-validation-entry"
+      && issue.message === `restore required workflow file: ${missing}`));
   });
 }
 

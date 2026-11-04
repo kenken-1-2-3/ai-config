@@ -2,6 +2,8 @@
 
 Harness-agnostic delegation, context-budget and verification rules. Claude Code 的 model 綁定另見 `~/wow/ai-config/ops/model-dispatch.md`；其他 harness 直接遵循本檔。
 
+- Before planning or implementing a non-trivial behavior/interface change, or when explicitly asked to deepen a task, use the applicable sections of `ops/change-workflow.md`. This applies to inline work too; it adds no delegation requirement and does not activate a second primary workflow skill.
+
 ## Current Codex delegation backend
 
 - When the active session is Codex, do not invoke external Claude Code. This includes `cc:review`, `cc:rescue`, `cc:adversarial-review`, the Claude CLI, and any tracked Claude Code job.

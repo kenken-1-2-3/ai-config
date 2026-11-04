@@ -20,6 +20,8 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 ## Scope Check
 
+Before decomposing non-trivial work, use the planning section of `ops/change-workflow.md` in the ai-config source of truth: ground the affected flow, preserve evidenced rationale, and sharpen proof within the approved scope. Use its test-first applicability rule for the example task cycle below; documentation and mechanical edits do not require manufactured failing tests.
+
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
 ## File Structure

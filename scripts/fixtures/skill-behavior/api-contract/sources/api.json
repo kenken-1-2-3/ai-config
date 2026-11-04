@@ -1,0 +1,7 @@
+{
+  "revision": "fixture-2026-11-04-v1",
+  "authority": "Complete currently published request and response schema; additionalProperties=false",
+  "endpoint": "PUT /agent/delivery-settings",
+  "request": { "type": "object", "properties": { "agent_id": { "type": "string" } }, "required": ["agent_id"], "additionalProperties": false },
+  "response": { "type": "object", "properties": { "agent_id": { "type": "string" } }, "required": ["agent_id"], "additionalProperties": false }
+}
