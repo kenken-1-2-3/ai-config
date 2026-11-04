@@ -36,6 +36,9 @@ Apply these rules to `Whitelabel_GSI_Platform_Multiverse`.
 
 ## Verification
 
+- (2026-11-04) For 全版型 requirements in this legacy 會員端 repository, initially run manual/browser acceptance only on base `okbet` (R001), not its color variants or every template. Do not automatically expand that browser matrix; follow a later explicit user instruction for additional templates. Why: use the user's chosen initial acceptance target. Evidence: user「舊會員端如果有全版型需求 測試都先測試一個版型就好okbet這個」.
+- This initial browser scope takes precedence over per-template runtime-acceptance wording in cross-template skills. Keep the authorized all-template implementation scope, caller/family impact audit, relevant automated checks, and required states/viewports/data cases on `okbet`; it does not apply to NX, 代理端, or a specifically named single-template task.
+- Report `okbet` results separately and other templates as `UNVERIFIED` / not browser-tested; never infer all-template runtime acceptance from one template. If `okbet` cannot exercise a required case, report that case as `BLOCKED` or `UNVERIFIED` with the reason instead of claiming success or silently substituting another template.
 - Use the smallest relevant validation for touched files.
 - Do not run `tsc --noEmit`.
 - Prefer `git --no-pager diff --check` plus targeted checks that are already available in the project.
