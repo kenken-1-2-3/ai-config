@@ -28,7 +28,8 @@ Keep model identifiers in this registry only. When models change, update the bin
 |---|---|---|---|
 | Judgment | `gpt-6.1-sol` | `high` | Coordination, routine requirements and specification, existing-architecture analysis, and routine acceptance |
 | Specialist Judgment | `gpt-6-astra` | `high` | Complex or high-risk judgment, unknown-root-cause diagnosis, high-risk acceptance and review, final release judgment |
-| Execution | `gpt-6.1-sol` | `medium` | Bounded lookup, implementation, test authoring, browser work, and known-root-cause fixes |
+| Execution | `gpt-6.1-sol` | `medium` | Bounded lookup, implementation, test authoring, and known-root-cause fixes |
+| Interaction Execution (pilot) | `gpt-6.1-terra` | `medium` | Authorized browser interaction, visual evidence collection and source-bounded writing; subject to the pilot scope below |
 | Testing | `gpt-5.6-luna` | `low` | Read-only execution of already specified verification commands or cases and exact output reporting |
 
 The table below governs model and effort for eligible workloads; it does not require delegation for short checks or change the active session's model. The main Judgment agent may run a routine single short lookup or check directly. Apply any model or effort change through an exposed, supported runtime control; writing this rule does not switch a running worker.
@@ -44,8 +45,16 @@ The table below governs model and effort for eligible workloads; it does not req
 | Complex-state or edge-case test-code authoring against frozen approved behavior | Execution | `high` |
 | High-risk acceptance design or review | Specialist Judgment | `high` |
 | Already specified test, build, or log execution | Testing | `low` |
-| Browser operation or visual verification | Execution | `medium`; `high` for complex states or visual comparisons |
+| Authorized browser/form/upload operation against frozen cases | Interaction Execution (pilot) | `medium` |
+| Visual discrepancy reporting against fixed sources and states | Interaction Execution (pilot) | `high` |
+| Draft/revise a report or message from already established evidence | Interaction Execution (pilot) | `medium` |
 | Explicitly requested ordinary review | Execution | `high` |
+
+#### Interaction pilot scope
+
+- Use the pilot for the bounded execution/evidence slice only. Judgment retains requirements, API-contract interpretation and final acceptance; Specialist Judgment retains unknown-root-cause diagnosis, high-risk review and release judgment. Implementation and test authoring retain Execution, including Figma-to-code and shared-component changes. Source-bounded writing may reorganize established facts but must not invent findings, resolve disputed sources or authorize publication.
+- Keep the existing delegation gate, single browser-foreground owner, project verification and permission boundaries. Visual reports require the existing source/measurement/state evidence; screenshots or model agreement alone do not establish pixel parity, Network, persistence or release acceptance. For authorized image-upload tests, use a generated plain TEST image matching the required format/dimensions; never select private images or personal files.
+- Qualify each workload with matched representative evidence under `ops/skill-validation.md`; failed or unrun workloads remain candidate-only and keep their previous Execution route. Browser runtime or permission failures are environment blockers, not model scores; switching models does not repair them. Figma MCP extraction remains candidate-only until its actual tool path is exercised. An eligible pilot run does not broaden tool access or create another delegation exception. Consult [the pilot record](../reports/2026-11-04-interaction-model-pilot.md) for exercised categories and remaining limits; reuse evidence only under the existing freshness rule.
 
 #### Codex Judgment effort
 
@@ -71,7 +80,7 @@ For a Codex request that changes code or behavior:
 
 - Delegating test execution is optional; all verification required by the acceptance packet and project rules remains mandatory. Use one native Testing worker with the Testing registry model and workload-table effort only for an eligible delegated subtask that runs already specified verification commands or cases. Resume only when its known model and effort match; otherwise start a fresh bounded worker. The delegation gate remains in force; a single short deterministic check stays with the main agent.
 - Test writing is separate from test execution. Execution may add implementation-level tests only against frozen approved expected behavior. Judgment owns acceptance criteria, novel expectations, and ambiguous failures. Testing is read-only and may not change code, tests, fixtures, configuration, scope, or expected results.
-- Testing at `low` executes exact specified checks only; it does not interpret ambiguous output, diagnose causes, or judge visual correctness. Browser visual judgment retains the Execution workload-table effort, and high-risk judgment retains Specialist Judgment.
+- Testing at `low` executes exact specified checks only; it does not interpret ambiguous output, diagnose causes, or judge visual correctness. Browser visual evidence follows the Interaction pilot scope and workload-table effort; final acceptance remains with Judgment, and high-risk judgment retains Specialist Judgment.
 - Give the Testing worker the frozen acceptance packet, exact commands or cases, required environment, and log location. It must not edit code, locked tests, fixtures, snapshots, or configuration; it must not reduce required test scope or create new test expectations.
 - The Testing worker reports the actual command and environment, exit status, evidence or log path, and `PASS`, `FAIL`, `BLOCKED`, or `UNVERIFIED` for each checked criterion. A skipped, blocked, or failing check never becomes success, and partial evidence never establishes root cause.
 - Route planning of new test expectations and ambiguous failures to Judgment. Route fixes only after the root cause is established, and then to Execution. Main Judgment retains final verification and acceptance responsibilities.

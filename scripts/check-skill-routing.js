@@ -5,6 +5,104 @@ const crypto = require("node:crypto");
 const path = require("node:path");
 
 const CONTRACTS = [
+  {
+    id: "interaction-pilot-routing",
+    file: "rules/agent_dispatch.md",
+    markdownTables: [
+      {
+        header: ["Role family", "Current binding", "Reasoning effort", "Responsibility"],
+        expectedRows: [
+          ["Judgment", "gpt-6.1-sol", "high"],
+          ["Specialist Judgment", "gpt-6-astra", "high"],
+          ["Execution", "gpt-6.1-sol", "medium"],
+          ["Interaction Execution (pilot)", "gpt-6.1-terra", "medium"],
+          ["Testing", "gpt-5.6-luna", "low"],
+        ],
+        message: "retain the Interaction pilot model and default effort",
+      },
+      {
+        header: ["Workload", "Role", "Effort"],
+        expectedRows: [
+          ["End-to-end coordination; routine requirements, specification, or existing-architecture analysis", "Judgment", "high"],
+          ["Scoped, known-source file, flow, or configuration lookup", "Execution", "medium"],
+          ["Clear routine implementation; known-root-cause fix", "Execution", "medium"],
+          ["Figma PC/H5 multi-state implementation; multi-module or complex-state known-root-cause fix", "Execution", "high"],
+          ["Unknown-root-cause, cross-system, or intermittent bug diagnosis", "Specialist Judgment", "high"],
+          ["Ordinary test-code authoring against frozen approved behavior", "Execution", "medium"],
+          ["Complex-state or edge-case test-code authoring against frozen approved behavior", "Execution", "high"],
+          ["High-risk acceptance design or review", "Specialist Judgment", "high"],
+          ["Already specified test, build, or log execution", "Testing", "low"],
+          ["Authorized browser/form/upload operation against frozen cases", "Interaction Execution (pilot)", "medium"],
+          ["Visual discrepancy reporting against fixed sources and states", "Interaction Execution (pilot)", "high"],
+          ["Draft/revise a report or message from already established evidence", "Interaction Execution (pilot)", "medium"],
+          ["Explicitly requested ordinary review", "Execution", "high"],
+        ],
+        message: "preserve workload roles and effort outside the bounded Interaction pilot",
+        exclusiveValue: "Interaction Execution (pilot)",
+        exclusiveMessage: "limit Interaction routing to the three authorized workloads",
+      },
+    ],
+    patterns: [
+      {
+        regex: /^- Use the pilot[^\n]*Judgment retains requirements, API-contract interpretation and final acceptance;/m,
+        message: "retain Judgment ownership of requirements and final acceptance",
+      },
+      {
+        regex: /^- Use the pilot[^\n]*Specialist Judgment retains unknown-root-cause diagnosis, high-risk review and release judgment\./m,
+        message: "retain Specialist ownership of unknown diagnosis, high-risk review and release",
+      },
+      {
+        regex: /^- Use the pilot[^\n]*Implementation and test authoring retain Execution, including Figma-to-code and shared-component changes\./m,
+        message: "keep implementation, test authoring and Figma-to-code with Execution",
+      },
+      {
+        regex: /^- Keep the existing delegation gate, single browser-foreground owner, project verification and permission boundaries\./m,
+        message: "retain delegation, browser ownership, verification and permission boundaries",
+      },
+      {
+        regex: /^- Keep the existing[^\n]*use a generated plain TEST image matching the required format\/dimensions; never select private images or personal files\./m,
+        message: "require generated TEST uploads and exclude personal files",
+      },
+      {
+        regex: /^- Qualify each workload[^\n]*failed or unrun workloads remain candidate-only and keep their previous Execution route\./m,
+        message: "keep failed and unrun workloads candidate-only on their previous route",
+      },
+      {
+        regex: /^- Qualify each workload[^\n]*Browser runtime or permission failures are environment blockers, not model scores;/m,
+        message: "separate environment blockers from model scores",
+      },
+      {
+        regex: /^- Qualify each workload[^\n]*Figma MCP extraction remains candidate-only until its actual tool path is exercised\./m,
+        message: "keep actual Figma MCP extraction candidate-only until exercised",
+      },
+      {
+        regex: /^- Qualify each workload[^\n]*An eligible pilot run does not broaden tool access or create another delegation exception\./m,
+        message: "forbid new tool permissions and delegation exceptions",
+      },
+    ],
+  },
+  {
+    id: "interaction-pilot-recipe",
+    file: "ops/skill-validation.md",
+    patterns: [
+      {
+        regex: /^3\. [^\n]*Mark frozen evaluation packets self-contained: required governing instructions still apply, but personal memory\/history are not task inputs unless explicitly supplied; record any extra-source read as a scope deviation rather than silently scoring it as compliant\./m,
+        message: "keep frozen packets self-contained and record undeclared memory or history reads as scope deviations",
+      },
+      {
+        regex: /^6\. [^\n]*For a model comparison, change only the model and keep the rule snapshot, effort, task, environment, tools and budget fixed\./m,
+        message: "hold rule, effort, task, environment, tools and budget fixed for model comparison",
+      },
+      {
+        regex: /^7\. [^\n]*A tool outage is `BLOCKED`, not a model failure or pass;/m,
+        message: "keep tool outages BLOCKED rather than model failures or passes",
+      },
+      {
+        regex: /^7\. [^\n]*Keep fixtures simple and non-personal\./m,
+        message: "keep pilot fixtures non-personal",
+      },
+    ],
+  },
   // Source structure only: these checks cannot verify a running agent's binding or routing.
   {
     id: "skill-validation-entry",
@@ -1128,6 +1226,10 @@ function parseFrontmatter(text) {
 function runChecks(rootDir) {
   return CONTRACTS.flatMap((contract) => {
     const absolutePath = path.join(rootDir, contract.file);
+    if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isFile()) {
+      return [{ id: contract.id, file: contract.file,
+        message: `restore required workflow file: ${contract.file}` }];
+    }
     const text = fs.readFileSync(absolutePath, "utf8");
     const frontmatter = parseFrontmatter(text);
 
@@ -1140,6 +1242,33 @@ function runChecks(rootDir) {
           file: contract.file,
           message: `restore required workflow file: ${requiredFile}`,
         });
+      }
+    }
+    // Compare table bindings, not surrounding prose or column spacing. Required rows
+    // must be unique, so a correct row cannot camouflage a conflicting duplicate.
+    for (const table of contract.markdownTables || []) {
+      const lines = text.split(/\r?\n/);
+      const cells = (line) => line.trim().split("|").slice(1, -1)
+        .map((cell) => cell.trim().replaceAll("`", ""));
+      const start = lines.findIndex((line) =>
+        line.trim().startsWith("|") && JSON.stringify(cells(line)) === JSON.stringify(table.header));
+      const rows = [];
+      if (start !== -1) {
+        for (let index = start + 1; index < lines.length && lines[index].trim().startsWith("|"); index++) {
+          const row = cells(lines[index]);
+          if (!row.every((cell) => /^:?-+:?$/.test(cell))) rows.push(row);
+        }
+      }
+      const matches = (actual, expected) => expected.every((cell, index) => actual[index] === cell);
+      if (table.expectedRows.some((expected) => {
+        const found = rows.filter((row) => row[0] === expected[0]);
+        return found.length !== 1 || !matches(found[0], expected);
+      })) {
+        issues.push({ id: contract.id, file: contract.file, message: table.message });
+      }
+      if (table.exclusiveValue && rows.some((row) => row[1] === table.exclusiveValue
+        && !table.expectedRows.some((expected) => matches(row, expected)))) {
+        issues.push({ id: contract.id, file: contract.file, message: table.exclusiveMessage });
       }
     }
     if (contract.expectedSha256) {

@@ -49,7 +49,211 @@ const scenarioMutators = {
   },
 };
 
+const interactionPilotScenarios = [
+  {
+    name: "interaction pilot scores undeclared personal-memory reads as compliant",
+    file: "ops/skill-validation.md",
+    from: "Mark frozen evaluation packets self-contained: required governing instructions still apply, but personal memory/history are not task inputs unless explicitly supplied; record any extra-source read as a scope deviation rather than silently scoring it as compliant.",
+    to: "Treat personal memory/history as implicit task inputs and score undeclared extra-source reads as compliant.",
+    id: "interaction-pilot-recipe",
+    message: "keep frozen packets self-contained and record undeclared memory or history reads as scope deviations",
+  },
+  {
+    "name": "interaction pilot changes model binding",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Interaction Execution (pilot) | `gpt-6.1-terra` | `medium` |",
+    "to": "| Interaction Execution (pilot) | `gpt-6.1-sol` | `medium` |",
+    "id": "interaction-pilot-routing",
+    "message": "retain the Interaction pilot model and default effort"
+  },
+  {
+    "name": "interaction pilot lowers default effort",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Interaction Execution (pilot) | `gpt-6.1-terra` | `medium` |",
+    "to": "| Interaction Execution (pilot) | `gpt-6.1-terra` | `low` |",
+    "id": "interaction-pilot-routing",
+    "message": "retain the Interaction pilot model and default effort"
+  },
+  {
+    "name": "interaction pilot takes over implementation",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Clear routine implementation; known-root-cause fix | Execution | `medium` |",
+    "to": "| Clear routine implementation; known-root-cause fix | Interaction Execution (pilot) | `medium` |",
+    "id": "interaction-pilot-routing",
+    "message": "preserve workload roles and effort outside the bounded Interaction pilot"
+  },
+  {
+    "name": "interaction pilot takes over Figma implementation",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Figma PC/H5 multi-state implementation; multi-module or complex-state known-root-cause fix | Execution | `high` |",
+    "to": "| Figma PC/H5 multi-state implementation; multi-module or complex-state known-root-cause fix | Interaction Execution (pilot) | `high` |",
+    "id": "interaction-pilot-routing",
+    "message": "preserve workload roles and effort outside the bounded Interaction pilot"
+  },
+  {
+    "name": "interaction pilot takes over test authoring",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Ordinary test-code authoring against frozen approved behavior | Execution | `medium` |",
+    "to": "| Ordinary test-code authoring against frozen approved behavior | Interaction Execution (pilot) | `medium` |",
+    "id": "interaction-pilot-routing",
+    "message": "preserve workload roles and effort outside the bounded Interaction pilot"
+  },
+  {
+    "name": "interaction pilot takes over complex test authoring",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Complex-state or edge-case test-code authoring against frozen approved behavior | Execution | `high` |",
+    "to": "| Complex-state or edge-case test-code authoring against frozen approved behavior | Interaction Execution (pilot) | `high` |",
+    "id": "interaction-pilot-routing",
+    "message": "preserve workload roles and effort outside the bounded Interaction pilot"
+  },
+  {
+    "name": "interaction pilot takes over unknown diagnosis",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Unknown-root-cause, cross-system, or intermittent bug diagnosis | Specialist Judgment | `high` |",
+    "to": "| Unknown-root-cause, cross-system, or intermittent bug diagnosis | Interaction Execution (pilot) | `high` |",
+    "id": "interaction-pilot-routing",
+    "message": "preserve workload roles and effort outside the bounded Interaction pilot"
+  },
+  {
+    "name": "interaction pilot takes over high risk acceptance",
+    "file": "rules/agent_dispatch.md",
+    "from": "| High-risk acceptance design or review | Specialist Judgment | `high` |",
+    "to": "| High-risk acceptance design or review | Interaction Execution (pilot) | `high` |",
+    "id": "interaction-pilot-routing",
+    "message": "preserve workload roles and effort outside the bounded Interaction pilot"
+  },
+  {
+    "name": "interaction pilot takes over ordinary review",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Explicitly requested ordinary review | Execution | `high` |",
+    "to": "| Explicitly requested ordinary review | Interaction Execution (pilot) | `high` |",
+    "id": "interaction-pilot-routing",
+    "message": "preserve workload roles and effort outside the bounded Interaction pilot"
+  },
+  {
+    "name": "interaction pilot takes over deterministic testing",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Already specified test, build, or log execution | Testing | `low` |",
+    "to": "| Already specified test, build, or log execution | Interaction Execution (pilot) | `low` |",
+    "id": "interaction-pilot-routing",
+    "message": "preserve workload roles and effort outside the bounded Interaction pilot"
+  },
+  {
+    "name": "interaction pilot lowers visual effort",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Visual discrepancy reporting against fixed sources and states | Interaction Execution (pilot) | `high` |",
+    "to": "| Visual discrepancy reporting against fixed sources and states | Interaction Execution (pilot) | `medium` |",
+    "id": "interaction-pilot-routing",
+    "message": "preserve workload roles and effort outside the bounded Interaction pilot"
+  },
+  {
+    "name": "interaction pilot adds unrelated workload",
+    "file": "rules/agent_dispatch.md",
+    "from": "| Explicitly requested ordinary review | Execution | `high` |",
+    "to": "| Explicitly requested ordinary review | Execution | `high` |\n| Unbounded implementation | Interaction Execution (pilot) | `medium` |",
+    "id": "interaction-pilot-routing",
+    "message": "limit Interaction routing to the three authorized workloads"
+  },
+  {
+    "name": "interaction pilot moves final acceptance",
+    "file": "rules/agent_dispatch.md",
+    "from": "Judgment retains requirements, API-contract interpretation and final acceptance",
+    "to": "Interaction Execution retains requirements, API-contract interpretation and final acceptance",
+    "id": "interaction-pilot-routing",
+    "message": "retain Judgment ownership of requirements and final acceptance"
+  },
+  {
+    "name": "interaction pilot moves release judgment",
+    "file": "rules/agent_dispatch.md",
+    "from": "Specialist Judgment retains unknown-root-cause diagnosis, high-risk review and release judgment",
+    "to": "Interaction Execution retains unknown-root-cause diagnosis, high-risk review and release judgment",
+    "id": "interaction-pilot-routing",
+    "message": "retain Specialist ownership of unknown diagnosis, high-risk review and release"
+  },
+  {
+    "name": "interaction pilot moves code authoring",
+    "file": "rules/agent_dispatch.md",
+    "from": "Implementation and test authoring retain Execution, including Figma-to-code and shared-component changes",
+    "to": "Implementation and test authoring use Interaction Execution, including Figma-to-code and shared-component changes",
+    "id": "interaction-pilot-routing",
+    "message": "keep implementation, test authoring and Figma-to-code with Execution"
+  },
+  {
+    "name": "interaction pilot promotes failed cases",
+    "file": "rules/agent_dispatch.md",
+    "from": "failed or unrun workloads remain candidate-only and keep their previous Execution route",
+    "to": "failed or unrun workloads qualify for the pilot route",
+    "id": "interaction-pilot-routing",
+    "message": "keep failed and unrun workloads candidate-only on their previous route"
+  },
+  {
+    "name": "interaction pilot scores tool blockers",
+    "file": "rules/agent_dispatch.md",
+    "from": "Browser runtime or permission failures are environment blockers, not model scores",
+    "to": "Browser runtime or permission failures are model failures",
+    "id": "interaction-pilot-routing",
+    "message": "separate environment blockers from model scores"
+  },
+  {
+    "name": "interaction pilot qualifies unrun Figma",
+    "file": "rules/agent_dispatch.md",
+    "from": "Figma MCP extraction remains candidate-only until its actual tool path is exercised",
+    "to": "Figma MCP extraction is qualified by synthetic screenshots",
+    "id": "interaction-pilot-routing",
+    "message": "keep actual Figma MCP extraction candidate-only until exercised"
+  },
+  {
+    "name": "interaction pilot expands delegation",
+    "file": "rules/agent_dispatch.md",
+    "from": "An eligible pilot run does not broaden tool access or create another delegation exception",
+    "to": "An eligible pilot run broadens tool access and creates another delegation exception",
+    "id": "interaction-pilot-routing",
+    "message": "forbid new tool permissions and delegation exceptions"
+  },
+  {
+    "name": "interaction pilot uploads private files",
+    "file": "rules/agent_dispatch.md",
+    "from": "use a generated plain TEST image matching the required format/dimensions; never select private images or personal files",
+    "to": "use a personal photo or private file for realistic uploads",
+    "id": "interaction-pilot-routing",
+    "message": "require generated TEST uploads and exclude personal files"
+  },
+  {
+    "name": "interaction pilot drops permission boundaries",
+    "file": "rules/agent_dispatch.md",
+    "from": "Keep the existing delegation gate, single browser-foreground owner, project verification and permission boundaries",
+    "to": "The pilot replaces the delegation gate, browser ownership, project verification and permission boundaries",
+    "id": "interaction-pilot-routing",
+    "message": "retain delegation, browser ownership, verification and permission boundaries"
+  },
+  {
+    "name": "interaction pilot compares rules as models",
+    "file": "ops/skill-validation.md",
+    "from": "For a model comparison, change only the model and keep the rule snapshot, effort, task, environment, tools and budget fixed",
+    "to": "For a model comparison, change the model, rules, effort and tools together",
+    "id": "interaction-pilot-recipe",
+    "message": "hold rule, effort, task, environment, tools and budget fixed for model comparison"
+  },
+  {
+    "name": "interaction pilot treats blocked as pass",
+    "file": "ops/skill-validation.md",
+    "from": "A tool outage is `BLOCKED`, not a model failure or pass",
+    "to": "A tool outage is a successful model trial",
+    "id": "interaction-pilot-recipe",
+    "message": "keep tool outages BLOCKED rather than model failures or passes"
+  },
+  {
+    "name": "interaction pilot uses personal fixtures",
+    "file": "ops/skill-validation.md",
+    "from": "Keep fixtures simple and non-personal",
+    "to": "Use personal files as fixtures",
+    "id": "interaction-pilot-recipe",
+    "message": "keep pilot fixtures non-personal"
+  }
+];
+
 const weakeningScenarios = [
+  ...interactionPilotScenarios,
   {
     name: "API fields alone trigger a human decision workflow",
     file: "rules/skill_trigger_guard.md",
@@ -891,3 +1095,14 @@ for (const scenario of weakeningScenarios) {
     assert.ok(issue, `${scenario.id} did not reject ${scenario.name}`);
   });
 }
+
+
+test("interaction pilot accepts harmless prose and table formatting changes", (t) => {
+  const fixtureRoot = createFixture(t);
+  const file = path.join(fixtureRoot, "rules/agent_dispatch.md");
+  const text = fs.readFileSync(file, "utf8")
+    .replace("#### Interaction pilot scope", "#### Interaction pilot scope\n\nThis pilot has a deliberately bounded evidence surface.")
+    .replaceAll(" | ", "  |  ");
+  fs.writeFileSync(file, text);
+  assert.deepEqual(runChecks(fixtureRoot), []);
+});
