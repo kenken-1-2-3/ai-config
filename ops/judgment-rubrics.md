@@ -25,6 +25,10 @@ Decision rules for calls that are easy to get wrong. Each has a trigger, a test,
 - ✅ Done: spec said "announcement targets support member tags AND levels"; you ran the dev server, exercised both filters, and the fresh-context reviewer confirmed both against the spec checklist; report notes tests were written but unstaged per rules.
 - ❌ Not done: code compiles and the diff "looks complete", but the spec's checklist item "empty-tag list falls back to all members" was never exercised. Compiling is not an acceptance criterion.
 
+- (2026-11-06) Before ending an authorized implementation/testing task with unfinished items, reconcile every remaining AC/VT in the existing record: executable now, blocked by a specific prerequisite, awaiting a necessary user decision/authorization, or explicitly deferred by the user. Continue executable in-scope work without another "continue" prompt; a partial final handoff is appropriate only when no authorized executable item remains or the user stops/narrows the task.
+  Stop a repeatedly failing method under the existing retry rule, assess a genuinely different supported method within current authorization, and continue independent checks; one tool/data failure does not block unrelated API capture, reachable visual comparison or other available tests. Preserve auth state when practical and do not manufacture data, broaden template scope, bypass safeguards, or send transactions to make cases testable.
+  Status-only/review-only requests remain bounded; a status question during active authorized execution is an interim update unless the user pauses or changes scope. Why: listing doable work as "unverified" still leaves the user managing ordinary next steps. Evidence: chat `01a1ae7c-3fc4-73f0-9e26-75096db76ccc`, user repeatedly requested authenticated API capture, App-condition checks and reachable Figma comparison after asking to finish all self-service checks; user「有很多應該是要自己跑的 我還需要自己說」.
+
 ## 3. When to stop and ask the user
 
 **Test** — stop when ANY of (and otherwise do NOT stop — reversible in-scope decisions are yours):
