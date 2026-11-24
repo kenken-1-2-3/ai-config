@@ -26,9 +26,9 @@ Keep model identifiers in this registry only. When models change, update the bin
 
 | Role family | Current binding | Reasoning effort | Responsibility |
 |---|---|---|---|
-| Judgment | `gpt-6.1-sol` | `high` | Coordination, routine requirements and specification, existing-architecture analysis, and routine acceptance |
+| Judgment | `gpt-6.2-sol` | `high` | Coordination, routine requirements and specification, existing-architecture analysis, and routine acceptance |
 | Specialist Judgment | `gpt-6-astra` | `high` | Complex or high-risk judgment, unknown-root-cause diagnosis, high-risk acceptance and review, final release judgment |
-| Execution | `gpt-6.1-sol` | `medium` | Bounded lookup, implementation, test authoring, and known-root-cause fixes |
+| Execution | `gpt-6.2-sol` | `medium` | Bounded lookup, implementation, test authoring, and known-root-cause fixes |
 | Interaction Execution (pilot) | `gpt-6.1-terra` | `medium` | Authorized browser interaction, visual evidence collection and source-bounded writing; subject to the pilot scope below |
 | Testing | `gpt-5.6-luna` | `low` | Read-only execution of already specified verification commands or cases and exact output reporting |
 

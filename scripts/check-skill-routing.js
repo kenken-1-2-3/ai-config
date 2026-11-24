@@ -12,9 +12,9 @@ const CONTRACTS = [
       {
         header: ["Role family", "Current binding", "Reasoning effort", "Responsibility"],
         expectedRows: [
-          ["Judgment", "gpt-6.1-sol", "high"],
+          ["Judgment", "gpt-6.2-sol", "high"],
           ["Specialist Judgment", "gpt-6-astra", "high"],
-          ["Execution", "gpt-6.1-sol", "medium"],
+          ["Execution", "gpt-6.2-sol", "medium"],
           ["Interaction Execution (pilot)", "gpt-6.1-terra", "medium"],
           ["Testing", "gpt-5.6-luna", "low"],
         ],

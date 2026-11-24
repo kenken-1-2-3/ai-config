@@ -51,6 +51,22 @@ const scenarioMutators = {
 
 const interactionPilotScenarios = [
   {
+    name: "judgment binding retains the previous Sol generation",
+    file: "rules/agent_dispatch.md",
+    from: "| Judgment | `gpt-6.2-sol` | `high` |",
+    to: "| Judgment | `gpt-6.1-sol` | `high` |",
+    id: "interaction-pilot-routing",
+    message: "retain the Interaction pilot model and default effort",
+  },
+  {
+    name: "execution binding retains the previous Sol generation",
+    file: "rules/agent_dispatch.md",
+    from: "| Execution | `gpt-6.2-sol` | `medium` |",
+    to: "| Execution | `gpt-6.1-sol` | `medium` |",
+    id: "interaction-pilot-routing",
+    message: "retain the Interaction pilot model and default effort",
+  },
+  {
     name: "interaction pilot scores undeclared personal-memory reads as compliant",
     file: "ops/skill-validation.md",
     from: "Mark frozen evaluation packets self-contained: required governing instructions still apply, but personal memory/history are not task inputs unless explicitly supplied; record any extra-source read as a scope deviation rather than silently scoring it as compliant.",
